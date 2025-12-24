@@ -31,6 +31,30 @@ public class User : AggregateRoot
         };
     }
 
+    /// <summary>
+    /// Reconstitutes a User from persistence. Use only in repositories.
+    /// </summary>
+    public static User Reconstitute(
+        Guid id,
+        string email,
+        string name,
+        UserRole role,
+        bool isActive,
+        DateTime createdAt,
+        DateTime? updatedAt)
+    {
+        return new User
+        {
+            Id = id,
+            Email = email,
+            Name = name,
+            Role = role,
+            IsActive = isActive,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
+    }
+
     public void SetPasswordHash(string passwordHash)
     {
         PasswordHash = passwordHash;

@@ -1,7 +1,11 @@
+using Aegis.Domain.Repositories;
+using Aegis.Infrastructure.Persistence;
+using Aegis.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
 
@@ -27,8 +31,15 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.ConfigureTestServices(services =>
         {
-            // Override connection strings with test containers
-            // This will be expanded as we add more infrastructure
+            // Remove the existing repository registration
+            services.RemoveAll<IUserRepository>();
+
+            // Run migrations against test container
+            var migrator = new DatabaseMigrator(PostgresConnectionString);
+            migrator.Migrate();
+
+            // Register repository with test container connection string
+            services.AddScoped<IUserRepository>(_ => new UserRepository(PostgresConnectionString));
         });
 
         builder.UseEnvironment("Testing");

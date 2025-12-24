@@ -1,4 +1,7 @@
 using System.Reflection;
+using Aegis.Domain.Repositories;
+using Aegis.Infrastructure.Persistence;
+using Aegis.Infrastructure.Persistence.Repositories;
 using Carter;
 using FluentValidation;
 using MediatR;
@@ -29,7 +32,18 @@ public static class ServiceCollectionExtensions
     {
         // Database connection string
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Host=localhost;Database=aegis;Username=postgres;Password=postgres";
+            ?? "Host=localhost;Port=5434;Database=aegis;Username=postgres;Password=postgres";
+
+        // Run database migrations
+        var migrator = new DatabaseMigrator(connectionString);
+        var result = migrator.Migrate();
+        if (!result.Successful)
+        {
+            throw new Exception($"Database migration failed: {result.Error?.Message}");
+        }
+
+        // Register repositories
+        services.AddScoped<IUserRepository>(_ => new UserRepository(connectionString));
 
         // Add health checks
         services.AddHealthChecks()
