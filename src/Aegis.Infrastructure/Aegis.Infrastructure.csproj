@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aegis.Domain\Aegis.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Data Access -->
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+    <PackageReference Include="dbup-postgresql" Version="6.1.5" />
+
+    <!-- Caching -->
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+
+    <!-- Vector Database -->
+    <PackageReference Include="Qdrant.Client" Version="1.12.0" />
+
+    <!-- AI/ML -->
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.30.0" />
+
+    <!-- Object Storage -->
+    <PackageReference Include="Minio" Version="6.0.4" />
+
+    <!-- HTTP -->
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>

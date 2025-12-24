@@ -1,0 +1,84 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.vspscc
+*.vssscc
+*.sln.docstates
+*.userprefs
+*.pidb
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+nuget.exe
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+[Cc]overage/
+coverage/
+*.coverage
+*.coveragexml
+
+# Project files
+*.csproj.user
+*.pubxml
+*.publishproj
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Docker
+docker/.env
+
+# Application specific
+appsettings.Development.json
+appsettings.Local.json
+*.log
+logs/
+
+# Secrets
+*.pfx
+*.key
+*.pem
+secrets/
+
+# Claude
+.claude/
