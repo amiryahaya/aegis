@@ -1,6 +1,6 @@
-using System.Security.Claims;
+using Aegis.Domain.Services;
 using Carter;
-using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Aegis.Api.Features.Query;
 
@@ -8,59 +8,138 @@ public class QueryModule : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/teams/{teamId:guid}/query")
-            .WithTags("Query")
-            .RequireAuthorization();
+        var group = app.MapGroup("/api/workspaces/{workspaceId:guid}/query")
+            .WithTags("Query");
 
-        group.MapPost("/", ExecuteQuery)
-            .WithSummary("Query documents using RAG");
+        group.MapPost("/", ExecuteQuery);
+        group.MapPost("/stream", ExecuteStreamingQuery);
+    }
 
-        static async Task<IResult> ExecuteQuery(
-            Guid teamId,
-            QueryRequest request,
-            IMediator mediator,
-            HttpContext context,
-            CancellationToken cancellationToken)
+    private static async Task<IResult> ExecuteQuery(
+        Guid workspaceId,
+        [FromBody] QueryRequest request,
+        [FromQuery] Guid? conversationId,
+        IRAGQueryService queryService)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
         {
-            // Get user ID from claims
-            var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-            {
-                return Results.Unauthorized();
-            }
+            return Results.BadRequest(new { error = "Query cannot be empty" });
+        }
 
-            // Create query command
-            var command = new QueryDocument.Command
-            {
-                TeamId = request.TeamId,
-                Query = request.Query,
-                MaxResults = request.MaxResults ?? 5,
-                ScoreThreshold = request.ScoreThreshold
-            };
+        var result = await queryService.QueryAsync(
+            request.Query,
+            workspaceId,
+            conversationId);
 
-            var result = await mediator.Send(command, cancellationToken);
-
-            if (result.IsSuccess)
-            {
-                return Results.Ok(result.Value);
-            }
-
-            var error = result.Error!;
-            var statusCode = error.Code.Contains("NotFound") ? 404
-                : error.Code.Contains("Validation") ? 400
-                : error.Code.Contains("Forbidden") ? 403
-                : 500;
-
+        if (result.IsFailure)
+        {
             return Results.Problem(
-                statusCode: statusCode,
-                title: error.Code,
-                detail: error.Message);
+                title: "Query Failed",
+                detail: result.Error!.Message,
+                statusCode: 500);
+        }
+
+        var response = result.Value!;
+
+        return Results.Ok(new
+        {
+            query = response.Query,
+            response = response.Response,
+            sources = response.Sources.Select(s => new
+            {
+                documentId = s.DocumentId,
+                documentName = s.DocumentName,
+                content = s.Content,
+                relevance = s.Relevance,
+                chunkIndex = s.ChunkIndex
+            }),
+            queryAnalysis = new
+            {
+                intent = response.QueryAnalysis.Intent.ToString(),
+                complexity = response.QueryAnalysis.Complexity.ToString(),
+                keywords = response.QueryAnalysis.Keywords,
+                extractedEntities = response.QueryAnalysis.ExtractedEntities
+            },
+            tokensUsed = response.TokensUsed,
+            processingTime = response.ProcessingTime.TotalMilliseconds,
+            conversationId = response.ConversationId
+        });
+    }
+
+    private static async Task ExecuteStreamingQuery(
+        Guid workspaceId,
+        [FromBody] QueryRequest request,
+        [FromQuery] Guid? conversationId,
+        IRAGQueryService queryService,
+        HttpContext context)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new { error = "Query cannot be empty" });
+            return;
+        }
+
+        // Set headers for SSE
+        context.Response.ContentType = "text/event-stream";
+        context.Response.Headers.Append("Cache-Control", "no-cache");
+        context.Response.Headers.Append("X-Accel-Buffering", "no");
+
+        await foreach (var chunkResult in queryService.QueryStreamingAsync(
+            request.Query,
+            workspaceId,
+            conversationId,
+            context.RequestAborted))
+        {
+            if (chunkResult.IsFailure)
+            {
+                await context.Response.WriteAsync($"data: {{\"error\":\"{chunkResult.Error!.Message}\"}}\n\n");
+                break;
+            }
+
+            var chunk = chunkResult.Value!;
+
+            if (chunk.IsComplete)
+            {
+                // Send final metadata
+                var metadata = new
+                {
+                    type = "metadata",
+                    sources = chunk.Sources?.Select(s => new
+                    {
+                        documentId = s.DocumentId,
+                        documentName = s.DocumentName,
+                        content = s.Content,
+                        relevance = s.Relevance,
+                        chunkIndex = s.ChunkIndex
+                    }),
+                    queryAnalysis = chunk.QueryAnalysis != null ? new
+                    {
+                        intent = chunk.QueryAnalysis.Intent.ToString(),
+                        complexity = chunk.QueryAnalysis.Complexity.ToString(),
+                        keywords = chunk.QueryAnalysis.Keywords,
+                        extractedEntities = chunk.QueryAnalysis.ExtractedEntities
+                    } : null
+                };
+
+                await context.Response.WriteAsync($"data: {System.Text.Json.JsonSerializer.Serialize(metadata)}\n\n");
+                await context.Response.WriteAsync("data: [DONE]\n\n");
+            }
+            else
+            {
+                // Send content chunk
+                var data = new
+                {
+                    type = "content",
+                    content = chunk.Content
+                };
+
+                await context.Response.WriteAsync($"data: {System.Text.Json.JsonSerializer.Serialize(data)}\n\n");
+            }
+
+            await context.Response.Body.FlushAsync();
         }
     }
 }
 
-public record QueryRequest(
-    string Query,
-    Guid TeamId,
-    int? MaxResults = 5,
-    float? ScoreThreshold = null);
+public record QueryRequest(string Query);

@@ -64,6 +64,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IWorkspaceContextService, Aegis.Infrastructure.Services.Workspace.WorkspaceContextService>();
+        services.AddScoped<IQueryProcessor, Aegis.Infrastructure.Services.Query.QueryProcessor>();
+        services.AddScoped<IRAGContextAssembler, Aegis.Infrastructure.Services.Query.RAGContextAssembler>();
+        services.AddScoped<IRAGQueryService, Aegis.Infrastructure.Services.Query.RAGQueryService>();
 
         // Register RAG services
         services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.PdfDocumentParser>();
@@ -85,7 +88,21 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBM25Indexer, Aegis.Infrastructure.Services.BM25.InMemoryBM25Indexer>();
         services.AddScoped<IHybridRetriever, Aegis.Infrastructure.Services.Retrieval.HybridRetriever>();
         services.AddScoped<IGraphEnhancedRetriever, Aegis.Infrastructure.Services.Graph.GraphEnhancedRetriever>();
-        services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
+
+        // Register LLM Service (OpenAI if API key provided, otherwise Mock)
+        var openAIKey = configuration["OpenAI:ApiKey"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        if (!string.IsNullOrWhiteSpace(openAIKey))
+        {
+            services.AddScoped<ILLMService>(sp => new Aegis.Infrastructure.Services.LLM.OpenAILLMService(
+                openAIKey,
+                sp.GetRequiredService<ILogger<Aegis.Infrastructure.Services.LLM.OpenAILLMService>>(),
+                configuration["OpenAI:Model"] ?? "gpt-4o-mini"));
+        }
+        else
+        {
+            services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
+        }
+
         services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
 
         // Register NER services (Intelligence NER wraps Basic NER)

@@ -28,6 +28,7 @@
 
     <!-- Caching -->
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0" />
+    <PackageReference Include="OpenAI" Version="2.1.0-beta.2" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
 
     <!-- Vector Database -->
