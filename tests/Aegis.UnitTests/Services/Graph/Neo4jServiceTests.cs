@@ -6,6 +6,7 @@ using Neo4j.Driver;
 
 namespace Aegis.UnitTests.Services.Graph;
 
+[Collection("GraphTests")]
 public class Neo4jServiceTests : IDisposable
 {
     private readonly Neo4jService _service;
@@ -281,7 +282,8 @@ public class Neo4jServiceTests : IDisposable
         await using var session = _driver.AsyncSession();
         await session.ExecuteWriteAsync(async tx =>
         {
-            await tx.RunAsync("MATCH (n) WHERE n.id STARTS WITH 'test-' DETACH DELETE n");
+            // Clean up all test nodes comprehensively
+            await tx.RunAsync("MATCH (n) WHERE n.id STARTS WITH 'test-' OR n.id STARTS WITH 'entity-' OR n.id STARTS WITH 'doc-' DETACH DELETE n");
         });
     }
 

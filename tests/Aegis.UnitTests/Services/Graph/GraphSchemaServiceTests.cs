@@ -6,6 +6,7 @@ using Neo4j.Driver;
 
 namespace Aegis.UnitTests.Services.Graph;
 
+[Collection("GraphTests")]
 public class GraphSchemaServiceTests : IDisposable
 {
     private readonly GraphSchemaService? _service;
