@@ -79,6 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVectorStore, Aegis.Infrastructure.Services.VectorStore.InMemoryVectorStore>();
         services.AddSingleton<IBM25Indexer, Aegis.Infrastructure.Services.BM25.InMemoryBM25Indexer>();
         services.AddScoped<IHybridRetriever, Aegis.Infrastructure.Services.Retrieval.HybridRetriever>();
+        services.AddScoped<IGraphEnhancedRetriever, Aegis.Infrastructure.Services.Graph.GraphEnhancedRetriever>();
         services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
         services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
 
