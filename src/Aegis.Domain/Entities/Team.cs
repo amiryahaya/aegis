@@ -27,6 +27,38 @@ public class Team : AggregateRoot
         };
     }
 
+    /// <summary>
+    /// Reconstitutes a Team from persistence. Use only in repositories.
+    /// </summary>
+    public static Team Reconstitute(
+        Guid id,
+        string name,
+        string? description,
+        Guid createdBy,
+        bool isActive,
+        DateTime createdAt,
+        DateTime? updatedAt,
+        IEnumerable<TeamMember>? members = null)
+    {
+        var team = new Team
+        {
+            Id = id,
+            Name = name,
+            Description = description,
+            CreatedBy = createdBy,
+            IsActive = isActive,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
+
+        if (members != null)
+        {
+            team._members.AddRange(members);
+        }
+
+        return team;
+    }
+
     public void UpdateDetails(string name, string? description)
     {
         Name = name;
@@ -102,6 +134,17 @@ public class TeamMember
             UserId = userId,
             Role = role,
             JoinedAt = DateTime.UtcNow
+        };
+    }
+
+    public static TeamMember Reconstitute(Guid teamId, Guid userId, TeamRole role, DateTime joinedAt)
+    {
+        return new TeamMember
+        {
+            TeamId = teamId,
+            UserId = userId,
+            Role = role,
+            JoinedAt = joinedAt
         };
     }
 

@@ -19,7 +19,8 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, email, name, role, is_active, created_at, updated_at
+            SELECT id, email, name, password_hash, role, is_active, email_verified, last_login_at,
+                   failed_login_attempts, lockout_until, created_at, updated_at
             FROM users
             WHERE id = @Id
             """;
@@ -33,7 +34,8 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, email, name, role, is_active, created_at, updated_at
+            SELECT id, email, name, password_hash, role, is_active, email_verified, last_login_at,
+                   failed_login_attempts, lockout_until, created_at, updated_at
             FROM users
             WHERE email = @Email
             """;
@@ -47,7 +49,8 @@ public class UserRepository : IUserRepository
     public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, email, name, role, is_active, created_at, updated_at
+            SELECT id, email, name, password_hash, role, is_active, email_verified, last_login_at,
+                   failed_login_attempts, lockout_until, created_at, updated_at
             FROM users
             ORDER BY created_at DESC
             """;
@@ -61,8 +64,10 @@ public class UserRepository : IUserRepository
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            INSERT INTO users (id, email, name, role, is_active, created_at, updated_at)
-            VALUES (@Id, @Email, @Name, @Role, @IsActive, @CreatedAt, @UpdatedAt)
+            INSERT INTO users (id, email, name, password_hash, role, is_active, email_verified,
+                             last_login_at, failed_login_attempts, lockout_until, created_at, updated_at)
+            VALUES (@Id, @Email, @Name, @PasswordHash, @Role, @IsActive, @EmailVerified,
+                    @LastLoginAt, @FailedLoginAttempts, @LockoutUntil, @CreatedAt, @UpdatedAt)
             """;
 
         await using var connection = CreateConnection();
@@ -71,8 +76,13 @@ public class UserRepository : IUserRepository
             user.Id,
             user.Email,
             user.Name,
+            user.PasswordHash,
             Role = user.Role.ToString(),
             user.IsActive,
+            user.EmailVerified,
+            user.LastLoginAt,
+            user.FailedLoginAttempts,
+            user.LockoutUntil,
             user.CreatedAt,
             UpdatedAt = user.UpdatedAt ?? user.CreatedAt
         });
@@ -83,8 +93,13 @@ public class UserRepository : IUserRepository
         const string sql = """
             UPDATE users
             SET name = @Name,
+                password_hash = @PasswordHash,
                 role = @Role,
                 is_active = @IsActive,
+                email_verified = @EmailVerified,
+                last_login_at = @LastLoginAt,
+                failed_login_attempts = @FailedLoginAttempts,
+                lockout_until = @LockoutUntil,
                 updated_at = @UpdatedAt
             WHERE id = @Id
             """;
@@ -94,8 +109,13 @@ public class UserRepository : IUserRepository
         {
             user.Id,
             user.Name,
+            user.PasswordHash,
             Role = user.Role.ToString(),
             user.IsActive,
+            user.EmailVerified,
+            user.LastLoginAt,
+            user.FailedLoginAttempts,
+            user.LockoutUntil,
             UpdatedAt = DateTime.UtcNow
         });
     }
@@ -128,15 +148,32 @@ public class UserRepository : IUserRepository
         Guid Id,
         string Email,
         string Name,
+        string? Password_Hash,
         string Role,
         bool Is_Active,
+        bool Email_Verified,
+        DateTime? Last_Login_At,
+        int Failed_Login_Attempts,
+        DateTime? Lockout_Until,
         DateTime Created_At,
         DateTime? Updated_At)
     {
         public User ToUser()
         {
             var role = Enum.Parse<UserRole>(Role, ignoreCase: true);
-            return User.Reconstitute(Id, Email, Name, role, Is_Active, Created_At, Updated_At);
+            return User.ReconstituteWithAuth(
+                Id,
+                Email,
+                Name,
+                Password_Hash,
+                role,
+                Is_Active,
+                Email_Verified,
+                Last_Login_At,
+                Failed_Login_Attempts,
+                Lockout_Until,
+                Created_At,
+                Updated_At);
         }
     }
 }

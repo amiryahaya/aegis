@@ -1,10 +1,16 @@
 using System.Reflection;
+using System.Text;
+using Aegis.Api.Middleware;
 using Aegis.Domain.Repositories;
+using Aegis.Domain.Services;
 using Aegis.Infrastructure.Persistence;
 using Aegis.Infrastructure.Persistence.Repositories;
+using Aegis.Infrastructure.Services;
 using Carter;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Aegis.Api.Extensions;
 
@@ -44,6 +50,63 @@ public static class ServiceCollectionExtensions
 
         // Register repositories
         services.AddScoped<IUserRepository>(_ => new UserRepository(connectionString));
+        services.AddScoped<ITeamRepository>(_ => new TeamRepository(connectionString));
+        services.AddScoped<IWorkspaceRepository>(_ => new WorkspaceRepository(connectionString));
+        services.AddScoped<IDataSourceRepository>(_ => new DataSourceRepository(connectionString));
+        services.AddScoped<IDocumentRepository>(_ => new DocumentRepository(connectionString));
+
+        // Register domain services
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        // Register RAG services
+        services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.PdfDocumentParser>();
+        services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.DocxDocumentParser>();
+        services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.PptxDocumentParser>();
+        services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.SpreadsheetParser>();
+        services.AddScoped<IDocumentParser, Aegis.Infrastructure.Services.DocumentParsing.HtmlDocumentParser>();
+
+        // Register chunking options with default values
+        services.AddSingleton(new ChunkingOptions
+        {
+            MaxChunkSize = 512,
+            ChunkOverlap = 50,
+            Strategy = ChunkingStrategy.Sentence
+        });
+        services.AddScoped<ITextChunker, Aegis.Infrastructure.Services.Chunking.TextChunker>();
+        services.AddSingleton<IEmbeddingService>(_ => new Aegis.Infrastructure.Services.Embedding.InMemoryEmbeddingService());
+        services.AddSingleton<IVectorStore, Aegis.Infrastructure.Services.VectorStore.InMemoryVectorStore>();
+        services.AddSingleton<IBM25Indexer, Aegis.Infrastructure.Services.BM25.InMemoryBM25Indexer>();
+        services.AddScoped<IHybridRetriever, Aegis.Infrastructure.Services.Retrieval.HybridRetriever>();
+        services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
+        services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
+
+        // Register NER services (Intelligence NER wraps Basic NER)
+        services.AddScoped<Aegis.Infrastructure.Services.NER.BasicNERService>();
+        services.AddScoped<INERService, Aegis.Infrastructure.Services.NER.IntelligenceNERService>(sp =>
+            new Aegis.Infrastructure.Services.NER.IntelligenceNERService(
+                sp.GetRequiredService<Aegis.Infrastructure.Services.NER.BasicNERService>(),
+                sp.GetRequiredService<ILogger<Aegis.Infrastructure.Services.NER.IntelligenceNERService>>()));
+
+        // Register sentiment analysis
+        services.AddScoped<ISentimentAnalyzer, Aegis.Infrastructure.Services.Sentiment.LexiconSentimentAnalyzer>();
+
+        // Register language detection
+        services.AddScoped<ILanguageDetector, Aegis.Infrastructure.Services.Language.PatternLanguageDetector>();
+
+        // Register OCR service
+        var tessDataPath = configuration["OCR:TessDataPath"]
+                          ?? Environment.GetEnvironmentVariable("TESSDATA_PREFIX")
+                          ?? Path.Combine(AppContext.BaseDirectory, "tessdata");
+
+        // Only register if tessdata exists
+        if (Directory.Exists(tessDataPath))
+        {
+            services.AddSingleton<IOCRService>(sp =>
+                new Aegis.Infrastructure.Services.OCR.TesseractOCRService(
+                    tessDataPath,
+                    sp.GetRequiredService<ILogger<Aegis.Infrastructure.Services.OCR.TesseractOCRService>>()));
+        }
 
         // Add health checks
         services.AddHealthChecks()
@@ -53,10 +116,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    public static IServiceCollection AddApiServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Carter for minimal API modules
         services.AddCarter();
+
+        // Exception handling
+        services.AddExceptionHandler<GlobalExceptionHandler>();
 
         // Problem Details
         services.AddProblemDetails();
@@ -71,6 +137,35 @@ public static class ServiceCollectionExtensions
                     .AllowAnyHeader();
             });
         });
+
+        // JWT Authentication
+        var jwtSecret = configuration["Jwt:Secret"] ?? "your-super-secret-key-minimum-32-characters-long!";
+        var jwtIssuer = configuration["Jwt:Issuer"] ?? "aegis-api";
+        var jwtAudience = configuration["Jwt:Audience"] ?? "aegis-client";
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+            };
+        });
+
+        services.AddAuthorization();
+
+        // SignalR
+        services.AddSignalR();
 
         return services;
     }

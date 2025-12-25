@@ -55,6 +55,40 @@ public class User : AggregateRoot
         };
     }
 
+    /// <summary>
+    /// Reconstitutes a User with full authentication details from persistence. Use only in repositories.
+    /// </summary>
+    public static User ReconstituteWithAuth(
+        Guid id,
+        string email,
+        string name,
+        string? passwordHash,
+        UserRole role,
+        bool isActive,
+        bool emailVerified,
+        DateTime? lastLoginAt,
+        int failedLoginAttempts,
+        DateTime? lockoutUntil,
+        DateTime createdAt,
+        DateTime? updatedAt)
+    {
+        return new User
+        {
+            Id = id,
+            Email = email,
+            Name = name,
+            PasswordHash = passwordHash,
+            Role = role,
+            IsActive = isActive,
+            EmailVerified = emailVerified,
+            LastLoginAt = lastLoginAt,
+            FailedLoginAttempts = failedLoginAttempts,
+            LockoutUntil = lockoutUntil,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
+    }
+
     public void SetPasswordHash(string passwordHash)
     {
         PasswordHash = passwordHash;
@@ -125,4 +159,13 @@ public enum UserRole
     Analyst,
     Admin,
     SystemAdmin
+}
+
+public static class UserErrors
+{
+    public static readonly Error NotFound = Error.NotFound("User.NotFound", "User not found");
+    public static readonly Error InvalidCredentials = Error.Unauthorized("User.InvalidCredentials", "Invalid email or password");
+    public static readonly Error EmailAlreadyExists = Error.Conflict("User.EmailAlreadyExists", "A user with this email already exists");
+    public static readonly Error AccountLocked = Error.Unauthorized("User.AccountLocked", "Account is locked due to multiple failed login attempts");
+    public static readonly Error EmailNotVerified = Error.Unauthorized("User.EmailNotVerified", "Email address has not been verified");
 }

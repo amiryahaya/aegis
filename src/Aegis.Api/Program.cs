@@ -1,4 +1,5 @@
 using Aegis.Api.Extensions;
+using Aegis.Api.Hubs;
 using Carter;
 using Serilog;
 
@@ -25,11 +26,18 @@ try
     builder.Services
         .AddApplicationServices()
         .AddInfrastructureServices(builder.Configuration)
-        .AddApiServices();
+        .AddApiServices(builder.Configuration);
+
+    // Configure JSON serialization
+    builder.Services.ConfigureHttpJsonOptions(options =>
+    {
+        options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
     var app = builder.Build();
 
     // Configure middleware pipeline
+    app.UseExceptionHandler();
     app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
@@ -37,8 +45,14 @@ try
         app.UseDeveloperExceptionPage();
     }
 
+    app.UseAuthentication();
+    app.UseAuthorization();
+
     app.UseHealthChecks("/health");
     app.MapCarter();
+
+    // Map SignalR hubs
+    app.MapHub<QueryHub>("/hubs/query");
 
     // Map a simple root endpoint
     app.MapGet("/", () => Results.Ok(new

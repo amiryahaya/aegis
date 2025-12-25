@@ -30,6 +30,32 @@ public class Workspace : AggregateRoot
         };
     }
 
+    /// <summary>
+    /// Reconstitutes a Workspace from persistence. Use only in repositories.
+    /// </summary>
+    public static Workspace Reconstitute(
+        Guid id,
+        string name,
+        string? description,
+        Guid? teamId,
+        Guid createdBy,
+        WorkspaceStatus status,
+        DateTime createdAt,
+        DateTime? updatedAt)
+    {
+        return new Workspace
+        {
+            Id = id,
+            Name = name,
+            Description = description,
+            TeamId = teamId,
+            CreatedBy = createdBy,
+            Status = status,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
+    }
+
     public void UpdateDetails(string name, string? description)
     {
         Name = name;
