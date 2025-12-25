@@ -19,7 +19,7 @@ public class WorkspaceRepository : IWorkspaceRepository
     public async Task<Workspace?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, name, description, team_id, created_by, status, created_at, updated_at
+            SELECT id, name, description, custom_instructions, team_id, created_by, status, created_at, updated_at
             FROM workspaces
             WHERE id = @Id
             """;
@@ -33,7 +33,7 @@ public class WorkspaceRepository : IWorkspaceRepository
     public async Task<IReadOnlyList<Workspace>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, name, description, team_id, created_by, status, created_at, updated_at
+            SELECT id, name, description, custom_instructions, team_id, created_by, status, created_at, updated_at
             FROM workspaces
             ORDER BY created_at DESC
             """;
@@ -47,7 +47,7 @@ public class WorkspaceRepository : IWorkspaceRepository
     public async Task<IReadOnlyList<Workspace>> GetByTeamIdAsync(Guid teamId, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, name, description, team_id, created_by, status, created_at, updated_at
+            SELECT id, name, description, custom_instructions, team_id, created_by, status, created_at, updated_at
             FROM workspaces
             WHERE team_id = @TeamId
             ORDER BY created_at DESC
@@ -63,7 +63,7 @@ public class WorkspaceRepository : IWorkspaceRepository
     {
         // Get workspaces created by user or belonging to teams the user is a member of
         const string sql = """
-            SELECT DISTINCT w.id, w.name, w.description, w.team_id, w.created_by, w.status, w.created_at, w.updated_at
+            SELECT DISTINCT w.id, w.name, w.description, w.custom_instructions, w.team_id, w.created_by, w.status, w.created_at, w.updated_at
             FROM workspaces w
             LEFT JOIN team_members tm ON w.team_id = tm.team_id
             LEFT JOIN teams t ON w.team_id = t.id
@@ -80,8 +80,8 @@ public class WorkspaceRepository : IWorkspaceRepository
     public async Task AddAsync(Workspace workspace, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            INSERT INTO workspaces (id, name, description, team_id, created_by, status, is_active, created_at, updated_at)
-            VALUES (@Id, @Name, @Description, @TeamId, @CreatedBy, @Status, @IsActive, @CreatedAt, @UpdatedAt)
+            INSERT INTO workspaces (id, name, description, custom_instructions, team_id, created_by, status, is_active, created_at, updated_at)
+            VALUES (@Id, @Name, @Description, @CustomInstructions, @TeamId, @CreatedBy, @Status, @IsActive, @CreatedAt, @UpdatedAt)
             """;
 
         await using var connection = CreateConnection();
@@ -90,6 +90,7 @@ public class WorkspaceRepository : IWorkspaceRepository
             workspace.Id,
             workspace.Name,
             workspace.Description,
+            workspace.CustomInstructions,
             workspace.TeamId,
             workspace.CreatedBy,
             Status = workspace.Status.ToString(),
@@ -105,6 +106,7 @@ public class WorkspaceRepository : IWorkspaceRepository
             UPDATE workspaces
             SET name = @Name,
                 description = @Description,
+                custom_instructions = @CustomInstructions,
                 team_id = @TeamId,
                 status = @Status,
                 is_active = @IsActive,
@@ -118,6 +120,7 @@ public class WorkspaceRepository : IWorkspaceRepository
             workspace.Id,
             workspace.Name,
             workspace.Description,
+            workspace.CustomInstructions,
             workspace.TeamId,
             Status = workspace.Status.ToString(),
             IsActive = workspace.Status == WorkspaceStatus.Active,
@@ -159,6 +162,7 @@ public class WorkspaceRepository : IWorkspaceRepository
         Guid Id,
         string Name,
         string? Description,
+        string? Custom_Instructions,
         Guid? Team_Id,
         Guid? Created_By,
         string Status,
@@ -168,7 +172,7 @@ public class WorkspaceRepository : IWorkspaceRepository
         public Workspace ToWorkspace()
         {
             var status = Enum.Parse<WorkspaceStatus>(Status, ignoreCase: true);
-            return Workspace.Reconstitute(Id, Name, Description, Team_Id, Created_By ?? Guid.Empty, status, Created_At, Updated_At);
+            return Workspace.Reconstitute(Id, Name, Description, Custom_Instructions, Team_Id, Created_By ?? Guid.Empty, status, Created_At, Updated_At);
         }
     }
 }
