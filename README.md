@@ -386,7 +386,7 @@ cd aegis
 # Copy environment template
 cp docker/.env.example docker/.env
 
-# Start minimal services (PostgreSQL 18, Redis, Qdrant)
+# Start core services (PostgreSQL, Redis, Qdrant, Neo4j)
 make up
 
 # Or start all services
@@ -400,8 +400,8 @@ make up-all
 
 | Profile | Command | Services |
 |---------|---------|----------|
-| (default) | `make up` | PostgreSQL 18 + pgvector, Redis 7, Qdrant |
-| `full` | `make up-full` | + Neo4j, Elasticsearch, RabbitMQ, MinIO, Ollama |
+| (default) | `make up` | PostgreSQL 18 + pgvector, Redis 7, Qdrant, **Neo4j 5** |
+| `full` | `make up-full` | + Elasticsearch, RabbitMQ, MinIO, Ollama |
 | `observability` | `make up-obs` | + Seq, Jaeger, Prometheus, Grafana |
 | `gpu` | `make up-gpu` | Ollama with NVIDIA GPU support |
 
@@ -416,14 +416,15 @@ dotnet run --project src/Aegis.AppHost
 ```
 
 ### 5. Access the Application
-| Service | URL |
-|---------|-----|
-| Web UI | https://localhost:5001 |
-| API | https://localhost:5000 |
-| Seq Logs | http://localhost:5341 |
-| Grafana | http://localhost:3000 |
-| Jaeger Tracing | http://localhost:16686 |
-| RabbitMQ Management | http://localhost:15672 |
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Web UI | https://localhost:5001 | - |
+| API | https://localhost:5000 | - |
+| **Neo4j Browser** | http://localhost:7474 | neo4j / password |
+| Seq Logs | http://localhost:5341 | - |
+| Grafana | http://localhost:3000 | admin / admin |
+| Jaeger Tracing | http://localhost:16686 | - |
+| RabbitMQ Management | http://localhost:15672 | guest / guest |
 
 ## Development Workflow (TDD)
 

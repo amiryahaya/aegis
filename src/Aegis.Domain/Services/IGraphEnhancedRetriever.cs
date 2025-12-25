@@ -29,7 +29,7 @@ public interface IGraphEnhancedRetriever
 /// <summary>
 /// Search result enhanced with graph information
 /// </summary>
-public class GraphEnhancedSearchResult : HybridSearchResult
+public record GraphEnhancedSearchResult : HybridSearchResult
 {
     /// <summary>
     /// Entities detected in this chunk
