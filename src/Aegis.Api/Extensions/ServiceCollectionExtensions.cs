@@ -120,7 +120,8 @@ public static class ServiceCollectionExtensions
         var neo4jUsername = configuration["Neo4j:Username"] ?? Environment.GetEnvironmentVariable("NEO4J_USERNAME");
         var neo4jPassword = configuration["Neo4j:Password"] ?? Environment.GetEnvironmentVariable("NEO4J_PASSWORD");
 
-        if (!string.IsNullOrEmpty(neo4jUri) && !string.IsNullOrEmpty(neo4jUsername) && !string.IsNullOrEmpty(neo4jPassword))
+        // Only register Neo4j if all credentials are provided and URI is not empty string
+        if (!string.IsNullOrWhiteSpace(neo4jUri) && !string.IsNullOrEmpty(neo4jUsername) && !string.IsNullOrEmpty(neo4jPassword))
         {
             services.AddSingleton(sp =>
             {
@@ -138,19 +139,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IRelationshipExtractionService, Aegis.Infrastructure.Services.Graph.RelationshipExtractionService>();
             services.AddScoped<IGraphQueryService, Aegis.Infrastructure.Services.Graph.GraphQueryService>();
 
-            // Initialize schema on startup
-            var sp = services.BuildServiceProvider();
-            var schemaService = sp.GetService<IGraphSchemaService>();
-            if (schemaService != null)
-            {
-                var initResult = schemaService.InitializeSchemaAsync().GetAwaiter().GetResult();
-                if (initResult.IsFailure)
-                {
-                    // Log warning but don't fail startup
-                    var logger = sp.GetRequiredService<ILogger<GraphSchemaService>>();
-                    logger.LogWarning("Failed to initialize graph schema: {Error}", initResult.Error?.Message);
-                }
-            }
+            // Note: Schema initialization moved to Program.cs to avoid service provider disposal issues
         }
 
         // Add health checks

@@ -37,8 +37,13 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.RemoveAll<IUserRepository>();
             services.RemoveAll<ITeamRepository>();
             services.RemoveAll<IWorkspaceRepository>();
+            services.RemoveAll<IConversationRepository>();
+            services.RemoveAll<IWorkspaceEntityRepository>();
+            services.RemoveAll<IWorkspaceFindingRepository>();
+            services.RemoveAll<IWorkspaceFactRepository>();
             services.RemoveAll<IDataSourceRepository>();
             services.RemoveAll<IDocumentRepository>();
+            services.RemoveAll<IWorkspaceContextService>();
 
             // Run migrations against test container
             var migrator = new DatabaseMigrator(PostgresConnectionString);
@@ -48,8 +53,13 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddScoped<IUserRepository>(_ => new UserRepository(PostgresConnectionString));
             services.AddScoped<ITeamRepository>(_ => new TeamRepository(PostgresConnectionString));
             services.AddScoped<IWorkspaceRepository>(_ => new WorkspaceRepository(PostgresConnectionString));
+            services.AddScoped<IConversationRepository>(_ => new ConversationRepository(PostgresConnectionString));
+            services.AddScoped<IWorkspaceEntityRepository>(_ => new WorkspaceEntityRepository(PostgresConnectionString));
+            services.AddScoped<IWorkspaceFindingRepository>(_ => new WorkspaceFindingRepository(PostgresConnectionString));
+            services.AddScoped<IWorkspaceFactRepository>(_ => new WorkspaceFactRepository(PostgresConnectionString));
             services.AddScoped<IDataSourceRepository>(_ => new DataSourceRepository(PostgresConnectionString));
             services.AddScoped<IDocumentRepository>(_ => new DocumentRepository(PostgresConnectionString));
+            services.AddScoped<IWorkspaceContextService, Aegis.Infrastructure.Services.Workspace.WorkspaceContextService>();
 
             // Register RAG services for testing
             services.RemoveAll<IDocumentParser>();
@@ -73,9 +83,18 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
             services.RemoveAll<ILLMService>();
             services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
+
+            // Remove Neo4j services for testing (they cause initialization issues)
+            services.RemoveAll<IGraphService>();
+            services.RemoveAll<IGraphSchemaService>();
+            services.RemoveAll<IEntityIngestionService>();
+            services.RemoveAll<IRelationshipExtractionService>();
+            services.RemoveAll<IGraphQueryService>();
+            services.RemoveAll<IGraphEnhancedRetriever>();
         });
 
         builder.UseEnvironment("Testing");
+        builder.UseSetting("Neo4j:Uri", ""); // Disable Neo4j
     }
 
     public async Task InitializeAsync()
@@ -187,5 +206,10 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
 [CollectionDefinition("Database")]
 public class DatabaseTestCollection : ICollectionFixture<AegisApiFactory>
+{
+}
+
+[CollectionDefinition("Integration")]
+public class IntegrationTestCollection : ICollectionFixture<AegisApiFactory>
 {
 }

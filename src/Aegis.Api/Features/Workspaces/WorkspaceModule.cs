@@ -59,7 +59,7 @@ public class WorkspaceModule : ICarterModule
             });
         }
 
-        var workspace = Workspace.Create(request.Name, request.CreatedBy, request.Description, request.TeamId);
+        var workspace = Workspace.Create(request.Name, request.CreatedBy, request.Description, request.TeamId, request.CustomInstructions);
         await repository.AddAsync(workspace);
 
         var response = ToResponse(workspace);
@@ -184,7 +184,7 @@ public class WorkspaceModule : ICarterModule
         new(workspace.Id, workspace.Name, workspace.Description, workspace.TeamId, workspace.CreatedBy, workspace.Status.ToString());
 }
 
-public record CreateWorkspaceRequest(string Name, Guid CreatedBy, string? Description = null, Guid? TeamId = null);
+public record CreateWorkspaceRequest(string Name, Guid CreatedBy, string? Description = null, Guid? TeamId = null, string? CustomInstructions = null);
 public record UpdateWorkspaceRequest(string Name, string? Description = null);
 public record WorkspaceResponse(Guid Id, string Name, string? Description, Guid? TeamId, Guid CreatedBy, string Status);
 public record WorkspaceContextResponse(
