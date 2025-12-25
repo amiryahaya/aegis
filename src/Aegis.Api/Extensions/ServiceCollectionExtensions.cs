@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository>(_ => new UserRepository(connectionString));
         services.AddScoped<ITeamRepository>(_ => new TeamRepository(connectionString));
         services.AddScoped<IWorkspaceRepository>(_ => new WorkspaceRepository(connectionString));
+        services.AddScoped<IConversationRepository>(_ => new ConversationRepository(connectionString));
         services.AddScoped<IDataSourceRepository>(_ => new DataSourceRepository(connectionString));
         services.AddScoped<IDocumentRepository>(_ => new DocumentRepository(connectionString));
 
