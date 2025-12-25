@@ -6,6 +6,7 @@ using Aegis.Domain.Services;
 using Aegis.Infrastructure.Persistence;
 using Aegis.Infrastructure.Persistence.Repositories;
 using Aegis.Infrastructure.Services;
+using Aegis.Infrastructure.Services.Graph;
 using Carter;
 using FluentValidation;
 using MediatR;
@@ -106,6 +107,44 @@ public static class ServiceCollectionExtensions
                 new Aegis.Infrastructure.Services.OCR.TesseractOCRService(
                     tessDataPath,
                     sp.GetRequiredService<ILogger<Aegis.Infrastructure.Services.OCR.TesseractOCRService>>()));
+        }
+
+        // Register Neo4j Graph Service
+        var neo4jUri = configuration["Neo4j:Uri"] ?? Environment.GetEnvironmentVariable("NEO4J_URI");
+        var neo4jUsername = configuration["Neo4j:Username"] ?? Environment.GetEnvironmentVariable("NEO4J_USERNAME");
+        var neo4jPassword = configuration["Neo4j:Password"] ?? Environment.GetEnvironmentVariable("NEO4J_PASSWORD");
+
+        if (!string.IsNullOrEmpty(neo4jUri) && !string.IsNullOrEmpty(neo4jUsername) && !string.IsNullOrEmpty(neo4jPassword))
+        {
+            services.AddSingleton(sp =>
+            {
+                return Neo4j.Driver.GraphDatabase.Driver(
+                    neo4jUri,
+                    Neo4j.Driver.AuthTokens.Basic(neo4jUsername, neo4jPassword),
+                    o => o
+                        .WithConnectionTimeout(TimeSpan.FromSeconds(5))
+                        .WithMaxConnectionLifetime(TimeSpan.FromMinutes(10)));
+            });
+
+            services.AddScoped<IGraphService, Aegis.Infrastructure.Services.Graph.Neo4jService>();
+            services.AddScoped<IGraphSchemaService, Aegis.Infrastructure.Services.Graph.GraphSchemaService>();
+            services.AddScoped<IEntityIngestionService, Aegis.Infrastructure.Services.Graph.EntityIngestionService>();
+            services.AddScoped<IRelationshipExtractionService, Aegis.Infrastructure.Services.Graph.RelationshipExtractionService>();
+            services.AddScoped<IGraphQueryService, Aegis.Infrastructure.Services.Graph.GraphQueryService>();
+
+            // Initialize schema on startup
+            var sp = services.BuildServiceProvider();
+            var schemaService = sp.GetService<IGraphSchemaService>();
+            if (schemaService != null)
+            {
+                var initResult = schemaService.InitializeSchemaAsync().GetAwaiter().GetResult();
+                if (initResult.IsFailure)
+                {
+                    // Log warning but don't fail startup
+                    var logger = sp.GetRequiredService<ILogger<GraphSchemaService>>();
+                    logger.LogWarning("Failed to initialize graph schema: {Error}", initResult.Error?.Message);
+                }
+            }
         }
 
         // Add health checks

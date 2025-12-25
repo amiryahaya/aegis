@@ -29,7 +29,7 @@ public class NamedEntity
     /// <summary>
     /// The entity type (PERSON, ORGANIZATION, LOCATION, etc.)
     /// </summary>
-    public required EntityType Type { get; init; }
+    public required NEREntityType Type { get; init; }
 
     /// <summary>
     /// Confidence score (0.0 to 1.0)
@@ -50,7 +50,7 @@ public class NamedEntity
 /// <summary>
 /// Common entity types for NER
 /// </summary>
-public enum EntityType
+public enum NEREntityType
 {
     Person,
     Organization,

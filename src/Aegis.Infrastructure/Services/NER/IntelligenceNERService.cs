@@ -69,19 +69,19 @@ public class IntelligenceNERService : INERService
             await Task.Run(() =>
             {
                 // Extract CVEs
-                ExtractPattern(text, CvePattern, EntityType.Other, entities, 0.98, "CVE");
+                ExtractPattern(text, CvePattern, NEREntityType.Other, entities, 0.98, "CVE");
 
                 // Extract file hashes (prioritize longer hashes)
-                ExtractPattern(text, Sha256Pattern, EntityType.Other, entities, 0.95, "SHA256");
-                ExtractPattern(text, Sha1Pattern, EntityType.Other, entities, 0.95, "SHA1");
-                ExtractPattern(text, Md5Pattern, EntityType.Other, entities, 0.95, "MD5");
+                ExtractPattern(text, Sha256Pattern, NEREntityType.Other, entities, 0.95, "SHA256");
+                ExtractPattern(text, Sha1Pattern, NEREntityType.Other, entities, 0.95, "SHA1");
+                ExtractPattern(text, Md5Pattern, NEREntityType.Other, entities, 0.95, "MD5");
 
                 // Extract MITRE ATT&CK techniques
-                ExtractPattern(text, MitreTechniquePattern, EntityType.Other, entities, 0.90, "MITRE");
+                ExtractPattern(text, MitreTechniquePattern, NEREntityType.Other, entities, 0.90, "MITRE");
 
                 // Extract domain names (but filter out already detected URLs)
                 var urlPositions = entities
-                    .Where(e => e.Type == EntityType.Url)
+                    .Where(e => e.Type == NEREntityType.Url)
                     .Select(e => (e.StartPosition, e.EndPosition))
                     .ToHashSet();
 
@@ -93,7 +93,7 @@ public class IntelligenceNERService : INERService
                         match.Index >= pos.StartPosition && match.Index < pos.EndPosition);
 
                     var overlapsWithEmail = entities.Any(e =>
-                        e.Type == EntityType.Email &&
+                        e.Type == NEREntityType.Email &&
                         match.Index >= e.StartPosition &&
                         match.Index < e.EndPosition);
 
@@ -102,7 +102,7 @@ public class IntelligenceNERService : INERService
                         entities.Add(new NamedEntity
                         {
                             Text = match.Value,
-                            Type = EntityType.Other,
+                            Type = NEREntityType.Other,
                             Confidence = 0.70,
                             StartPosition = match.Index,
                             EndPosition = match.Index + match.Length
@@ -131,7 +131,7 @@ public class IntelligenceNERService : INERService
     private void ExtractPattern(
         string text,
         Regex pattern,
-        EntityType type,
+        NEREntityType type,
         List<NamedEntity> entities,
         double confidence,
         string subType)

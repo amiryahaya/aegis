@@ -25,8 +25,8 @@ public class BasicNERServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().ContainSingle(e => e.Type == EntityType.Email);
-        result.Value.First(e => e.Type == EntityType.Email).Text.Should().Be("john.doe@example.com");
+        result.Value.Should().ContainSingle(e => e.Type == NEREntityType.Email);
+        result.Value.First(e => e.Type == NEREntityType.Email).Text.Should().Be("john.doe@example.com");
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class BasicNERServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().ContainSingle(e => e.Type == EntityType.Url);
-        result.Value.First(e => e.Type == EntityType.Url).Text.Should().Contain("example.com");
+        result.Value.Should().ContainSingle(e => e.Type == NEREntityType.Url);
+        result.Value.First(e => e.Type == NEREntityType.Url).Text.Should().Contain("example.com");
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public class BasicNERServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().ContainSingle(e => e.Type == EntityType.IpAddress);
-        result.Value.First(e => e.Type == EntityType.IpAddress).Text.Should().Be("192.168.1.100");
+        result.Value.Should().ContainSingle(e => e.Type == NEREntityType.IpAddress);
+        result.Value.First(e => e.Type == NEREntityType.IpAddress).Text.Should().Be("192.168.1.100");
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class BasicNERServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Contain(e => e.Type == EntityType.PhoneNumber);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.PhoneNumber);
     }
 
     [Fact]
@@ -90,10 +90,10 @@ Phone: +1-555-0100
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCountGreaterOrEqualTo(4);
-        result.Value.Should().Contain(e => e.Type == EntityType.Email);
-        result.Value.Should().Contain(e => e.Type == EntityType.Url);
-        result.Value.Should().Contain(e => e.Type == EntityType.IpAddress);
-        result.Value.Should().Contain(e => e.Type == EntityType.PhoneNumber);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.Email);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.Url);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.IpAddress);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.PhoneNumber);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ Phone: +1-555-0100
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var emailEntity = result.Value.First(e => e.Type == EntityType.Email);
+        var emailEntity = result.Value.First(e => e.Type == NEREntityType.Email);
         emailEntity.StartPosition.Should().BeGreaterOrEqualTo(0);
         emailEntity.EndPosition.Should().BeGreaterThan(emailEntity.StartPosition);
     }
@@ -147,7 +147,7 @@ Phone: +1-555-0100
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var emailEntity = result.Value.First(e => e.Type == EntityType.Email);
+        var emailEntity = result.Value.First(e => e.Type == NEREntityType.Email);
         emailEntity.Confidence.Should().BeInRange(0.0, 1.0);
         emailEntity.Confidence.Should().BeGreaterThan(0.5); // Pattern-based should have high confidence
     }

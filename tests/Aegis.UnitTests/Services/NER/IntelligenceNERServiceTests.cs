@@ -93,7 +93,7 @@ Threat Report:
         result.Value.Should().Contain(e => e.Text.Contains("CVE"));
         result.Value.Should().Contain(e => e.Text == "5d41402abc4b2a76b9719d911017c592");
         result.Value.Should().Contain(e => e.Text.Contains("T1566"));
-        result.Value.Should().Contain(e => e.Type == EntityType.Email);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.Email);
     }
 
     [Fact]
@@ -108,8 +108,8 @@ Threat Report:
         // Assert
         result.IsSuccess.Should().BeTrue();
         // Should include both basic (email, URL) and intel (CVE) entities
-        result.Value.Should().Contain(e => e.Type == EntityType.Email);
-        result.Value.Should().Contain(e => e.Type == EntityType.Url);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.Email);
+        result.Value.Should().Contain(e => e.Type == NEREntityType.Url);
         result.Value.Should().Contain(e => e.Text.Contains("CVE"));
     }
 

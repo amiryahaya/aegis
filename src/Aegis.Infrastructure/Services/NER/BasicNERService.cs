@@ -51,16 +51,16 @@ public class BasicNERService : INERService
                 var entities = new List<NamedEntity>();
 
                 // Extract emails
-                ExtractPattern(text, EmailPattern, EntityType.Email, entities, 0.95);
+                ExtractPattern(text, EmailPattern, NEREntityType.Email, entities, 0.95);
 
                 // Extract URLs
-                ExtractPattern(text, UrlPattern, EntityType.Url, entities, 0.90);
+                ExtractPattern(text, UrlPattern, NEREntityType.Url, entities, 0.90);
 
                 // Extract IP addresses
-                ExtractPattern(text, IpAddressPattern, EntityType.IpAddress, entities, 0.95);
+                ExtractPattern(text, IpAddressPattern, NEREntityType.IpAddress, entities, 0.95);
 
                 // Extract phone numbers
-                ExtractPattern(text, PhonePattern, EntityType.PhoneNumber, entities, 0.85);
+                ExtractPattern(text, PhonePattern, NEREntityType.PhoneNumber, entities, 0.85);
 
                 return Result<IReadOnlyList<NamedEntity>>.Success(entities.AsReadOnly());
             }, cancellationToken);
@@ -76,7 +76,7 @@ public class BasicNERService : INERService
     private void ExtractPattern(
         string text,
         Regex pattern,
-        EntityType type,
+        NEREntityType type,
         List<NamedEntity> entities,
         double confidence)
     {
