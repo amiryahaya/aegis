@@ -10,6 +10,9 @@ using Aegis.Infrastructure.Services.Graph;
 using Aegis.Infrastructure.Services.Sync;
 using Aegis.Infrastructure.Services.Connectors;
 using Aegis.Infrastructure.Services.Reranking;
+using Aegis.Infrastructure.Services.Search;
+using Aegis.Infrastructure.Services.Agents;
+using Aegis.Api.Features.Agents;
 using Carter;
 using FluentValidation;
 using Hangfire;
@@ -151,6 +154,16 @@ public static class ServiceCollectionExtensions
         {
             services.AddScoped<IRerankerService, SimpleRerankerService>();
         }
+
+        // Register search services
+        services.AddScoped<ISemanticSearchService, SemanticSearchService>();
+        services.AddScoped<IKeywordSearchService, KeywordSearchService>();
+
+        // Register plugin authorization service
+        services.AddScoped<IPluginAuthorizationService, PluginAuthorizationService>();
+
+        // Register Semantic Kernel service with all plugins
+        services.AddScoped<SemanticKernelService>();
 
         services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
 

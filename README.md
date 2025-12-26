@@ -45,6 +45,30 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 See [Data Connectors Guide](./docs/DATA_CONNECTORS.md) and [Query Features Guide](./docs/QUERY_FEATURES.md) for details.
 
+### Sprint 19-20: Semantic Kernel Integration ✅
+
+#### Semantic Kernel Plugins (6 plugins, 21 tests passing)
+- **VectorSearchPlugin** - Semantic similarity search using vector embeddings
+- **KeywordSearchPlugin** - BM25 keyword-based search with term matching
+- **GraphQueryPlugin** - Knowledge graph queries (entity networks, path finding)
+- **EntityLookupPlugin** - Entity resolution and search by type
+- **SanctionsCheckPlugin** - Entity verification against watchlists
+- **TimelineBuilderPlugin** - Temporal timeline construction for entities
+
+#### LLM & Authorization
+- **OllamaLLMService** - Local LLM inference (non-streaming, RAG, streaming)
+- **PluginAuthorizationService** - Role-based plugin access control
+  - Viewer: VectorSearch, KeywordSearch
+  - Contributor+: Graph queries, Entity lookup
+  - Analyst+: Sanctions check, Timeline builder
+
+#### Infrastructure Services
+- **SemanticSearchService** - Combines embedding + vector store
+- **KeywordSearchService** - Placeholder for Elasticsearch integration
+- **SemanticKernelService** - Orchestrates all 6 plugins with DI
+
+**Test Coverage:** 30 new passing tests (21 plugin + 6 authorization + 3 Ollama)
+
 ---
 
 ## Core Concepts
