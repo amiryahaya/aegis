@@ -1465,7 +1465,7 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 
 ---
 
-### Sprint 17-18: Data Connectors & Reranking (Weeks 33-36) - PLANNED
+### Sprint 17-18: Data Connectors & Reranking (Weeks 33-36) - COMPLETED ✅
 
 #### Tasks with TDD
 
@@ -1478,6 +1478,43 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 | Cross-encoder reranker | RerankerTests | BgeRerankerService | 3 days |
 | Query history feature | QueryHistoryTests | QueryHistory feature | 2 days |
 | Feedback collection | FeedbackTests | Feedback feature | 2 days |
+
+#### Sprint 17-18 Summary
+
+**Status:** COMPLETED ✅
+
+**Deliverables:**
+- ✅ PostgreSQL connector with incremental sync support
+- ✅ MongoDB connector with BSON to JSON conversion
+- ✅ RSS feed connector for content ingestion
+- ✅ Hangfire-based sync scheduler with automated background jobs
+- ✅ Cross-encoder reranking service (Cohere API with SimpleReranker fallback)
+- ✅ Query history tracking with full-text search and analytics
+- ✅ User feedback collection system (positive/negative/neutral ratings)
+- ✅ 18 integration tests using Testcontainers (PostgreSQL, MongoDB, RSS)
+
+**Database Migrations:**
+- 005_CreateSyncHistory.sql - Sync tracking and status monitoring
+- 006_AddDocumentContentFields.sql - Enhanced document metadata
+- 007_CreateQueryHistory.sql - Query tracking with full-text search
+- 008_CreateFeedback.sql - User feedback collection
+
+**API Endpoints:**
+- POST/GET /api/sync/* - Data source synchronization management
+- POST/GET /api/query-history/* - Query history and search
+- POST/PUT/DELETE /api/feedback/* - Feedback collection and statistics
+
+**Test Results:**
+- 18 new integration tests for connectors
+- All tests passing with Testcontainers for real database testing
+- Full coverage of sync operations, validation, and error scenarios
+
+**Technical Achievements:**
+- Pluggable connector architecture via IDataConnector interface
+- DataConnectorFactory for registering custom connectors
+- SyncOptions with full/incremental sync support
+- Enhanced RAGContextAssembler with optional reranking pipeline
+- Comprehensive error handling and Result<T> pattern throughout
 
 ---
 
@@ -1493,9 +1530,10 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 - [x] RAG Query Pipeline (end-to-end) ✅ Sprint 15-16
 - [x] OpenAI LLM integration with streaming ✅ Sprint 15-16
 - [x] Query API endpoints with SSE ✅ Sprint 15-16
-- [ ] Database connectors (PostgreSQL, MongoDB) - Sprint 17-18
-- [ ] RSS/news feed integration - Sprint 17-18
-- [ ] Cross-encoder reranking - Sprint 17-18
+- [x] Database connectors (PostgreSQL, MongoDB) ✅ Sprint 17-18
+- [x] RSS/news feed integration ✅ Sprint 17-18
+- [x] Cross-encoder reranking ✅ Sprint 17-18
+- [x] Query history and feedback collection ✅ Sprint 17-18
 - [x] >80% test coverage maintained ✅ (134 new passing tests: 76 Sprint 9-10 + 32 Sprint 11-12 + 26 Sprint 13-14)
 
 ---

@@ -15,6 +15,30 @@ AEGIS is a single-tenant, multi-user platform that provides:
 - **Agentic Reasoning** - Planning and multi-agent orchestration via Microsoft Semantic Kernel
 - **Comprehensive Audit Logging** - Full compliance and traceability features
 
+## Latest Features (Sprint 17-18) ✨
+
+### Data Connectors & Sync
+- **PostgreSQL Connector** - Sync table data with incremental updates
+- **MongoDB Connector** - Ingest MongoDB collections with BSON conversion
+- **RSS Feed Connector** - Automated news and content ingestion
+- **Hangfire Scheduler** - Background sync jobs with cron scheduling
+- **Sync History** - Track sync operations, status, and metrics
+
+### RAG Enhancements
+- **Cross-Encoder Reranking** - Improve relevance with Cohere API (with fallback)
+- **Query History** - Track all queries with full-text search and analytics
+- **User Feedback** - Collect ratings (positive/negative/neutral) with comments
+- **Enhanced Context Assembly** - Optional reranking pipeline for better results
+
+**New API Endpoints:**
+- `POST/GET /api/sync/*` - Data source synchronization
+- `POST/GET /api/query-history/*` - Query tracking and search
+- `POST/PUT/DELETE /api/feedback/*` - Feedback collection and statistics
+
+See [Data Connectors Guide](./docs/DATA_CONNECTORS.md) and [Query Features Guide](./docs/QUERY_FEATURES.md) for details.
+
+---
+
 ## Core Concepts
 
 ### Workspaces
@@ -799,11 +823,16 @@ Centralized configuration for single-organization deployment.
 
 ## Documentation
 
-- [Development Plan](./DEVELOPMENT_PLAN.md) - Detailed implementation roadmap
+### User Guides
+- [Data Connectors Guide](./docs/DATA_CONNECTORS.md) - PostgreSQL, MongoDB, RSS feed setup
+- [Query Features Guide](./docs/QUERY_FEATURES.md) - Query history, feedback, reranking
+- [User Guide](./docs/user-guide.md) - End-user documentation
+
+### Developer Documentation
+- [Development Plan](./docs/DEVELOPMENT_PLAN.md) - Detailed implementation roadmap
 - [API Documentation](./docs/api.md) - OpenAPI specification
 - [Architecture Guide](./docs/architecture.md) - System design details
 - [Testing Guide](./docs/testing.md) - TDD practices and conventions
-- [User Guide](./docs/user-guide.md) - End-user documentation
 
 ## Contributing
 
