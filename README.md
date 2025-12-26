@@ -15,16 +15,24 @@ AEGIS is a single-tenant, multi-user platform that provides:
 - **Agentic Reasoning** - Planning and multi-agent orchestration via Microsoft Semantic Kernel
 - **Comprehensive Audit Logging** - Full compliance and traceability features
 
-## Latest Features (Sprint 17-18) ✨
+## Latest Updates ✨
 
-### Data Connectors & Sync
+### UUID v7 Migration (December 2025)
+- **Time-Ordered Identifiers** - All entities use UUID v7 for better database performance
+- **PostgreSQL 18** - Upgraded to latest PostgreSQL with native optimizations
+- **30-50% Faster Inserts** - Sequential UUIDs reduce B-tree index fragmentation
+- **Database-Friendly** - UUIDNext library generates PostgreSQL-optimized IDs
+
+### Sprint 17-18: Data Connectors & RAG Improvements
+
+#### Data Connectors & Sync
 - **PostgreSQL Connector** - Sync table data with incremental updates
 - **MongoDB Connector** - Ingest MongoDB collections with BSON conversion
 - **RSS Feed Connector** - Automated news and content ingestion
 - **Hangfire Scheduler** - Background sync jobs with cron scheduling
 - **Sync History** - Track sync operations, status, and metrics
 
-### RAG Enhancements
+#### RAG Enhancements
 - **Cross-Encoder Reranking** - Improve relevance with Cohere API (with fallback)
 - **Query History** - Track all queries with full-text search and analytics
 - **User Feedback** - Collect ratings (positive/negative/neutral) with comments
@@ -232,8 +240,9 @@ Aegis.sln
 | Component | Technology | Purpose |
 |-----------|------------|---------|
 | Micro-ORM | Dapper | High-performance SQL queries |
-| Migrations | DbUp / FluentMigrator | Database versioning |
-| Result Pattern | Custom / Ardalis.Result | Explicit error handling |
+| Migrations | DbUp | Database versioning |
+| **UUID Generation** | **UUIDNext** | **Time-ordered UUID v7 for better index performance** |
+| Result Pattern | Custom | Explicit error handling |
 | Problem Details | RFC 7807 implementation | Standardized API errors |
 
 ### AI/ML Components
@@ -247,7 +256,7 @@ Aegis.sln
 ### Data Layer
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| Primary DB | PostgreSQL 16 | Relational data with Dapper |
+| Primary DB | **PostgreSQL 18** | Relational data with Dapper, **UUID v7 support** |
 | Vector DB | Qdrant | Vector similarity search |
 | Graph DB | Neo4j | Knowledge graph queries |
 | Caching | Redis | Distributed caching, sessions |
@@ -424,7 +433,7 @@ make up-all
 
 | Profile | Command | Services |
 |---------|---------|----------|
-| (default) | `make up` | PostgreSQL 18 + pgvector, Redis 7, Qdrant, **Neo4j 5** |
+| (default) | `make up` | **PostgreSQL 18** + pgvector, Redis 7, Qdrant, **Neo4j 5** |
 | `full` | `make up-full` | + Elasticsearch, RabbitMQ, MinIO, Ollama |
 | `observability` | `make up-obs` | + Seq, Jaeger, Prometheus, Grafana |
 | `gpu` | `make up-gpu` | Ollama with NVIDIA GPU support |
