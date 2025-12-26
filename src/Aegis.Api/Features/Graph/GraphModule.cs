@@ -35,7 +35,7 @@ public class GraphModule : ICarterModule
 
     private static async Task<Results<Ok<EntityResponse>, NotFound>> GetEntity(
         string id,
-        IGraphService graphService)
+        [FromServices] IGraphService graphService)
     {
         // Get entity via network with 0 hops (just the entity itself)
         var result = await graphService.GetEntityNetworkAsync(id, maxHops: 0);
@@ -52,7 +52,7 @@ public class GraphModule : ICarterModule
         [FromQuery] string? type,
         [FromQuery] double? minConfidence,
         [FromQuery] int limit,
-        IGraphQueryService queryService)
+        [FromServices] IGraphQueryService queryService)
     {
         var query = queryService.Query();
 
@@ -80,7 +80,7 @@ public class GraphModule : ICarterModule
     private static async Task<Results<Ok<EntityNetworkResponse>, NotFound>> GetEntityNetwork(
         string id,
         [FromQuery] int maxHops,
-        IGraphService graphService)
+        [FromServices] IGraphService graphService)
     {
         var result = await graphService.GetEntityNetworkAsync(
             id,
@@ -106,7 +106,7 @@ public class GraphModule : ICarterModule
     private static async Task<Ok<List<SimilarEntityResponse>>> GetSimilarEntities(
         string id,
         [FromQuery] int limit,
-        IGraphQueryService queryService)
+        [FromServices] IGraphQueryService queryService)
     {
         var result = await queryService.FindSimilarEntitiesAsync(
             id,
@@ -125,7 +125,7 @@ public class GraphModule : ICarterModule
         string fromId,
         string toId,
         [FromQuery] int maxDepth,
-        IGraphService graphService)
+        [FromServices] IGraphService graphService)
     {
         var result = await graphService.FindPathsAsync(
             fromId,

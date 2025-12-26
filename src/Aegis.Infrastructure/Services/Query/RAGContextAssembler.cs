@@ -35,36 +35,48 @@ public class RAGContextAssembler : IRAGContextAssembler
             cancellationToken);
 
         // Retrieve relevant chunks using hybrid retrieval
-        var retrievalResults = await _hybridRetriever.SearchAsync(
+        var collectionName = $"workspace_{workspaceId}";
+        var retrievalResult = await _hybridRetriever.RetrieveAsync(
+            collectionName,
             queryAnalysis.ProcessedQuery,
-            topK: maxChunks,
-            cancellationToken);
+            limit: maxChunks,
+            cancellationToken: cancellationToken);
 
         // Convert retrieval results to retrieved chunks with document metadata
         var retrievedChunks = new List<RetrievedChunk>();
 
-        foreach (var result in retrievalResults)
+        if (retrievalResult.IsSuccess && retrievalResult.Value != null)
         {
-            // Get document metadata
-            var document = await _documentRepository.GetByIdAsync(result.DocumentId, cancellationToken);
-
-            if (document != null)
+            foreach (var result in retrievalResult.Value)
             {
-                retrievedChunks.Add(new RetrievedChunk
+                // Extract document ID from metadata
+                if (result.Metadata.TryGetValue("document_id", out var docIdStr) &&
+                    Guid.TryParse(docIdStr, out var documentId))
                 {
-                    ChunkId = result.ChunkId,
-                    DocumentId = result.DocumentId,
-                    DocumentName = document.FileName,
-                    Content = result.Content,
-                    Score = result.Score,
-                    RetrievalMethod = "hybrid",
-                    Metadata = new Dictionary<string, object>
+                    // Get document metadata
+                    var document = await _documentRepository.GetByIdAsync(documentId, cancellationToken);
+
+                    if (document != null)
                     {
-                        ["chunk_index"] = result.ChunkIndex,
-                        ["document_type"] = document.FileType,
-                        ["uploaded_at"] = document.CreatedAt
+                        retrievedChunks.Add(new RetrievedChunk
+                        {
+                            ChunkId = result.Id,
+                            DocumentId = documentId,
+                            DocumentName = document.FileName,
+                            Content = result.Text,
+                            Score = result.Score,
+                            RetrievalMethod = "hybrid",
+                            Metadata = new Dictionary<string, object>
+                            {
+                                ["chunk_index"] = result.Metadata.GetValueOrDefault("chunk_index", "0"),
+                                ["document_type"] = document.ContentType,
+                                ["uploaded_at"] = document.CreatedAt,
+                                ["vector_score"] = result.VectorScore ?? 0,
+                                ["bm25_score"] = result.BM25Score ?? 0
+                            }
+                        });
                     }
-                });
+                }
             }
         }
 

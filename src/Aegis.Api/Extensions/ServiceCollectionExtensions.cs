@@ -87,7 +87,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVectorStore, Aegis.Infrastructure.Services.VectorStore.InMemoryVectorStore>();
         services.AddSingleton<IBM25Indexer, Aegis.Infrastructure.Services.BM25.InMemoryBM25Indexer>();
         services.AddScoped<IHybridRetriever, Aegis.Infrastructure.Services.Retrieval.HybridRetriever>();
-        services.AddScoped<IGraphEnhancedRetriever, Aegis.Infrastructure.Services.Graph.GraphEnhancedRetriever>();
 
         // Register LLM Service (OpenAI if API key provided, otherwise Mock)
         var openAIKey = configuration["OpenAI:ApiKey"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
@@ -155,6 +154,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IEntityIngestionService, Aegis.Infrastructure.Services.Graph.EntityIngestionService>();
             services.AddScoped<IRelationshipExtractionService, Aegis.Infrastructure.Services.Graph.RelationshipExtractionService>();
             services.AddScoped<IGraphQueryService, Aegis.Infrastructure.Services.Graph.GraphQueryService>();
+            services.AddScoped<IGraphEnhancedRetriever, Aegis.Infrastructure.Services.Graph.GraphEnhancedRetriever>();
 
             // Note: Schema initialization moved to Program.cs to avoid service provider disposal issues
         }

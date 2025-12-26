@@ -71,7 +71,10 @@ public class QueryProcessor : IQueryProcessor
         if (_nerService != null)
         {
             var nerResult = await _nerService.ExtractEntitiesAsync(trimmedQuery);
-            entities = nerResult.Entities.Select(e => e.Text).Distinct().ToList();
+            if (nerResult.IsSuccess && nerResult.Value != null)
+            {
+                entities = nerResult.Value.Select(e => e.Text).Distinct().ToList();
+            }
         }
 
         // Determine complexity

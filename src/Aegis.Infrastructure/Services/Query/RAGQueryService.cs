@@ -105,7 +105,7 @@ public class RAGQueryService : IRAGQueryService
         {
             _logger.LogError(ex, "Error executing RAG query");
             return Result<RAGQueryResponse>.Failure(
-                Error.Failure("RAG.QueryError", $"Failed to process query: {ex.Message}"));
+                Error.Internal("RAG.QueryError", $"Failed to process query: {ex.Message}"));
         }
     }
 
@@ -117,6 +117,10 @@ public class RAGQueryService : IRAGQueryService
     {
         QueryAnalysis? queryAnalysis = null;
         List<SourceReference>? sources = null;
+        string? prompt = null;
+
+        // Step 1-4: Prepare context (capture errors without yielding in catch)
+        Exception? preparationError = null;
 
         try
         {
@@ -152,39 +156,46 @@ public class RAGQueryService : IRAGQueryService
             }).ToList();
 
             // Step 4: Build prompt
-            var prompt = BuildRAGPrompt(queryAnalysis.ProcessedQuery, contexts);
-
-            // Step 5: Stream response
-            await foreach (var chunk in _llmService.GenerateStreamingResponseAsync(prompt, cancellationToken))
-            {
-                if (chunk.IsFailure)
-                {
-                    yield return Result<RAGStreamChunk>.Failure(chunk.Error!);
-                    yield break;
-                }
-
-                yield return Result<RAGStreamChunk>.Success(new RAGStreamChunk
-                {
-                    Content = chunk.Value!,
-                    IsComplete = false
-                });
-            }
-
-            // Send final chunk with metadata
-            yield return Result<RAGStreamChunk>.Success(new RAGStreamChunk
-            {
-                Content = "",
-                IsComplete = true,
-                Sources = sources,
-                QueryAnalysis = queryAnalysis
-            });
+            prompt = BuildRAGPrompt(queryAnalysis.ProcessedQuery, contexts);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in streaming RAG query");
-            yield return Result<RAGStreamChunk>.Failure(
-                Error.Failure("RAG.StreamingError", $"Failed to process streaming query: {ex.Message}"));
+            _logger.LogError(ex, "Error preparing streaming RAG query");
+            preparationError = ex;
         }
+
+        // Yield error outside of try-catch
+        if (preparationError != null)
+        {
+            yield return Result<RAGStreamChunk>.Failure(
+                Error.Internal("RAG.StreamingError", $"Failed to prepare streaming query: {preparationError.Message}"));
+            yield break;
+        }
+
+        // Step 5: Stream response
+        await foreach (var chunk in _llmService.GenerateStreamingResponseAsync(prompt!, cancellationToken))
+        {
+            if (chunk.IsFailure)
+            {
+                yield return Result<RAGStreamChunk>.Failure(chunk.Error!);
+                yield break;
+            }
+
+            yield return Result<RAGStreamChunk>.Success(new RAGStreamChunk
+            {
+                Content = chunk.Value!,
+                IsComplete = false
+            });
+        }
+
+        // Send final chunk with metadata
+        yield return Result<RAGStreamChunk>.Success(new RAGStreamChunk
+        {
+            Content = "",
+            IsComplete = true,
+            Sources = sources,
+            QueryAnalysis = queryAnalysis
+        });
     }
 
     private static string BuildRAGPrompt(string query, List<string> contexts)

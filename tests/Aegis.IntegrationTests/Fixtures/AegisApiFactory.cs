@@ -84,6 +84,16 @@ public class AegisApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.RemoveAll<ILLMService>();
             services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
 
+            // Register RAG query services
+            services.RemoveAll<IQueryProcessor>();
+            services.AddScoped<IQueryProcessor, Aegis.Infrastructure.Services.Query.QueryProcessor>();
+
+            services.RemoveAll<IRAGContextAssembler>();
+            services.AddScoped<IRAGContextAssembler, Aegis.Infrastructure.Services.Query.RAGContextAssembler>();
+
+            services.RemoveAll<IRAGQueryService>();
+            services.AddScoped<IRAGQueryService, Aegis.Infrastructure.Services.Query.RAGQueryService>();
+
             // Remove Neo4j services for testing (they cause initialization issues)
             services.RemoveAll<IGraphService>();
             services.RemoveAll<IGraphSchemaService>();

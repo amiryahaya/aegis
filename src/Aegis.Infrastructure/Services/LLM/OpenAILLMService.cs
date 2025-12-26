@@ -43,7 +43,7 @@ public class OpenAILLMService : ILLMService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating LLM response");
-            return Result<string>.Failure(Error.Failure("LLM.Error", ex.Message));
+            return Result<string>.Failure(Error.Internal("LLM.Error", ex.Message));
         }
     }
 
@@ -96,7 +96,7 @@ public class OpenAILLMService : ILLMService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating RAG response");
-            return Result<RAGResponse>.Failure(Error.Failure("LLM.RAGError", ex.Message));
+            return Result<RAGResponse>.Failure(Error.Internal("LLM.RAGError", ex.Message));
         }
     }
 
@@ -104,32 +104,47 @@ public class OpenAILLMService : ILLMService
         string prompt,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        AsyncResultCollection<StreamingChatCompletionUpdate>? streamingUpdates = null;
-
-        try
+        var messages = new List<ChatMessage>
         {
-            var messages = new List<ChatMessage>
-            {
-                new UserChatMessage(prompt)
-            };
+            new UserChatMessage(prompt)
+        };
 
-            streamingUpdates = _chatClient.CompleteChatStreamingAsync(messages, cancellationToken: cancellationToken);
+        var streamingUpdates = _chatClient.CompleteChatStreamingAsync(messages, cancellationToken: cancellationToken);
 
-            await foreach (var update in streamingUpdates.WithCancellation(cancellationToken))
+        var enumerator = streamingUpdates.ConfigureAwait(false).GetAsyncEnumerator();
+
+        while (true)
+        {
+            StreamingChatCompletionUpdate? update = null;
+            Exception? error = null;
+
+            try
             {
-                foreach (var contentPart in update.ContentUpdate)
+                if (!await enumerator.MoveNextAsync())
+                    break;
+
+                update = enumerator.Current;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in streaming LLM response");
+                error = ex;
+            }
+
+            // Yield outside of try-catch
+            if (error != null)
+            {
+                yield return Result<string>.Failure(Error.Internal("LLM.StreamingError", error.Message));
+                yield break;
+            }
+
+            foreach (var contentPart in update!.ContentUpdate)
+            {
+                if (!string.IsNullOrEmpty(contentPart.Text))
                 {
-                    if (!string.IsNullOrEmpty(contentPart.Text))
-                    {
-                        yield return Result<string>.Success(contentPart.Text);
-                    }
+                    yield return Result<string>.Success(contentPart.Text);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in streaming LLM response");
-            yield return Result<string>.Failure(Error.Failure("LLM.StreamingError", ex.Message));
         }
     }
 
