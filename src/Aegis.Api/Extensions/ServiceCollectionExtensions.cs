@@ -165,6 +165,38 @@ public static class ServiceCollectionExtensions
         // Register Semantic Kernel service with all plugins
         services.AddScoped<SemanticKernelService>();
 
+        // Register agent orchestration services
+        services.AddScoped<IPlannerAgent, PlannerAgent>();
+        services.AddScoped<IAgent, RetrieverAgent>(sp => new RetrieverAgent(
+            sp.GetRequiredService<ISemanticSearchService>(),
+            sp.GetRequiredService<IKeywordSearchService>(),
+            sp.GetRequiredService<ILogger<RetrieverAgent>>()));
+        services.AddScoped<IAgent, AnalyzerAgent>(sp => new AnalyzerAgent(
+            sp.GetRequiredService<ILLMService>(),
+            sp.GetRequiredService<ILogger<AnalyzerAgent>>()));
+        services.AddScoped<IAgent, SynthesizerAgent>(sp => new SynthesizerAgent(
+            sp.GetRequiredService<ILLMService>(),
+            sp.GetRequiredService<ILogger<SynthesizerAgent>>()));
+
+        // Register working memory service
+        services.AddSingleton<IWorkingMemory, WorkingMemoryService>();
+
+        // Register task executor with agent dictionary
+        services.AddScoped<ITaskExecutor>(sp =>
+        {
+            var agents = new Dictionary<string, IAgent>
+            {
+                { "Planner", sp.GetRequiredService<IPlannerAgent>() as IAgent },
+                { "Retriever", sp.GetServices<IAgent>().First(a => a.AgentType == "Retriever") },
+                { "Analyzer", sp.GetServices<IAgent>().First(a => a.AgentType == "Analyzer") },
+                { "Synthesizer", sp.GetServices<IAgent>().First(a => a.AgentType == "Synthesizer") }
+            };
+
+            return new TaskExecutor(
+                agents!,
+                sp.GetRequiredService<ILogger<TaskExecutor>>());
+        });
+
         services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
 
         // Register NER services (Intelligence NER wraps Basic NER)

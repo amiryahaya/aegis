@@ -69,6 +69,30 @@ See [Data Connectors Guide](./docs/DATA_CONNECTORS.md) and [Query Features Guide
 
 **Test Coverage:** 30 new passing tests (21 plugin + 6 authorization + 3 Ollama)
 
+### Sprint 21-22: Planning & Orchestration ✅
+
+#### Multi-Agent Orchestration (12 tests passing)
+- **PlannerAgent** - Decomposes queries into executable task DAGs
+- **TaskExecutor** - Executes plans with dependency management
+- **RetrieverAgent** - Semantic search and information retrieval
+- **AnalyzerAgent** - LLM-based analysis of retrieved data
+- **SynthesizerAgent** - Final response synthesis from all results
+
+#### Working Memory
+- **WorkingMemoryService** - Session and conversation context management
+  - In-memory key-value storage with expiration
+  - Conversation history tracking
+  - Multi-turn dialogue support
+
+#### Key Features
+- Rule-based task decomposition (search, entity, analysis, temporal)
+- DAG-based execution with topological sort
+- Automatic dependency resolution
+- Result passing between agents
+- Confidence scoring and reasoning traces
+
+**Test Coverage:** 12 new passing tests (7 planner + 5 executor)
+
 ---
 
 ## Core Concepts
