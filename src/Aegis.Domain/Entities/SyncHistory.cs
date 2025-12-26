@@ -25,7 +25,7 @@ public class SyncHistory : AggregateRoot
     {
         return new SyncHistory
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             DataSourceId = dataSourceId,
             Type = type,
             Status = SyncStatus.Running,

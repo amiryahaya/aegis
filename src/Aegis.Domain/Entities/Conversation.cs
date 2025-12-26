@@ -20,7 +20,7 @@ public class Conversation : AggregateRoot
     {
         return new Conversation
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             WorkspaceId = workspaceId,
             Title = title,
             CreatedBy = createdBy,

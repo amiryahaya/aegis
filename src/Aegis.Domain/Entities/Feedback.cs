@@ -26,7 +26,7 @@ public class Feedback : AggregateRoot
     {
         return new Feedback
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             QueryHistoryId = queryHistoryId,
             UserId = userId,
             WorkspaceId = workspaceId,

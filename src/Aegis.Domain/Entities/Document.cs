@@ -34,7 +34,7 @@ public class Document : AggregateRoot
     {
         return new Document
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             FileName = fileName,
             Title = title ?? fileName,
             ContentType = contentType,

@@ -1,6 +1,6 @@
 -- Create sync_history table
 CREATE TABLE IF NOT EXISTS sync_history (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
     data_source_id UUID NOT NULL REFERENCES data_sources(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,

@@ -30,7 +30,7 @@ public class WorkspaceFinding : AggregateRoot
     {
         return new WorkspaceFinding
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             WorkspaceId = workspaceId,
             Title = title,
             Content = content,

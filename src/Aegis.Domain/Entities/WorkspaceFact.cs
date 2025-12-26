@@ -26,7 +26,7 @@ public class WorkspaceFact : AggregateRoot
     {
         return new WorkspaceFact
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             WorkspaceId = workspaceId,
             Statement = statement,
             Confidence = confidence,

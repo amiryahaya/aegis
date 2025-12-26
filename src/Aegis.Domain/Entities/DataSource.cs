@@ -28,7 +28,7 @@ public class DataSource : AggregateRoot
     {
         return new DataSource
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             Name = name,
             Description = description,
             TeamId = teamId,

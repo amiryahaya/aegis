@@ -18,7 +18,7 @@ public class Team : AggregateRoot
     {
         return new Team
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             Name = name,
             Description = description,
             CreatedBy = createdBy,

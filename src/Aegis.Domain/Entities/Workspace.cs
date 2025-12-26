@@ -22,7 +22,7 @@ public class Workspace : AggregateRoot
     {
         return new Workspace
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             Name = name,
             Description = description,
             CustomInstructions = customInstructions,

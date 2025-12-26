@@ -31,7 +31,7 @@ public class QueryHistory : AggregateRoot
     {
         return new QueryHistory
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             WorkspaceId = workspaceId,
             UserId = userId,
             ConversationId = conversationId,

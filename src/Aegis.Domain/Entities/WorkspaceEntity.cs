@@ -30,7 +30,7 @@ public class WorkspaceEntity : AggregateRoot
     {
         return new WorkspaceEntity
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             WorkspaceId = workspaceId,
             Name = name,
             Type = type,

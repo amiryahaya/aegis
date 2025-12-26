@@ -6,7 +6,7 @@ services:
   # =============================================================================
 
   postgres:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg18
     container_name: aegis-postgres
     ports:
       - "${POSTGRES_PORT:-5434}:5432"

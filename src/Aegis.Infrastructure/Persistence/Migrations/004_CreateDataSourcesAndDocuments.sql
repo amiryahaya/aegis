@@ -1,6 +1,6 @@
 -- Create data_sources table
 CREATE TABLE IF NOT EXISTS data_sources (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
     team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS data_sources (
 
 -- Create documents table
 CREATE TABLE IF NOT EXISTS documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
     file_name VARCHAR(500) NOT NULL,
     title VARCHAR(500),
     content_type VARCHAR(100) NOT NULL,

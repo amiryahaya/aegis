@@ -21,7 +21,7 @@ public class User : AggregateRoot
     {
         return new User
         {
-            Id = Guid.NewGuid(),
+            Id = UuidGenerator.NewId(),
             Email = email.ToLowerInvariant(),
             Name = name,
             Role = role,

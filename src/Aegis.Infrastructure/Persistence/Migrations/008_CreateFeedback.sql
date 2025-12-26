@@ -2,7 +2,7 @@
 -- Description: Stores user feedback on RAG query responses
 
 CREATE TABLE IF NOT EXISTS feedback (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
     query_history_id UUID NOT NULL REFERENCES query_history(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
