@@ -1370,7 +1370,102 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 
 ---
 
-### Sprint 13-14: Data Connectors & Reranking (Weeks 25-28)
+### Sprint 13-14: Workspaces & Conversations ✅ (Weeks 25-28) - COMPLETED
+
+#### Actual Implementation (Completed December 2025)
+
+| Task | Status | Implementation |
+|------|--------|----------------|
+| Workspace entity model | ✅ | Workspace.cs with custom instructions, team association |
+| Team entity model | ✅ | Team.cs with owner, members |
+| Workspace knowledge base - Entities | ✅ | WorkspaceEntity.cs (Person, Org, Location, other) |
+| Workspace knowledge base - Findings | ✅ | WorkspaceFinding.cs (Evidence, Hypothesis, Conclusion, Lead) |
+| Workspace knowledge base - Facts | ✅ | WorkspaceFact.cs (confirmed statements, verification metadata) |
+| Workspace/Team repositories | ✅ | Full CRUD with Dapper, PostgreSQL |
+| Workspace context service | ✅ | Aggregates entities, findings, facts for query context |
+| Database migrations | ✅ | Added workspace knowledge schema (migration 004) |
+| Workspace/Team API endpoints | ✅ | Carter modules with full REST API |
+| Integration tests | ✅ | 26 new passing tests for workspaces, teams, knowledge |
+
+#### Technical Highlights
+- **Knowledge Base**: Three-tier knowledge structure (Entities, Findings, Facts) for workspace context
+- **Custom Instructions**: Workspace-specific prompts injected into every query
+- **Team-based Access**: Data sources and workspaces scoped by team membership
+- **PostgreSQL JSONB**: Metadata stored as JSONB for flexible properties
+- **Result Pattern**: All operations return Result<T> for explicit error handling
+- **Test Coverage**: Comprehensive integration tests with Testcontainers
+
+---
+
+### Sprint 15-16: RAG Query Pipeline ✅ (Weeks 29-32) - COMPLETED
+
+#### Actual Implementation (Completed December 2025)
+
+| Component | Status | Implementation |
+|-----------|--------|----------------|
+| Query Processor | ✅ | Intent detection (Question/Command/Analysis/etc), keyword extraction, NER integration |
+| Context Assembler | ✅ | Combines hybrid retrieval chunks + workspace knowledge + custom instructions |
+| LLM Service | ✅ | OpenAI integration with streaming, fallback to mock, citation extraction |
+| RAG Query Service | ✅ | End-to-end orchestration: query → context → LLM → response |
+| Query API endpoints | ✅ | REST endpoints with SSE streaming support |
+| Hybrid Retriever Integration | ✅ | Vector + BM25 + metadata filtering |
+| Response generation | ✅ | Citations with source tracking, numbered references |
+| Streaming support | ✅ | Server-Sent Events for real-time token streaming |
+
+#### Technical Implementation
+
+**QueryProcessor** (`IQueryProcessor`):
+- Intent classification: Question, Command, Search, Analysis, Summarization, Comparison
+- Complexity analysis: Simple, Medium, Complex (based on keywords, length, patterns)
+- Keyword extraction with stop-word filtering
+- NER integration for entity extraction
+
+**RAGContextAssembler** (`IRAGContextAssembler`):
+- Retrieves top-K chunks via hybrid search (vector + BM25 + RRF)
+- Fetches workspace context (custom instructions, entities, findings, facts)
+- Assembles prompt context with token estimation
+- Returns structured `RAGContext` with all components
+
+**OpenAILLMService** (`ILLMService`):
+- OpenAI API integration (gpt-4o-mini default)
+- Streaming responses via `IAsyncEnumerable<Result<string>>`
+- Citation extraction from [1], [2] style references
+- Graceful error handling (no yield in try-catch)
+- Falls back to MockLLMService when API key not configured
+
+**QueryModule** (Carter):
+- `POST /api/workspaces/{id}/query` - Execute RAG query
+- `POST /api/workspaces/{id}/query/stream` - Streaming RAG query (SSE)
+- Conversation threading with optional conversationId
+- Returns query analysis, sources, citations, processing time
+
+#### Key Files Created
+- `src/Aegis.Domain/Services/IQueryProcessor.cs`
+- `src/Aegis.Domain/Services/IRAGContextAssembler.cs`
+- `src/Aegis.Domain/Services/IRAGQueryService.cs`
+- `src/Aegis.Infrastructure/Services/Query/QueryProcessor.cs`
+- `src/Aegis.Infrastructure/Services/Query/RAGContextAssembler.cs`
+- `src/Aegis.Infrastructure/Services/Query/RAGQueryService.cs`
+- `src/Aegis.Infrastructure/Services/LLM/OpenAILLMService.cs`
+- `src/Aegis.Api/Features/Query/QueryModule.cs`
+
+#### Technical Highlights
+- **Layered Context**: Workspace context + conversation history + retrieved documents
+- **Hybrid Retrieval**: Combines vector similarity, BM25, and graph relationships
+- **Streaming Architecture**: Async enumerable pattern for token-by-token responses
+- **Citation Tracking**: Automatic extraction of numbered citations from LLM responses
+- **Service Registration**: Conditional Neo4j/OpenAI registration, graceful degradation
+- **Error Handling**: Result pattern throughout, structured error responses
+
+#### Bug Fixes
+- Fixed `IGraphEnhancedRetriever` dependency when Neo4j not configured
+- Added `[FromServices]` attributes to GraphModule parameters
+- Fixed Document property reference (ContentType vs FileType)
+- Restructured streaming methods to avoid C# yield in try-catch limitation
+
+---
+
+### Sprint 17-18: Data Connectors & Reranking (Weeks 33-36) - PLANNED
 
 #### Tasks with TDD
 
@@ -1381,7 +1476,6 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 | RSS feed connector | RssConnectorTests | RssFeedConnector | 2 days |
 | Scheduled sync with Hangfire | ScheduledSyncTests | DataSourceSyncJob | 2 days |
 | Cross-encoder reranker | RerankerTests | BgeRerankerService | 3 days |
-| Investigation workspace backend | WorkspaceTests | Workspace feature | 3 days |
 | Query history feature | QueryHistoryTests | QueryHistory feature | 2 days |
 | Feedback collection | FeedbackTests | Feedback feature | 2 days |
 
@@ -1394,11 +1488,15 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 - [x] Named Entity Recognition for intelligence entities ✅ Sprint 9-10
 - [x] Knowledge graph with entity relationships ✅ Sprint 11-12 (5/8 tasks, core complete)
 - [x] Graph-enhanced retrieval 🟡 Sprint 11-12 (interface defined, implementation pending)
-- [ ] Database connectors (PostgreSQL, MongoDB)
-- [ ] RSS/news feed integration
-- [ ] Cross-encoder reranking
-- [ ] Investigation workspace feature
-- [x] >80% test coverage maintained ✅ (108 new passing tests: 76 Sprint 9-10 + 32 Sprint 11-12)
+- [x] Workspace knowledge base (Entities, Findings, Facts) ✅ Sprint 13-14
+- [x] Team-based access control ✅ Sprint 13-14
+- [x] RAG Query Pipeline (end-to-end) ✅ Sprint 15-16
+- [x] OpenAI LLM integration with streaming ✅ Sprint 15-16
+- [x] Query API endpoints with SSE ✅ Sprint 15-16
+- [ ] Database connectors (PostgreSQL, MongoDB) - Sprint 17-18
+- [ ] RSS/news feed integration - Sprint 17-18
+- [ ] Cross-encoder reranking - Sprint 17-18
+- [x] >80% test coverage maintained ✅ (134 new passing tests: 76 Sprint 9-10 + 32 Sprint 11-12 + 26 Sprint 13-14)
 
 ---
 
@@ -1414,7 +1512,7 @@ Implemented comprehensive knowledge graph infrastructure with Neo4j for threat i
 
 ---
 
-### Sprint 15-16: Semantic Kernel Integration (Weeks 29-32)
+### Sprint 19-20: Semantic Kernel Integration (Weeks 37-40) - PLANNED
 
 #### Tasks with TDD
 
@@ -1485,14 +1583,12 @@ public class VectorSearchPlugin
 
 ---
 
-### Sprint 17-18: Planning & Orchestration (Weeks 33-36)
+### Sprint 21-22: Planning & Orchestration (Weeks 41-44) - PLANNED
 
 #### Tasks with TDD
 
 | Task | Test First | Implement | Effort |
 |------|------------|-----------|--------|
-| Query intent classifier | IntentClassifierTests | IntentClassifier | 3 days |
-| Query complexity analyzer | ComplexityAnalyzerTests | ComplexityAnalyzer | 2 days |
 | Planner Agent with SK | PlannerAgentTests | PlannerAgent | 4 days |
 | DAG-based execution | DagExecutorTests | TaskExecutor | 3 days |
 | Retriever Agent | RetrieverAgentTests | RetrieverAgent | 3 days |
@@ -1503,7 +1599,7 @@ public class VectorSearchPlugin
 
 ---
 
-### Sprint 19-20: Self-Evaluation & Quality (Weeks 37-40)
+### Sprint 23-24: Self-Evaluation & Quality (Weeks 45-48) - PLANNED
 
 #### Tasks with TDD
 
@@ -1522,14 +1618,15 @@ public class VectorSearchPlugin
 
 ### Phase 3 Deliverables Checklist
 
-- [ ] Semantic Kernel integration with custom plugins
-- [ ] Query intent classification and routing
-- [ ] Task decomposition and planning
-- [ ] Multi-agent orchestration
-- [ ] Self-evaluation with faithfulness scoring
-- [ ] Working memory for conversation context
-- [ ] Reasoning trace visualization
-- [ ] Multi-turn conversation support
+- [x] Query intent classification and routing ✅ Sprint 15-16 (basic implementation)
+- [x] RAG query pipeline with context assembly ✅ Sprint 15-16
+- [ ] Semantic Kernel integration with custom plugins - Sprint 19-20
+- [ ] Task decomposition and planning - Sprint 21-22
+- [ ] Multi-agent orchestration - Sprint 21-22
+- [ ] Self-evaluation with faithfulness scoring - Sprint 23-24
+- [ ] Working memory for conversation context - Sprint 21-22
+- [ ] Reasoning trace visualization - Sprint 23-24
+- [ ] Multi-turn conversation support - Sprint 23-24
 - [ ] >80% test coverage maintained
 
 ---
@@ -1546,7 +1643,7 @@ public class VectorSearchPlugin
 
 ---
 
-### Sprint 21-22: Security & Caching (Weeks 41-44)
+### Sprint 25-26: Security & Caching (Weeks 49-52) - PLANNED
 
 #### Tasks with TDD
 
