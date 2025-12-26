@@ -24,6 +24,7 @@
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.4.0" />
     <PackageReference Include="itext7" Version="9.4.0" />
     <PackageReference Include="Microsoft.ML" Version="5.0.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
     <PackageReference Include="Neo4j.Driver" Version="5.28.4" />
     <PackageReference Include="Npgsql" Version="9.0.4" />
@@ -31,14 +32,13 @@
 
     <!-- Caching -->
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0" />
-    <PackageReference Include="OpenAI" Version="2.1.0-beta.2" />
+    <PackageReference Include="OpenAI" Version="2.8.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
 
     <!-- Vector Database -->
     <PackageReference Include="Qdrant.Client" Version="1.12.0" />
 
     <!-- AI/ML -->
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.30.0" />
 
     <!-- Object Storage -->
     <PackageReference Include="Minio" Version="6.0.4" />
