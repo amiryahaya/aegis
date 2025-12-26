@@ -141,9 +141,13 @@ public class DataSource : AggregateRoot
 public enum DataSourceType
 {
     Upload,
-    Database,
-    Api,
+    PostgreSQL,
+    MongoDB,
+    MySQL,
+    MSSQL,
     RssFeed,
+    RestApi,
+    GraphQLApi,
     WebScraper
 }
 

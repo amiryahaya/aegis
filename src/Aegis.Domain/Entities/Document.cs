@@ -9,6 +9,8 @@ public class Document : AggregateRoot
     public string ContentType { get; private set; } = string.Empty;
     public long SizeBytes { get; private set; }
     public string? StoragePath { get; private set; }
+    public string? Content { get; private set; } // For inline content from connectors
+    public string? ExternalId { get; private set; } // For tracking external source records
     public Guid DataSourceId { get; private set; }
     public Guid UploadedBy { get; private set; }
     public DocumentStatus Status { get; private set; }
@@ -26,7 +28,9 @@ public class Document : AggregateRoot
         Guid dataSourceId,
         Guid uploadedBy,
         string? title = null,
-        string? storagePath = null)
+        string? storagePath = null,
+        string? content = null,
+        string? externalId = null)
     {
         return new Document
         {
@@ -36,6 +40,8 @@ public class Document : AggregateRoot
             ContentType = contentType,
             SizeBytes = sizeBytes,
             StoragePath = storagePath,
+            Content = content,
+            ExternalId = externalId,
             DataSourceId = dataSourceId,
             UploadedBy = uploadedBy,
             Status = DocumentStatus.Pending,
@@ -54,6 +60,8 @@ public class Document : AggregateRoot
         string contentType,
         long sizeBytes,
         string? storagePath,
+        string? content,
+        string? externalId,
         Guid dataSourceId,
         Guid uploadedBy,
         DocumentStatus status,
@@ -72,6 +80,8 @@ public class Document : AggregateRoot
             ContentType = contentType,
             SizeBytes = sizeBytes,
             StoragePath = storagePath,
+            Content = content,
+            ExternalId = externalId,
             DataSourceId = dataSourceId,
             UploadedBy = uploadedBy,
             Status = status,
@@ -116,6 +126,13 @@ public class Document : AggregateRoot
     public void UpdateTitle(string title)
     {
         Title = title;
+        SetUpdated();
+    }
+
+    public void UpdateContent(string content, long sizeBytes)
+    {
+        Content = content;
+        SizeBytes = sizeBytes;
         SetUpdated();
     }
 }

@@ -8,15 +8,18 @@ public class RAGContextAssembler : IRAGContextAssembler
     private readonly IHybridRetriever _hybridRetriever;
     private readonly IWorkspaceContextService _workspaceContextService;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IRerankerService? _rerankerService;
 
     public RAGContextAssembler(
         IHybridRetriever hybridRetriever,
         IWorkspaceContextService workspaceContextService,
-        IDocumentRepository documentRepository)
+        IDocumentRepository documentRepository,
+        IRerankerService? rerankerService = null)
     {
         _hybridRetriever = hybridRetriever;
         _workspaceContextService = workspaceContextService;
         _documentRepository = documentRepository;
+        _rerankerService = rerankerService;
     }
 
     public async Task<RAGContext> AssembleContextAsync(
@@ -77,6 +80,45 @@ public class RAGContextAssembler : IRAGContextAssembler
                         });
                     }
                 }
+            }
+        }
+
+        // Apply reranking if reranker service is available
+        if (_rerankerService != null && retrievedChunks.Count > 0)
+        {
+            var documents = retrievedChunks.Select(c => c.Content).ToList();
+            var rerankResult = await _rerankerService.RerankAsync(
+                queryAnalysis.ProcessedQuery,
+                documents,
+                topK: Math.Min(maxChunks, retrievedChunks.Count),
+                cancellationToken);
+
+            if (rerankResult.IsSuccess && rerankResult.Value != null)
+            {
+                // Create a new list with reranked chunks in order
+                var rerankedChunks = new List<RetrievedChunk>();
+                foreach (var rankedDoc in rerankResult.Value)
+                {
+                    var originalChunk = retrievedChunks[rankedDoc.Index];
+
+                    // Update the chunk with reranked score and method
+                    rerankedChunks.Add(new RetrievedChunk
+                    {
+                        ChunkId = originalChunk.ChunkId,
+                        DocumentId = originalChunk.DocumentId,
+                        DocumentName = originalChunk.DocumentName,
+                        Content = originalChunk.Content,
+                        Score = rankedDoc.RelevanceScore,
+                        RetrievalMethod = "reranked",
+                        Metadata = new Dictionary<string, object>(originalChunk.Metadata)
+                        {
+                            ["original_score"] = originalChunk.Score,
+                            ["reranker_score"] = rankedDoc.RelevanceScore
+                        }
+                    });
+                }
+
+                retrievedChunks = rerankedChunks;
             }
         }
 

@@ -151,7 +151,7 @@ public class CreateDataSourceCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         await _dataSourceRepository.Received(1).AddAsync(Arg.Is<DataSource>(ds =>
-            ds.Type == DataSourceType.Api),
+            ds.Type == DataSourceType.RestApi),
             Arg.Any<CancellationToken>());
     }
 }

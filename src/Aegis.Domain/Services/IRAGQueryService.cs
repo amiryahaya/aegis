@@ -13,6 +13,7 @@ public interface IRAGQueryService
     Task<Result<RAGQueryResponse>> QueryAsync(
         string query,
         Guid workspaceId,
+        Guid? userId = null,
         Guid? conversationId = null,
         CancellationToken cancellationToken = default);
 
@@ -22,6 +23,7 @@ public interface IRAGQueryService
     IAsyncEnumerable<Result<RAGStreamChunk>> QueryStreamingAsync(
         string query,
         Guid workspaceId,
+        Guid? userId = null,
         Guid? conversationId = null,
         CancellationToken cancellationToken = default);
 }

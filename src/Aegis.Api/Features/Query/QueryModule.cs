@@ -88,6 +88,7 @@ public class QueryModule : ICarterModule
         await foreach (var chunkResult in queryService.QueryStreamingAsync(
             request.Query,
             workspaceId,
+            userId: null, // TODO: Extract from HttpContext.User claims
             conversationId,
             context.RequestAborted))
         {

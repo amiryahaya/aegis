@@ -1,6 +1,7 @@
 using Aegis.Api.Extensions;
 using Aegis.Api.Hubs;
 using Carter;
+using Hangfire;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -43,6 +44,7 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
+        app.UseHangfireDashboard("/hangfire");
     }
 
     app.UseAuthentication();

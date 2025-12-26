@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Aegis.Domain.Common;
+using Aegis.Domain.Entities;
+using Aegis.Domain.Repositories;
 using Aegis.Domain.Services;
 using Microsoft.Extensions.Logging;
 
@@ -11,23 +13,27 @@ public class RAGQueryService : IRAGQueryService
     private readonly IQueryProcessor _queryProcessor;
     private readonly IRAGContextAssembler _contextAssembler;
     private readonly ILLMService _llmService;
+    private readonly IQueryHistoryRepository? _queryHistoryRepository;
     private readonly ILogger<RAGQueryService> _logger;
 
     public RAGQueryService(
         IQueryProcessor queryProcessor,
         IRAGContextAssembler contextAssembler,
         ILLMService llmService,
-        ILogger<RAGQueryService> logger)
+        ILogger<RAGQueryService> logger,
+        IQueryHistoryRepository? queryHistoryRepository = null)
     {
         _queryProcessor = queryProcessor;
         _contextAssembler = contextAssembler;
         _llmService = llmService;
         _logger = logger;
+        _queryHistoryRepository = queryHistoryRepository;
     }
 
     public async Task<Result<RAGQueryResponse>> QueryAsync(
         string query,
         Guid workspaceId,
+        Guid? userId = null,
         Guid? conversationId = null,
         CancellationToken cancellationToken = default)
     {
@@ -99,6 +105,32 @@ public class RAGQueryService : IRAGQueryService
 
             _logger.LogInformation("RAG query completed in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
 
+            // Step 6: Save query history (if repository available and userId provided)
+            if (_queryHistoryRepository != null && userId.HasValue)
+            {
+                try
+                {
+                    var retrievalMethod = ragContext.RetrievedChunks.FirstOrDefault()?.RetrievalMethod ?? "unknown";
+                    var queryHistory = QueryHistory.Create(
+                        workspaceId,
+                        userId.Value,
+                        query,
+                        response.Response,
+                        ragContext.TotalTokens,
+                        stopwatch.Elapsed,
+                        ragContext.RetrievedChunks.Count,
+                        retrievalMethod,
+                        conversationId);
+
+                    await _queryHistoryRepository.AddAsync(queryHistory, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the query if history saving fails
+                    _logger.LogWarning(ex, "Failed to save query history");
+                }
+            }
+
             return Result<RAGQueryResponse>.Success(response);
         }
         catch (Exception ex)
@@ -112,6 +144,7 @@ public class RAGQueryService : IRAGQueryService
     public async IAsyncEnumerable<Result<RAGStreamChunk>> QueryStreamingAsync(
         string query,
         Guid workspaceId,
+        Guid? userId = null,
         Guid? conversationId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

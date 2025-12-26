@@ -20,8 +20,8 @@ public class DocumentRepository : IDocumentRepository
     public async Task<Document?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, file_name, title, content_type, size_bytes, storage_path, data_source_id,
-                   uploaded_by, status, error_message, chunk_count, processed_at, metadata,
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata,
                    created_at, updated_at
             FROM documents
             WHERE id = @Id
@@ -36,8 +36,8 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IReadOnlyList<Document>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, file_name, title, content_type, size_bytes, storage_path, data_source_id,
-                   uploaded_by, status, error_message, chunk_count, processed_at, metadata,
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata,
                    created_at, updated_at
             FROM documents
             ORDER BY created_at DESC
@@ -52,8 +52,8 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IReadOnlyList<Document>> GetByDataSourceIdAsync(Guid dataSourceId, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, file_name, title, content_type, size_bytes, storage_path, data_source_id,
-                   uploaded_by, status, error_message, chunk_count, processed_at, metadata,
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata,
                    created_at, updated_at
             FROM documents
             WHERE data_source_id = @DataSourceId
@@ -66,11 +66,27 @@ public class DocumentRepository : IDocumentRepository
         return records.Select(r => r.ToDocument()).ToList();
     }
 
+    public async Task<Document?> GetByExternalIdAsync(Guid dataSourceId, string externalId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata,
+                   created_at, updated_at
+            FROM documents
+            WHERE data_source_id = @DataSourceId AND external_id = @ExternalId
+            """;
+
+        await using var connection = CreateConnection();
+        var record = await connection.QuerySingleOrDefaultAsync<DocumentRecord>(sql, new { DataSourceId = dataSourceId, ExternalId = externalId });
+
+        return record?.ToDocument();
+    }
+
     public async Task<IReadOnlyList<Document>> GetPendingDocumentsAsync(int limit = 100, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, file_name, title, content_type, size_bytes, storage_path, data_source_id,
-                   uploaded_by, status, error_message, chunk_count, processed_at, metadata,
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata,
                    created_at, updated_at
             FROM documents
             WHERE status = 'Pending'
@@ -87,10 +103,10 @@ public class DocumentRepository : IDocumentRepository
     public async Task AddAsync(Document document, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            INSERT INTO documents (id, file_name, title, content_type, size_bytes, storage_path,
+            INSERT INTO documents (id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
                                  data_source_id, uploaded_by, status, error_message, chunk_count,
                                  processed_at, metadata, created_at, updated_at)
-            VALUES (@Id, @FileName, @Title, @ContentType, @SizeBytes, @StoragePath,
+            VALUES (@Id, @FileName, @Title, @ContentType, @SizeBytes, @StoragePath, @Content, @ExternalId,
                     @DataSourceId, @UploadedBy, @Status, @ErrorMessage, @ChunkCount,
                     @ProcessedAt, @Metadata::jsonb, @CreatedAt, @UpdatedAt)
             """;
@@ -104,6 +120,8 @@ public class DocumentRepository : IDocumentRepository
             document.ContentType,
             document.SizeBytes,
             document.StoragePath,
+            document.Content,
+            document.ExternalId,
             document.DataSourceId,
             document.UploadedBy,
             Status = document.Status.ToString(),
@@ -121,6 +139,8 @@ public class DocumentRepository : IDocumentRepository
         const string sql = """
             UPDATE documents
             SET title = @Title,
+                content = @Content,
+                size_bytes = @SizeBytes,
                 status = @Status,
                 error_message = @ErrorMessage,
                 chunk_count = @ChunkCount,
@@ -135,6 +155,8 @@ public class DocumentRepository : IDocumentRepository
         {
             document.Id,
             document.Title,
+            document.Content,
+            document.SizeBytes,
             Status = document.Status.ToString(),
             document.ErrorMessage,
             document.ChunkCount,
@@ -175,6 +197,8 @@ public class DocumentRepository : IDocumentRepository
         string Content_Type,
         long Size_Bytes,
         string? Storage_Path,
+        string? Content,
+        string? External_Id,
         Guid Data_Source_Id,
         Guid Uploaded_By,
         string Status,
@@ -197,6 +221,8 @@ public class DocumentRepository : IDocumentRepository
                 Content_Type,
                 Size_Bytes,
                 Storage_Path,
+                Content,
+                External_Id,
                 Data_Source_Id,
                 Uploaded_By,
                 status,

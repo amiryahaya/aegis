@@ -7,8 +7,13 @@ using Aegis.Infrastructure.Persistence;
 using Aegis.Infrastructure.Persistence.Repositories;
 using Aegis.Infrastructure.Services;
 using Aegis.Infrastructure.Services.Graph;
+using Aegis.Infrastructure.Services.Sync;
+using Aegis.Infrastructure.Services.Connectors;
+using Aegis.Infrastructure.Services.Reranking;
 using Carter;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -59,6 +64,36 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWorkspaceFactRepository>(_ => new WorkspaceFactRepository(connectionString));
         services.AddScoped<IDataSourceRepository>(_ => new DataSourceRepository(connectionString));
         services.AddScoped<IDocumentRepository>(_ => new DocumentRepository(connectionString));
+        services.AddScoped<ISyncHistoryRepository>(_ => new SyncHistoryRepository(connectionString));
+        services.AddScoped<IQueryHistoryRepository>(_ => new QueryHistoryRepository(connectionString));
+        services.AddScoped<IFeedbackRepository>(_ => new FeedbackRepository(connectionString));
+
+        // Configure Hangfire for background jobs
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString)));
+
+        services.AddHangfireServer();
+
+        // Register sync services
+        services.AddScoped<DataSourceSyncJob>();
+        services.AddScoped<ISyncScheduler, HangfireSyncScheduler>();
+
+        // Register data connectors
+        services.AddScoped<PostgreSqlConnector>();
+        services.AddScoped<MongoDbConnector>();
+        services.AddScoped<RssFeedConnector>();
+        services.AddHttpClient(); // For RSS feed connector
+        services.AddSingleton<IDataConnectorFactory>(sp =>
+        {
+            var factory = new DataConnectorFactory(sp);
+            factory.RegisterConnector(Aegis.Domain.Entities.DataSourceType.PostgreSQL, typeof(PostgreSqlConnector));
+            factory.RegisterConnector(Aegis.Domain.Entities.DataSourceType.MongoDB, typeof(MongoDbConnector));
+            factory.RegisterConnector(Aegis.Domain.Entities.DataSourceType.RssFeed, typeof(RssFeedConnector));
+            return factory;
+        });
 
         // Register domain services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -100,6 +135,21 @@ public static class ServiceCollectionExtensions
         else
         {
             services.AddScoped<ILLMService, Aegis.Infrastructure.Services.LLM.MockLLMService>();
+        }
+
+        // Register Reranker Service (Cohere if API key provided, otherwise Simple fallback)
+        var cohereApiKey = configuration["Cohere:ApiKey"] ?? Environment.GetEnvironmentVariable("COHERE_API_KEY");
+        if (!string.IsNullOrWhiteSpace(cohereApiKey))
+        {
+            services.AddScoped<IRerankerService>(sp => new CohereRerankerService(
+                sp.GetRequiredService<IHttpClientFactory>(),
+                sp.GetRequiredService<ILogger<CohereRerankerService>>(),
+                cohereApiKey,
+                configuration["Cohere:Model"] ?? "rerank-english-v3.0"));
+        }
+        else
+        {
+            services.AddScoped<IRerankerService, SimpleRerankerService>();
         }
 
         services.AddScoped<ITableExtractor, Aegis.Infrastructure.Services.Tables.HtmlTableExtractor>();
