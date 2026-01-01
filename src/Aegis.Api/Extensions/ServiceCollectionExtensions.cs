@@ -247,6 +247,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISessionService, Aegis.Infrastructure.Services.Sessions.InMemorySessionService>();
         services.AddScoped<IConversationContextService, Aegis.Infrastructure.Services.Sessions.ConversationContextService>();
 
+        // Register collaboration services (Sprint 49-50)
+        services.AddSingleton<ICollaborationService, Aegis.Infrastructure.Services.Collaboration.InMemoryCollaborationService>();
+        services.AddSingleton<IPresenceService, Aegis.Infrastructure.Services.Collaboration.InMemoryPresenceService>();
+        services.AddSingleton<ICommentService, Aegis.Infrastructure.Services.Collaboration.InMemoryCommentService>();
+        services.AddSingleton<IActivityFeedService, Aegis.Infrastructure.Services.Collaboration.InMemoryActivityFeedService>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
