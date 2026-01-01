@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}-config
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.config.aspnetEnvironment | quote }}
+  ASPNETCORE_URLS: "http://+:{{ .Values.service.targetPort }}"
+  Logging__LogLevel__Default: {{ .Values.config.logLevel | quote }}
+  Logging__LogLevel__Microsoft.AspNetCore: "Warning"
+
+  # LLM Configuration
+  LLM__Provider: {{ .Values.config.llm.provider | quote }}
+  LLM__OllamaBaseUrl: {{ .Values.config.llm.ollamaBaseUrl | quote }}
+  LLM__DefaultModel: {{ .Values.config.llm.defaultModel | quote }}
+  LLM__EmbeddingModel: {{ .Values.config.llm.embeddingModel | quote }}
+
+  # Cache Configuration
+  Cache__SemanticCache__Enabled: {{ .Values.config.cache.semanticCache.enabled | quote }}
+  Cache__SemanticCache__SimilarityThreshold: {{ .Values.config.cache.semanticCache.similarityThreshold | quote }}
+  Cache__EmbeddingCache__Enabled: {{ .Values.config.cache.embeddingCache.enabled | quote }}
+  Cache__ResponseCache__Enabled: {{ .Values.config.cache.responseCache.enabled | quote }}
+
+  # Rate Limiting
+  RateLimiting__RequestsPerMinute: {{ .Values.config.rateLimiting.requestsPerMinute | quote }}
+  RateLimiting__RequestsPerHour: {{ .Values.config.rateLimiting.requestsPerHour | quote }}
+
+  # Security
+  Security__EnableInputSanitization: {{ .Values.config.security.enableInputSanitization | quote }}
+  Security__EnableContentFiltering: {{ .Values.config.security.enableContentFiltering | quote }}
+
+  # Database
+  {{- if .Values.postgresql.enabled }}
+  ConnectionStrings__DefaultConnection: "Host={{ .Release.Name }}-postgresql;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }}"
+  {{- end }}
+
+  # Vector Store
+  {{- if .Values.qdrant.enabled }}
+  Qdrant__Host: "{{ .Release.Name }}-qdrant"
+  Qdrant__Port: "6334"
+  Qdrant__GrpcPort: "6333"
+  {{- end }}

@@ -227,6 +227,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDataExporter, Aegis.Infrastructure.Services.Admin.InMemoryDataExporter>();
         services.AddSingleton<IAdminDashboardService, Aegis.Infrastructure.Services.Admin.InMemoryAdminDashboardService>();
 
+        // Register evaluation & benchmarking services (Sprint 29-30)
+        services.AddScoped<IRAGEvaluator, Aegis.Infrastructure.Services.Evaluation.InMemoryRAGEvaluator>();
+        services.AddSingleton<IPerformanceBenchmark, Aegis.Infrastructure.Services.Evaluation.InMemoryPerformanceBenchmark>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {

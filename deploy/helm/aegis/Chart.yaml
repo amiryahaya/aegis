@@ -1,0 +1,32 @@
+apiVersion: v2
+name: aegis
+description: A Helm chart for Aegis RAG System - Enterprise-grade Retrieval-Augmented Generation platform
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - rag
+  - ai
+  - llm
+  - retrieval-augmented-generation
+  - semantic-search
+  - vector-database
+
+home: https://github.com/example/aegis
+sources:
+  - https://github.com/example/aegis
+
+maintainers:
+  - name: Aegis Team
+    email: aegis@example.com
+
+dependencies:
+  - name: postgresql
+    version: "~12.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: qdrant
+    version: "~0.6"
+    repository: "https://qdrant.github.io/qdrant-helm"
+    condition: qdrant.enabled

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aegis-config
+  namespace: aegis
+  labels:
+    app.kubernetes.io/name: aegis
+    app.kubernetes.io/component: api
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+
+  # Logging
+  Logging__LogLevel__Default: "Information"
+  Logging__LogLevel__Microsoft.AspNetCore: "Warning"
+
+  # Database
+  ConnectionStrings__DefaultConnection: "Host=aegis-postgres;Database=aegis;Username=aegis"
+
+  # Vector Store
+  Qdrant__Host: "aegis-qdrant"
+  Qdrant__Port: "6334"
+  Qdrant__GrpcPort: "6333"
+
+  # LLM Settings
+  LLM__Provider: "Ollama"
+  LLM__OllamaBaseUrl: "http://aegis-ollama:11434"
+  LLM__DefaultModel: "llama3.2"
+  LLM__EmbeddingModel: "nomic-embed-text"
+
+  # Cache Settings
+  Cache__SemanticCache__Enabled: "true"
+  Cache__SemanticCache__SimilarityThreshold: "0.95"
+  Cache__EmbeddingCache__Enabled: "true"
+  Cache__ResponseCache__Enabled: "true"
+
+  # Rate Limiting
+  RateLimiting__RequestsPerMinute: "60"
+  RateLimiting__RequestsPerHour: "1000"
+
+  # Security
+  Security__EnableInputSanitization: "true"
+  Security__EnableContentFiltering: "true"

@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** 405138a - Complete Sprint 27-28: Admin & Reporting
+**Last Commit:** 5366037 - Complete Sprint 29-30: Testing & Deployment
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -53,25 +53,36 @@
 - **Total: 100 tests passing**
 - **Commit:** 405138a
 
+#### Sprint 29-30: Testing & Deployment ✅
+- Architecture tests with NetArchTest (21 tests enforcing Clean Architecture)
+- InMemoryRAGEvaluator for RAGAS-style quality metrics (32 tests)
+- InMemoryPerformanceBenchmark for load testing and benchmarking (25 tests)
+- Kubernetes manifests (namespace, deployment, service, ingress, HPA, PDB, PVC)
+- Helm charts with full templating and dependencies
+- **Total: 78 new tests passing**
+- **Commit:** 5366037
+
 ### Current Statistics
-- **Total Tests Passing:** 314 new tests (Sprint 19-20: 30 + Sprint 21-22: 12 + Sprint 23-24: 50 + Sprint 25-26: 122 + Sprint 27-28: 100)
+- **Total Unit Tests Passing:** 595 (574 unit + 21 architecture)
 - **Test Coverage:** >80% maintained
 - **Build Status:** ✅ Passing
 - **Warnings:** 0
 
 ## 🎯 What's Next
 
-### Sprint 29-30: Testing & Deployment (PLANNED)
-According to DEVELOPMENT_PLAN.md, the next sprint includes:
+### Future Sprints (PLANNED)
+The core RAG system is now complete with:
+1. **All backend services implemented**
+2. **Security, caching, and admin features**
+3. **Comprehensive testing infrastructure**
+4. **Kubernetes deployment ready**
 
-1. **Comprehensive unit test review** - >80% coverage verified
-2. **Integration test suite completion** - All features covered
-3. **E2E tests with Playwright** - UI automation complete
-4. **Architecture tests** - Rules enforced
-5. **RAG evaluation pipeline (RAGAS)** - Quality metrics
-6. **Performance load testing (k6)** - Benchmark results
-7. **Kubernetes manifests** - K8s configs
-8. **Helm charts** - Deployment automation
+Potential future work:
+- E2E tests with Playwright (UI automation)
+- Production database migrations
+- CI/CD pipeline setup
+- Monitoring and alerting setup (Prometheus/Grafana)
+- Documentation site
 
 ### Files Created (Sprint 23-24)
 
@@ -145,6 +156,48 @@ According to DEVELOPMENT_PLAN.md, the next sprint includes:
 - tests/Aegis.UnitTests/Services/Admin/DataExporterTests.cs
 - tests/Aegis.UnitTests/Services/Admin/AdminDashboardServiceTests.cs
 
+### Files Created (Sprint 29-30)
+
+**Domain Interfaces:**
+- src/Aegis.Domain/Services/IRAGEvaluator.cs
+- src/Aegis.Domain/Services/IPerformanceBenchmark.cs
+
+**Evaluation Infrastructure:**
+- src/Aegis.Infrastructure/Services/Evaluation/InMemoryRAGEvaluator.cs
+- src/Aegis.Infrastructure/Services/Evaluation/InMemoryPerformanceBenchmark.cs
+
+**Tests:**
+- tests/Aegis.UnitTests/Services/Evaluation/RAGEvaluatorTests.cs
+- tests/Aegis.UnitTests/Services/Evaluation/PerformanceBenchmarkTests.cs
+- tests/Aegis.ArchitectureTests/ArchitectureTests.cs (extended with 18 new tests)
+
+**Kubernetes Deployment:**
+- deploy/k8s/namespace.yaml
+- deploy/k8s/configmap.yaml
+- deploy/k8s/secrets.yaml
+- deploy/k8s/deployment.yaml
+- deploy/k8s/service.yaml
+- deploy/k8s/ingress.yaml
+- deploy/k8s/hpa.yaml
+- deploy/k8s/pdb.yaml
+- deploy/k8s/pvc.yaml
+- deploy/k8s/serviceaccount.yaml
+- deploy/k8s/kustomization.yaml
+
+**Helm Charts:**
+- deploy/helm/aegis/Chart.yaml
+- deploy/helm/aegis/values.yaml
+- deploy/helm/aegis/templates/_helpers.tpl
+- deploy/helm/aegis/templates/deployment.yaml
+- deploy/helm/aegis/templates/service.yaml
+- deploy/helm/aegis/templates/configmap.yaml
+- deploy/helm/aegis/templates/secret.yaml
+- deploy/helm/aegis/templates/ingress.yaml
+- deploy/helm/aegis/templates/hpa.yaml
+- deploy/helm/aegis/templates/pdb.yaml
+- deploy/helm/aegis/templates/serviceaccount.yaml
+- deploy/helm/aegis/templates/pvc.yaml
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -192,6 +245,8 @@ Final Response + Follow-ups to User
 - ✅ InMemoryUsageAnalyticsService (usage metrics and trends)
 - ✅ InMemoryDataExporter (JSON, CSV, PDF, DOCX, Excel exports)
 - ✅ InMemoryAdminDashboardService (system health, dashboard)
+- ✅ InMemoryRAGEvaluator (RAGAS-style quality evaluation)
+- ✅ InMemoryPerformanceBenchmark (load testing and benchmarking)
 
 ## 📊 Test Commands
 

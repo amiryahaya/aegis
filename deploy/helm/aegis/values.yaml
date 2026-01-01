@@ -1,0 +1,196 @@
+# Default values for aegis
+# This is a YAML-formatted file.
+
+replicaCount: 3
+
+image:
+  repository: aegis/api
+  pullPolicy: IfNotPresent
+  tag: ""  # Overrides the image tag whose default is the chart appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: aegis.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: aegis-tls
+      hosts:
+        - aegis.example.com
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+pdb:
+  enabled: true
+  minAvailable: 2
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: aegis
+          topologyKey: kubernetes.io/hostname
+
+# Application configuration
+config:
+  aspnetEnvironment: Production
+  logLevel: Information
+
+  # LLM Settings
+  llm:
+    provider: Ollama
+    ollamaBaseUrl: http://aegis-ollama:11434
+    defaultModel: llama3.2
+    embeddingModel: nomic-embed-text
+
+  # Cache Settings
+  cache:
+    semanticCache:
+      enabled: true
+      similarityThreshold: 0.95
+    embeddingCache:
+      enabled: true
+    responseCache:
+      enabled: true
+
+  # Rate Limiting
+  rateLimiting:
+    requestsPerMinute: 60
+    requestsPerHour: 1000
+
+  # Security
+  security:
+    enableInputSanitization: true
+    enableContentFiltering: true
+
+# Secrets (use external secrets in production)
+secrets:
+  create: true
+  # Database password
+  dbPassword: ""
+  # JWT Secret
+  jwtSecret: ""
+  # Admin password
+  adminPassword: ""
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+# PostgreSQL subchart configuration
+postgresql:
+  enabled: true
+  auth:
+    database: aegis
+    username: aegis
+    existingSecret: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 50Gi
+
+# Qdrant subchart configuration
+qdrant:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 100Gi
+
+# Health probes
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    path: /health/startup
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+# Metrics and monitoring
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
