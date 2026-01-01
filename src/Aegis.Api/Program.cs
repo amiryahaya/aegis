@@ -30,6 +30,24 @@ try
         .AddApiServices(builder.Configuration)
         .AddObservability(builder.Configuration);
 
+    // Configure CORS for frontend
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy
+                .WithOrigins(
+                    "http://localhost:3000",
+                    "http://localhost:3001",
+                    "http://aegis-web",
+                    "http://aegis-web:80"
+                )
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+    });
+
     // Configure JSON serialization
     builder.Services.ConfigureHttpJsonOptions(options =>
     {
@@ -41,6 +59,7 @@ try
     // Configure middleware pipeline
     app.UseExceptionHandler();
     app.UseSerilogRequestLogging();
+    app.UseCors("AllowFrontend");
 
     if (app.Environment.IsDevelopment())
     {

@@ -305,6 +305,34 @@ services:
     networks:
       - aegis-network
 
+  # =============================================================================
+  # AEGIS WEB FRONTEND
+  # Vue 3 + TailwindCSS frontend (Sprint 51-52)
+  # =============================================================================
+
+  aegis-web:
+    build:
+      context: ../src/Aegis.Web
+      dockerfile: Dockerfile
+    container_name: aegis-web
+    ports:
+      - "${WEB_PORT:-3001}:80"
+    environment:
+      VITE_API_URL: "/api"
+      VITE_SIGNALR_URL: "/hubs"
+    depends_on:
+      aegis-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - aegis-network
+    restart: unless-stopped
+
 networks:
   aegis-network:
     driver: bridge
