@@ -5,6 +5,7 @@ export * from './api'
 export * from './notification'
 export * from './admin'
 export * from './search'
+export * from './profile'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

@@ -7,7 +7,9 @@ import {
   SunIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  Cog6ToothIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -124,8 +126,39 @@ function logout() {
         >
           <MenuItems class="absolute right-0 mt-2 w-48 origin-top-right rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
             <MenuItem v-slot="{ active }">
-              <button
+              <RouterLink
+                to="/profile"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm"
+                :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+              >
+                <UserCircleIcon class="h-5 w-5" />
+                Profile
+              </RouterLink>
+            </MenuItem>
+            <MenuItem v-slot="{ active }">
+              <RouterLink
+                to="/settings"
+                class="flex w-full items-center gap-2 px-4 py-2 text-sm"
+                :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+              >
+                <Cog6ToothIcon class="h-5 w-5" />
+                Settings
+              </RouterLink>
+            </MenuItem>
+            <MenuItem v-slot="{ active }">
+              <RouterLink
+                to="/help"
+                class="flex w-full items-center gap-2 px-4 py-2 text-sm"
+                :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+              >
+                <QuestionMarkCircleIcon class="h-5 w-5" />
+                Help
+              </RouterLink>
+            </MenuItem>
+            <div class="border-t border-gray-200 dark:border-gray-700 my-1" />
+            <MenuItem v-slot="{ active }">
+              <button
+                class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400"
                 :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
                 @click="logout"
               >

@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 2, 2026
-**Last Commit:** Sprint 57-58: Global Search & Document Preview UI
+**Last Commit:** Sprint 59-60: User Profile & Help Center UI
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -260,6 +260,23 @@
 - Document metadata sidebar (workspace, uploader, file size, word count)
 - Updated router with /search route
 - **Files Added:** 5 new Vue/TypeScript files (SearchView, search.ts store, search.ts types, DocumentPreviewModal)
+
+#### Sprint 59-60: User Profile & Help Center UI ✅
+- ProfileView with tabbed interface (Profile, Activity, API Keys, Security)
+- Profile store with Pinia for user profile, stats, and API key management
+- Profile types for user details, stats, activity, and API keys
+- Avatar upload and removal with hover overlay
+- User stats display (total sessions, queries, workspaces, response times)
+- Top workspaces usage display
+- API key management (create, view, revoke) with scope selection
+- Password change functionality
+- Account deletion with confirmation
+- HelpView with getting started guide, keyboard shortcuts, and FAQ
+- Keyboard shortcuts composable with navigation, search, and general shortcuts
+- Multi-key shortcuts support (e.g., "g h" for go to home)
+- FAQ with search functionality and accordion display
+- User menu updated with Profile, Settings, Help links
+- **Files Added:** 6 new Vue/TypeScript files (ProfileView, HelpView, profile.ts store, profile.ts types, useKeyboardShortcuts.ts)
 
 ### Current Statistics
 - **Total Unit Tests Passing:** 865 (844 unit + 21 architecture)
@@ -686,6 +703,26 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added search types export)
 - src/Aegis.Web/src/router/index.ts (added /search route)
 
+### Files Created (Sprint 59-60)
+
+**Types:**
+- src/Aegis.Web/src/types/profile.ts (UserProfile, UserStats, ApiKeyInfo, HelpArticle, KeyboardShortcut, FAQ types)
+
+**Stores:**
+- src/Aegis.Web/src/stores/profile.ts (profile state, stats, API keys, avatar, password)
+
+**Views:**
+- src/Aegis.Web/src/views/ProfileView.vue (tabbed profile with activity, API keys, security)
+- src/Aegis.Web/src/views/HelpView.vue (getting started, keyboard shortcuts, FAQ)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useKeyboardShortcuts.ts (navigation, search, theme shortcuts)
+
+**Updated Files:**
+- src/Aegis.Web/src/components/common/AppHeader.vue (user menu with Profile, Settings, Help links)
+- src/Aegis.Web/src/types/index.ts (added profile types export)
+- src/Aegis.Web/src/router/index.ts (added /profile and /help routes)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -844,10 +881,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 59-60: User Profile & Help Center UI
   - Sprint 57-58: Global Search & Document Preview UI
   - Sprint 55-56: Settings & Admin Dashboard UI
   - Sprint 53-54: SignalR Streaming & Extended Frontend
-  - Sprint 51-52: Vue 3 + TailwindCSS Frontend
 
 ## 💡 Tips for Next Session
 
