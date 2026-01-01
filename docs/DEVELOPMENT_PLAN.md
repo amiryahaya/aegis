@@ -2429,6 +2429,15 @@ public class VectorSearchPlugin
 - [x] Session Management & Conversation Context (Sprint 47-48: Session lifecycle, context building, topic detection)
 - [x] Collaboration & Real-Time Features (Sprint 49-50: Workspace sharing, presence, comments, activity feed)
 
+### Vue 3 Frontend Sprints (Phase 5)
+
+- [x] Vue 3 + TailwindCSS Frontend Core (Sprint 51-52: Vite 5, Headless UI, Pinia, Vue Router, Auth, Chat, Sessions)
+- [x] SignalR Streaming & Extended Frontend (Sprint 53-54: Real-time streaming, Workspaces, Notifications, Documents)
+- [x] Settings & Admin Dashboard UI (Sprint 55-56: User preferences, Admin dashboard, System health, Metrics)
+- [x] Global Search & Document Preview UI (Sprint 57-58: Full-text search, Filters, Document preview modal)
+- [x] User Profile & Help Center UI (Sprint 59-60: Profile management, API keys, Keyboard shortcuts, FAQ)
+- [x] Activity Feed & Comments UI (Sprint 61-62: Activity feed, Comments with reactions, Presence indicators)
+
 ---
 
 ## Architecture Tests

@@ -17,6 +17,21 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 61-62: Activity Feed & Comments UI ✅ (January 2026)
+- **Activity Feed** - View activity across workspaces with filtering and tabs
+- **Comments System** - Threaded discussions with @mentions and reactions
+- **Presence Indicators** - Real-time "who's viewing" for resources
+- **8 Emoji Reactions** - Like, Love, Laugh, Celebrate, Insightful, Question, Agree, Disagree
+
+### Vue 3 Frontend (Sprint 51-62) ✅
+Complete Vue 3 + TailwindCSS frontend with:
+- Chat interface with SignalR streaming
+- Session and workspace management
+- Admin dashboard with metrics
+- Global search and document preview
+- User profile and API key management
+- Keyboard shortcuts and dark mode
+
 ### UUID v7 Migration (December 2025)
 - **Time-Ordered Identifiers** - All entities use UUID v7 for better database performance
 - **PostgreSQL 18** - Upgraded to latest PostgreSQL with native optimizations
@@ -333,13 +348,29 @@ Aegis.sln
 | API Testing | Alba | HTTP endpoint testing |
 | Coverage | Coverlet | Code coverage reports |
 
-### Frontend
+### Frontend (Vue 3 + TailwindCSS)
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| Web UI | Blazor WebAssembly/Server | Interactive web application |
-| UI Components | MudBlazor | Material Design components |
-| Graph Visualization | Blazor.Diagrams | Knowledge graph display |
-| Charts | ApexCharts.Blazor | Analytics dashboards |
+| Web UI | Vue 3 + Vite 5 | Interactive web application |
+| UI Components | Headless UI + TailwindCSS | Accessible component library |
+| State Management | Pinia | Reactive state stores |
+| Routing | Vue Router 4 | SPA navigation with guards |
+| Real-time | SignalR | WebSocket streaming |
+| Icons | Heroicons | SVG icon library |
+| HTTP Client | Axios | API communication |
+
+**Frontend Features (Sprint 51-62):**
+- Chat interface with streaming responses
+- Session management (CRUD, export, filtering)
+- Workspace management with data sources
+- Document upload and preview
+- Global search with filters
+- Admin dashboard with metrics
+- User profile and API key management
+- Activity feed with threaded comments
+- Presence indicators (who's viewing)
+- Keyboard shortcuts
+- Dark mode support
 
 ## Key Patterns
 
