@@ -243,6 +243,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INotificationService, Aegis.Infrastructure.Services.Notifications.InMemoryNotificationService>();
         services.AddScoped<Aegis.Infrastructure.Services.Jobs.NotificationDispatcherJob>();
 
+        // Register session services (Sprint 47-48)
+        services.AddSingleton<ISessionService, Aegis.Infrastructure.Services.Sessions.InMemorySessionService>();
+        services.AddScoped<IConversationContextService, Aegis.Infrastructure.Services.Sessions.ConversationContextService>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
