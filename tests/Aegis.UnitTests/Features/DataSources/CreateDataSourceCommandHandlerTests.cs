@@ -139,7 +139,7 @@ public class CreateDataSourceCommandHandlerTests
             TeamId: teamId,
             CreatedBy: Guid.NewGuid(),
             Description: "API source",
-            Type: "Api",
+            Type: "RestApi",
             WorkspaceId: null);
 
         _teamRepository.ExistsAsync(teamId, Arg.Any<CancellationToken>()).Returns(true);
