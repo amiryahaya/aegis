@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** 3cfa139 - Sprint 39-40: API Resilience & Versioning
+**Last Commit:** Sprint 41-42: Webhook & Event System
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -116,8 +116,22 @@
 - **Total: 16 new tests passing**
 - **Commit:** 3cfa139
 
+#### Sprint 41-42: Webhook & Event System ✅
+- IWebhookService interface for webhook subscription management
+- IEventPublisher interface for domain event publishing with webhook delivery
+- 17 WebhookEventType definitions (Document, Query, DataSource, System, User events)
+- DomainEvent base class with specific event records (DocumentUploaded, QueryCompleted, etc.)
+- InMemoryWebhookService with registration, update, delete, delivery, retry, and health tracking (26 tests)
+- InMemoryEventPublisher with in-memory handlers and webhook integration (16 tests)
+- WebhookRetryService for automatic retry of failed deliveries
+- HMAC-SHA256 signature verification for webhook security
+- Exponential backoff for retry policies (1s, 2s, 4s, 8s, etc.)
+- Webhook API endpoints with Carter (register, update, delete, list, test, delivery history)
+- Full CQRS pattern with MediatR for webhook commands/queries
+- **Total: 42 new tests passing**
+
 ### Current Statistics
-- **Total Unit Tests Passing:** 656 (635 unit + 21 architecture)
+- **Total Unit Tests Passing:** 698 (677 unit + 21 architecture)
 - **Test Coverage:** >80% maintained
 - **Build Status:** ✅ Passing
 - **Warnings:** 0
@@ -345,6 +359,38 @@ Potential future work:
 **Updated Files:**
 - src/Aegis.Domain/Common/Error.cs (added ServiceUnavailable, Timeout, TooManyRequests)
 
+### Files Created (Sprint 41-42)
+
+**Domain Interfaces:**
+- src/Aegis.Domain/Services/IWebhookService.cs (webhook management interface)
+- src/Aegis.Domain/Services/IEventPublisher.cs (domain event publishing interface with event types)
+
+**Webhook Infrastructure:**
+- src/Aegis.Infrastructure/Services/Webhooks/InMemoryWebhookService.cs
+- src/Aegis.Infrastructure/Services/Webhooks/InMemoryEventPublisher.cs
+- src/Aegis.Infrastructure/Services/Webhooks/WebhookRetryService.cs
+
+**API Features (CQRS with MediatR):**
+- src/Aegis.Api/Features/Webhooks/WebhookModule.cs (Carter endpoints)
+- src/Aegis.Api/Features/Webhooks/Register/RegisterWebhookCommand.cs
+- src/Aegis.Api/Features/Webhooks/Register/RegisterWebhookCommandHandler.cs
+- src/Aegis.Api/Features/Webhooks/Update/UpdateWebhookCommand.cs
+- src/Aegis.Api/Features/Webhooks/Update/UpdateWebhookCommandHandler.cs
+- src/Aegis.Api/Features/Webhooks/Delete/DeleteWebhookCommand.cs
+- src/Aegis.Api/Features/Webhooks/Delete/DeleteWebhookCommandHandler.cs
+- src/Aegis.Api/Features/Webhooks/Get/GetWebhookQuery.cs
+- src/Aegis.Api/Features/Webhooks/Get/GetWebhookQueryHandler.cs
+- src/Aegis.Api/Features/Webhooks/List/ListWebhooksQuery.cs
+- src/Aegis.Api/Features/Webhooks/List/ListWebhooksQueryHandler.cs
+- src/Aegis.Api/Features/Webhooks/Test/TestWebhookCommand.cs
+- src/Aegis.Api/Features/Webhooks/Test/TestWebhookCommandHandler.cs
+- src/Aegis.Api/Features/Webhooks/DeliveryHistory/GetDeliveryHistoryQuery.cs
+- src/Aegis.Api/Features/Webhooks/DeliveryHistory/GetDeliveryHistoryQueryHandler.cs
+
+**Tests:**
+- tests/Aegis.UnitTests/Services/Webhooks/WebhookServiceTests.cs (26 tests)
+- tests/Aegis.UnitTests/Services/Webhooks/EventPublisherTests.cs (16 tests)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -411,6 +457,10 @@ Final Response + Follow-ups to User
 - ✅ Rate limiting middleware (X-RateLimit headers)
 - ✅ PollyResilienceService (circuit breaker, retry, timeout)
 - ✅ Resilient HTTP clients (OpenAI, Cohere, Ollama, Qdrant)
+- ✅ InMemoryWebhookService (webhook subscription management)
+- ✅ InMemoryEventPublisher (domain event publishing with webhook delivery)
+- ✅ WebhookRetryService (automatic retry of failed deliveries)
+- ✅ Webhook API endpoints (/api/webhooks)
 
 ## 📊 Test Commands
 

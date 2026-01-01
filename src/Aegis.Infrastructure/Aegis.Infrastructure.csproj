@@ -44,7 +44,8 @@
     <!-- Object Storage -->
     <PackageReference Include="Minio" Version="6.0.4" />
 
-    <!-- HTTP -->
+    <!-- HTTP & Hosting -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.1" />
