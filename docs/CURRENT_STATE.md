@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** c6fc73e - Sprint 35-36: Grafana Dashboards & Alerting
+**Last Commit:** 31e7064 - Sprint 37-38: Background Jobs & Async Processing
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -90,8 +90,21 @@
 - Alert categories: API, Query, LLM, Cache, Auth, System, Documents
 - **Commit:** baec73f
 
+#### Sprint 37-38: Background Jobs & Async Processing ✅
+- Hangfire integration with PostgreSQL storage for background job processing
+- HangfireBackgroundJobService for job enqueueing, scheduling, status tracking (6 tests)
+- DocumentProcessingJob for async document ingestion with chunking and embedding
+- EmbeddingGenerationJob for vector database updates
+- DataSourceSyncJob for scheduled data source synchronization
+- CleanupJob for cache eviction and audit log archiving (10 tests)
+- Queue prioritization (critical, default, low) with automatic retry policies
+- Hangfire dashboard at /hangfire for job monitoring
+- Enhanced cache interfaces with stats and eviction methods
+- **Total: 16 new tests passing**
+- **Commit:** 31e7064
+
 ### Current Statistics
-- **Total Unit Tests Passing:** 624 (603 unit + 21 architecture)
+- **Total Unit Tests Passing:** 640 (619 unit + 21 architecture)
 - **Test Coverage:** >80% maintained
 - **Build Status:** ✅ Passing
 - **Warnings:** 0
@@ -268,6 +281,36 @@ Potential future work:
 **Alerting:**
 - docker/prometheus-alerts.yml (comprehensive alerting rules)
 
+### Files Created (Sprint 37-38)
+
+**Domain Interfaces:**
+- src/Aegis.Domain/Services/IBackgroundJobService.cs (job management interface)
+- src/Aegis.Domain/Services/IDocumentProcessingJob.cs (job interfaces for processing pipeline)
+
+**Background Jobs Infrastructure:**
+- src/Aegis.Infrastructure/Services/Jobs/HangfireBackgroundJobService.cs
+- src/Aegis.Infrastructure/Services/Jobs/DocumentProcessingJob.cs
+- src/Aegis.Infrastructure/Services/Jobs/DataSourceSyncJob.cs
+- src/Aegis.Infrastructure/Services/Jobs/CleanupJob.cs
+
+**API Configuration:**
+- src/Aegis.Api/Extensions/HangfireExtensions.cs (Hangfire setup with PostgreSQL)
+
+**Tests:**
+- tests/Aegis.UnitTests/Services/Jobs/BackgroundJobServiceTests.cs (6 tests)
+- tests/Aegis.UnitTests/Services/Jobs/CleanupJobTests.cs (10 tests)
+
+**Updated Interfaces:**
+- src/Aegis.Domain/Services/ISemanticCache.cs (added GetStatsAsync, EvictExpiredAsync)
+- src/Aegis.Domain/Services/IEmbeddingCache.cs (added GetStatsAsync, EvictExpiredAsync)
+- src/Aegis.Domain/Services/IResponseCache.cs (added GetStatsAsync, EvictExpiredAsync)
+- src/Aegis.Domain/Services/IAuditLogService.cs (added ArchiveLogsBeforeAsync)
+- src/Aegis.Domain/Repositories/IDataSourceRepository.cs (added GetDueSyncAsync)
+- src/Aegis.Domain/Repositories/IDocumentRepository.cs (added GetPendingProcessingAsync)
+
+**Docker Compose Updates:**
+- docker/docker-compose.yml (Hangfire dashboard configuration)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -325,6 +368,11 @@ Final Response + Follow-ups to User
 - ✅ AegisMetrics (custom application metrics)
 - ✅ Grafana dashboards (Overview, API Performance, LLM & RAG)
 - ✅ Prometheus alerting rules (7 alert groups, 15+ rules)
+- ✅ HangfireBackgroundJobService (background job management)
+- ✅ DocumentProcessingJob (async document ingestion)
+- ✅ DataSourceSyncJob (scheduled data source sync)
+- ✅ CleanupJob (cache eviction, audit log archiving)
+- ✅ Hangfire dashboard (/hangfire)
 
 ## 📊 Test Commands
 
@@ -390,9 +438,9 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
-  - c3c29b4: Sprint 21-22 (Planning & Orchestration)
-  - ac8d5e6: Sprint 19-20 (Semantic Kernel Integration)
-  - 0f69e51: UUID v7 documentation update
+  - 31e7064: Sprint 37-38 (Background Jobs & Async Processing)
+  - c6fc73e: Sprint 35-36 (Grafana Dashboards & Alerting)
+  - 429efd7: Sprint 33-34 (Containerization & Observability)
 
 ## 💡 Tips for Next Session
 

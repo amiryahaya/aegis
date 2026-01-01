@@ -13,4 +13,9 @@ public interface IDataSourceRepository
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> NameExistsInTeamAsync(string name, Guid teamId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get data sources that are due for sync (nextSyncAt <= now)
+    /// </summary>
+    Task<IReadOnlyList<DataSource>> GetDueSyncAsync(CancellationToken cancellationToken = default);
 }

@@ -68,6 +68,17 @@ public interface IEmbeddingCache
     /// <returns>Cache statistics</returns>
     Task<Result<EmbeddingCacheStatistics>> GetStatisticsAsync(
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get cache stats summary
+    /// </summary>
+    Task<Result<EmbeddingCacheStatistics>> GetStatsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Evict expired cache entries
+    /// </summary>
+    /// <returns>Number of entries evicted</returns>
+    Task<Result<int>> EvictExpiredAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>

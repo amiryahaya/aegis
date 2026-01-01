@@ -205,6 +205,42 @@ public class InMemoryResponseCache : IResponseCache
         }
     }
 
+    public Task<Result<ResponseCacheStatistics>> GetStatsAsync(CancellationToken cancellationToken = default)
+    {
+        return GetStatisticsAsync(cancellationToken);
+    }
+
+    public Task<Result<int>> EvictExpiredAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var keysToRemove = new List<string>();
+            var now = DateTime.UtcNow;
+
+            foreach (var (key, entry) in _cache)
+            {
+                if (entry.ExpiresAt.HasValue && entry.ExpiresAt.Value < now)
+                {
+                    keysToRemove.Add(key);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                _cache.TryRemove(key, out _);
+            }
+
+            _logger.LogDebug("Evicted {Count} expired response cache entries", keysToRemove.Count);
+
+            return Task.FromResult(Result<int>.Success(keysToRemove.Count));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error evicting expired cache entries");
+            return Task.FromResult(Result<int>.Failure(Error.Internal("ResponseCache.Error", ex.Message)));
+        }
+    }
+
     private string GenerateKey(ResponseCacheRequest request)
     {
         var keyParts = new StringBuilder();

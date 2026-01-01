@@ -190,6 +190,42 @@ public class InMemorySemanticCache : ISemanticCache
         }
     }
 
+    public Task<Result<CacheStatistics>> GetStatsAsync(CancellationToken cancellationToken = default)
+    {
+        return GetStatisticsAsync(null, cancellationToken);
+    }
+
+    public Task<Result<int>> EvictExpiredAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var keysToRemove = new List<string>();
+            var now = DateTime.UtcNow;
+
+            foreach (var (key, entry) in _cache)
+            {
+                if (entry.ExpiresAt.HasValue && entry.ExpiresAt.Value < now)
+                {
+                    keysToRemove.Add(key);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                _cache.TryRemove(key, out _);
+            }
+
+            _logger.LogDebug("Evicted {Count} expired semantic cache entries", keysToRemove.Count);
+
+            return Task.FromResult(Result<int>.Success(keysToRemove.Count));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error evicting expired cache entries");
+            return Task.FromResult(Result<int>.Failure(Error.Internal("SemanticCache.Error", ex.Message)));
+        }
+    }
+
     private CacheEntry? FindBestMatch(float[] queryEmbedding, Guid? workspaceId, double threshold)
     {
         CacheEntry? bestMatch = null;

@@ -14,4 +14,9 @@ public interface IDocumentRepository
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> GetCountByDataSourceIdAsync(Guid dataSourceId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get documents pending processing for a specific data source
+    /// </summary>
+    Task<IReadOnlyList<Document>> GetPendingProcessingAsync(Guid dataSourceId, CancellationToken cancellationToken = default);
 }

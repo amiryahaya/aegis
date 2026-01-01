@@ -89,6 +89,7 @@ services:
 
   # =============================================================================
   # AEGIS API
+  # Includes Hangfire dashboard at /hangfire (configurable via HANGFIRE_DASHBOARD_PATH)
   # =============================================================================
 
   aegis-api:
@@ -113,6 +114,8 @@ services:
       Jwt__Audience: "${JWT_AUDIENCE:-aegis-client}"
       OpenAI__ApiKey: "${OPENAI_API_KEY:-}"
       Cohere__ApiKey: "${COHERE_API_KEY:-}"
+      # Hangfire Background Jobs
+      Hangfire__DashboardPath: "${HANGFIRE_DASHBOARD_PATH:-/hangfire}"
     depends_on:
       postgres:
         condition: service_healthy

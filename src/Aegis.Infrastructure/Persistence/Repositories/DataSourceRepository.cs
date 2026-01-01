@@ -166,6 +166,26 @@ public class DataSourceRepository : IDataSourceRepository
         return await connection.ExecuteScalarAsync<bool>(sql, new { Name = name, TeamId = teamId });
     }
 
+    public async Task<IReadOnlyList<DataSource>> GetDueSyncAsync(CancellationToken cancellationToken = default)
+    {
+        // Get data sources that are due for sync based on status and last indexed time
+        // For now, return active data sources that haven't been indexed in the last hour
+        const string sql = """
+            SELECT id, name, description, team_id, workspace_id, type, status, created_by,
+                   settings, document_count, total_size_bytes, last_indexed_at, created_at, updated_at
+            FROM data_sources
+            WHERE status = 'Active'
+              AND (last_indexed_at IS NULL OR last_indexed_at < @DueTime)
+            ORDER BY last_indexed_at ASC NULLS FIRST
+            LIMIT 10
+            """;
+
+        await using var connection = CreateConnection();
+        var records = await connection.QueryAsync<DataSourceRecord>(sql, new { DueTime = DateTime.UtcNow.AddHours(-1) });
+
+        return records.Select(r => r.ToDataSource()).ToList();
+    }
+
     private record DataSourceRecord(
         Guid Id,
         string Name,

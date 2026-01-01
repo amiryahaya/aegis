@@ -48,6 +48,16 @@ public interface IAuditLogService
     Task<Result<int>> PurgeAsync(
         AuditPurgeRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Archive audit logs before a specific date
+    /// </summary>
+    /// <param name="beforeDate">Archive logs before this date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of logs archived</returns>
+    Task<Result<int>> ArchiveLogsBeforeAsync(
+        DateTime beforeDate,
+        CancellationToken cancellationToken = default);
 }
 
 #region Request/Response Records

@@ -47,6 +47,17 @@ public interface ISemanticCache
     Task<Result<CacheStatistics>> GetStatisticsAsync(
         Guid? workspaceId = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get cache stats summary
+    /// </summary>
+    Task<Result<CacheStatistics>> GetStatsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Evict expired cache entries
+    /// </summary>
+    /// <returns>Number of entries evicted</returns>
+    Task<Result<int>> EvictExpiredAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>

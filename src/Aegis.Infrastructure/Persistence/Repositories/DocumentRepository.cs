@@ -190,6 +190,24 @@ public class DocumentRepository : IDocumentRepository
         return await connection.ExecuteScalarAsync<int>(sql, new { DataSourceId = dataSourceId });
     }
 
+    public async Task<IReadOnlyList<Document>> GetPendingProcessingAsync(Guid dataSourceId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT id, file_name, title, content_type, size_bytes, storage_path, content, external_id,
+                   data_source_id, uploaded_by, status, error_message, chunk_count, processed_at, metadata, created_at, updated_at
+            FROM documents
+            WHERE data_source_id = @DataSourceId
+              AND status IN ('Pending', 'Uploaded')
+            ORDER BY created_at ASC
+            LIMIT 100
+            """;
+
+        await using var connection = CreateConnection();
+        var records = await connection.QueryAsync<DocumentRecord>(sql, new { DataSourceId = dataSourceId });
+
+        return records.Select(r => r.ToDocument()).ToList();
+    }
+
     private record DocumentRecord(
         Guid Id,
         string File_Name,

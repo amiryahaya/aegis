@@ -369,6 +369,36 @@ public class InMemoryAuditLogService : IAuditLogService
         }
     }
 
+    public Task<Result<int>> ArchiveLogsBeforeAsync(DateTime beforeDate, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // In-memory implementation just counts entries that would be archived
+            // A real implementation would move entries to cold storage
+            var entriesToArchive = _entries.Values
+                .Where(e => e.Timestamp < beforeDate)
+                .ToList();
+
+            var count = entriesToArchive.Count;
+
+            // For now, just remove from active memory (simulating archive)
+            foreach (var entry in entriesToArchive)
+            {
+                _entries.TryRemove(entry.Id, out _);
+            }
+
+            _logger.LogInformation("Archived {Count} audit log entries before {Date}", count, beforeDate);
+
+            return Task.FromResult(Result.Success(count));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to archive audit logs");
+            return Task.FromResult(Result.Failure<int>(
+                Error.Internal("AuditLog.ArchiveFailed", "Failed to archive audit logs")));
+        }
+    }
+
     #region Private Methods
 
     private static byte[] ExportToJson(List<AuditLogEntry> entries, AuditExportRequest request)
