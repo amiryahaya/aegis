@@ -221,6 +221,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEmbeddingCache, Aegis.Infrastructure.Services.Caching.InMemoryEmbeddingCache>();
         services.AddSingleton<IResponseCache, Aegis.Infrastructure.Services.Caching.InMemoryResponseCache>();
 
+        // Register admin & reporting services (Sprint 27-28)
+        services.AddSingleton<IAuditLogService, Aegis.Infrastructure.Services.Admin.InMemoryAuditLogService>();
+        services.AddSingleton<IUsageAnalyticsService, Aegis.Infrastructure.Services.Admin.InMemoryUsageAnalyticsService>();
+        services.AddScoped<IDataExporter, Aegis.Infrastructure.Services.Admin.InMemoryDataExporter>();
+        services.AddSingleton<IAdminDashboardService, Aegis.Infrastructure.Services.Admin.InMemoryAdminDashboardService>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
