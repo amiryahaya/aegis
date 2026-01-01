@@ -167,6 +167,7 @@ public static class ServiceCollectionExtensions
 
         // Register agent orchestration services
         services.AddScoped<IPlannerAgent, PlannerAgent>();
+        services.AddScoped<IEvaluatorAgent, EvaluatorAgent>();
         services.AddScoped<IAgent, RetrieverAgent>(sp => new RetrieverAgent(
             sp.GetRequiredService<ISemanticSearchService>(),
             sp.GetRequiredService<IKeywordSearchService>(),
@@ -177,9 +178,21 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAgent, SynthesizerAgent>(sp => new SynthesizerAgent(
             sp.GetRequiredService<ILLMService>(),
             sp.GetRequiredService<ILogger<SynthesizerAgent>>()));
+        services.AddScoped<IAgent, EvaluatorAgent>(sp => new EvaluatorAgent(
+            sp.GetRequiredService<ILLMService>(),
+            sp.GetRequiredService<ILogger<EvaluatorAgent>>()));
 
         // Register working memory service
         services.AddSingleton<IWorkingMemory, WorkingMemoryService>();
+
+        // Register refinement loop for iterative response improvement
+        services.AddScoped<IRefinementLoop, RefinementLoop>();
+
+        // Register reasoning trace logger (singleton to persist traces across requests)
+        services.AddSingleton<IReasoningTraceLogger, ReasoningTraceLogger>();
+
+        // Register follow-up question generator
+        services.AddScoped<IFollowUpGenerator, FollowUpGenerator>();
 
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
@@ -189,7 +202,8 @@ public static class ServiceCollectionExtensions
                 { "Planner", sp.GetRequiredService<IPlannerAgent>() as IAgent },
                 { "Retriever", sp.GetServices<IAgent>().First(a => a.AgentType == "Retriever") },
                 { "Analyzer", sp.GetServices<IAgent>().First(a => a.AgentType == "Analyzer") },
-                { "Synthesizer", sp.GetServices<IAgent>().First(a => a.AgentType == "Synthesizer") }
+                { "Synthesizer", sp.GetServices<IAgent>().First(a => a.AgentType == "Synthesizer") },
+                { "Evaluator", sp.GetRequiredService<IEvaluatorAgent>() as IAgent }
             };
 
             return new TaskExecutor(
