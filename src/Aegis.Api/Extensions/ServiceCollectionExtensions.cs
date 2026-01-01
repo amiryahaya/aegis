@@ -194,6 +194,33 @@ public static class ServiceCollectionExtensions
         // Register follow-up question generator
         services.AddScoped<IFollowUpGenerator, FollowUpGenerator>();
 
+        // Register security services (Sprint 25-26)
+        services.AddScoped<IInputSanitizer, Aegis.Infrastructure.Services.Security.InputSanitizer>();
+        services.AddScoped<IContentFilter, Aegis.Infrastructure.Services.Security.ContentFilter>();
+        services.AddScoped<IApiKeyService, Aegis.Infrastructure.Services.Security.InMemoryApiKeyService>();
+
+        // Register rate limiter with default config
+        services.AddSingleton<IRateLimiter>(sp =>
+        {
+            var config = new RateLimitConfig
+            {
+                Name = "default",
+                Limits = new List<WindowLimit>
+                {
+                    new WindowLimit { WindowSeconds = 60, MaxRequests = 100 },    // 100 per minute
+                    new WindowLimit { WindowSeconds = 3600, MaxRequests = 1000 }  // 1000 per hour
+                }
+            };
+            return new Aegis.Infrastructure.Services.Security.InMemoryRateLimiter(
+                sp.GetRequiredService<ILogger<Aegis.Infrastructure.Services.Security.InMemoryRateLimiter>>(),
+                config);
+        });
+
+        // Register caching services (Sprint 25-26)
+        services.AddSingleton<ISemanticCache, Aegis.Infrastructure.Services.Caching.InMemorySemanticCache>();
+        services.AddSingleton<IEmbeddingCache, Aegis.Infrastructure.Services.Caching.InMemoryEmbeddingCache>();
+        services.AddSingleton<IResponseCache, Aegis.Infrastructure.Services.Caching.InMemoryResponseCache>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
