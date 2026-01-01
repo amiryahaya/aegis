@@ -12,7 +12,7 @@ import {
   TrashIcon,
   ArrowDownTrayIcon
 } from '@heroicons/vue/24/outline'
-import type { SessionStatus, SessionType, ExportFormat } from '@/types'
+import { SessionType, type SessionStatus, type ExportFormat } from '@/types'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -23,7 +23,7 @@ const statusFilter = ref<SessionStatus | ''>('')
 const typeFilter = ref<SessionType | ''>('')
 const showNewSessionDialog = ref(false)
 const newSessionTitle = ref('')
-const newSessionType = ref<SessionType>('QuickQuery')
+const newSessionType = ref<SessionType>(SessionType.QuickQuery)
 
 const filteredSessions = computed(() => {
   let sessions = sessionStore.sessions
@@ -126,7 +126,14 @@ function getTypeColor(type: SessionType): string {
   return colors[type] || colors.QuickQuery
 }
 
-const sessionTypes: SessionType[] = ['QuickQuery', 'Research', 'Analysis', 'Document', 'Exploration', 'Comparison']
+const sessionTypes: SessionType[] = [
+  SessionType.QuickQuery,
+  SessionType.Research,
+  SessionType.Analysis,
+  SessionType.Document,
+  SessionType.Exploration,
+  SessionType.Comparison
+]
 </script>
 
 <template>

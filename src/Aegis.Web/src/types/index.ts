@@ -2,6 +2,28 @@
 export * from './user'
 export * from './session'
 export * from './api'
+export * from './notification'
+
+// Re-export workspace types with explicit names to avoid conflicts
+export type {
+  WorkspaceSettings,
+  WorkspaceStats,
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+  DataSource,
+  DataSourceType,
+  DataSourceStatus,
+  DataSourceConfig,
+  CreateDataSourceRequest,
+  Document,
+  DocumentType,
+  DocumentStatus,
+  WorkspaceShare,
+  WorkspaceRole,
+  ShareableLink,
+  CreateShareableLinkRequest,
+  SearchMode
+} from './workspace'
 
 // Common types
 export interface PagedResponse<T> {

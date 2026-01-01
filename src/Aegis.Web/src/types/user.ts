@@ -3,6 +3,7 @@ export interface User {
   email: string
   name: string
   role: UserRole
+  teamId?: string
   isActive: boolean
   createdAt: string
   lastLoginAt?: string

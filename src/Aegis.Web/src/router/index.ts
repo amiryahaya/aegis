@@ -35,6 +35,24 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/workspaces',
+      name: 'workspaces',
+      component: () => import('@/views/WorkspacesView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/workspaces/:workspaceId',
+      name: 'workspace-detail',
+      component: () => import('@/views/WorkspaceDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notifications',
+      name: 'notifications',
+      component: () => import('@/views/NotificationsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/'
     }

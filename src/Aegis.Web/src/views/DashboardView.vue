@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
+import { SessionType } from '@/types'
 import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
@@ -28,7 +29,7 @@ async function startNewChat() {
   const session = await sessionStore.createSession({
     userId: authStore.user.id,
     title: 'New Conversation',
-    type: 'QuickQuery'
+    type: SessionType.QuickQuery
   })
 
   if (session) {

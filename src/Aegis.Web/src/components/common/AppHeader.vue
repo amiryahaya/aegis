@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import {
   Bars3Icon,
-  BellIcon,
   MoonIcon,
   SunIcon,
   UserCircleIcon,
@@ -11,6 +10,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import NotificationBell from '@/components/notifications/NotificationBell.vue'
 
 const emit = defineEmits<{
   toggleSidebar: []
@@ -68,10 +68,7 @@ function logout() {
       </button>
 
       <!-- Notifications -->
-      <button type="button" class="btn-ghost relative p-2">
-        <BellIcon class="h-5 w-5" />
-        <span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-      </button>
+      <NotificationBell />
 
       <!-- User menu -->
       <Menu as="div" class="relative">

@@ -7,10 +7,12 @@ import {
   HomeIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
-  PlusIcon
+  PlusIcon,
+  FolderIcon
 } from '@heroicons/vue/24/outline'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
+import { SessionType } from '@/types'
 
 defineProps<{
   open: boolean
@@ -28,7 +30,8 @@ const authStore = useAuthStore()
 const navigation = computed(() => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, current: route.path === '/' },
   { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, current: route.path.startsWith('/chat') },
-  { name: 'Sessions', href: '/sessions', icon: ClockIcon, current: route.path === '/sessions' }
+  { name: 'Sessions', href: '/sessions', icon: ClockIcon, current: route.path === '/sessions' },
+  { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') }
 ])
 
 async function createNewSession() {
@@ -37,7 +40,7 @@ async function createNewSession() {
   const session = await sessionStore.createSession({
     userId: authStore.user.id,
     title: 'New Conversation',
-    type: 'QuickQuery' as const
+    type: SessionType.QuickQuery
   })
 
   if (session) {

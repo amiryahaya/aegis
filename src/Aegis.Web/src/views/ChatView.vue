@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
+import { useQueryStream } from '@/composables/useSignalR'
 import {
   PencilIcon,
   TrashIcon,
@@ -12,12 +13,13 @@ import {
   EllipsisVerticalIcon
 } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import type { SessionTurn, ExportFormat } from '@/types'
+import { SessionType, type ExportFormat } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
+const { connectionState, streamState, connect, disconnect, streamQuery, resetStream } = useQueryStream()
 
 const chatContainerRef = ref<HTMLDivElement>()
 const chatInputRef = ref<InstanceType<typeof ChatInput>>()
@@ -25,6 +27,7 @@ const isLoading = ref(false)
 const streamingTurnId = ref<string | null>(null)
 const isEditingTitle = ref(false)
 const editTitle = ref('')
+const streamingResponse = ref('')
 
 const sessionId = computed(() => route.params.sessionId as string | undefined)
 
@@ -42,8 +45,47 @@ watch(sessionId, async (id) => {
   }
 }, { immediate: true })
 
-onMounted(() => {
+onMounted(async () => {
   chatInputRef.value?.focus()
+  await connect()
+})
+
+onUnmounted(() => {
+  disconnect()
+})
+
+// Watch for streaming updates
+watch(() => streamState.value.fullResponse, (newResponse) => {
+  streamingResponse.value = newResponse
+  scrollToBottom()
+})
+
+watch(() => streamState.value.isStreaming, async (isStreaming) => {
+  if (!isStreaming && streamState.value.fullResponse && streamingTurnId.value) {
+    // Stream complete - save the response
+    const sid = sessionId.value
+    if (sid) {
+      const citations = streamState.value.citations.map(c => ({
+        documentId: c.documentId,
+        documentName: `Document ${c.chunkIndex}`,
+        relevanceScore: c.score,
+        excerpt: c.text.slice(0, 200)
+      }))
+
+      await sessionStore.completeTurn(
+        sid,
+        streamingTurnId.value,
+        streamState.value.fullResponse,
+        citations,
+        ['What are the key takeaways?', 'Can you provide more details?']
+      )
+    }
+
+    isLoading.value = false
+    streamingTurnId.value = null
+    resetStream()
+    scrollToBottom()
+  }
 })
 
 async function handleSend(query: string) {
@@ -55,7 +97,7 @@ async function handleSend(query: string) {
     const session = await sessionStore.createSession({
       userId: authStore.user.id,
       title: query.slice(0, 50) + (query.length > 50 ? '...' : ''),
-      type: 'QuickQuery'
+      type: SessionType.QuickQuery
     })
     if (!session) return
     sid = session.id
@@ -63,6 +105,7 @@ async function handleSend(query: string) {
   }
 
   isLoading.value = true
+  resetStream()
 
   // Add the turn (user query)
   const turn = await sessionStore.addTurn(sid, { query })
@@ -74,36 +117,47 @@ async function handleSend(query: string) {
   streamingTurnId.value = turn.id
   scrollToBottom()
 
-  // Simulate streaming response (in real implementation, use SignalR)
-  // For now, we'll call the complete endpoint
-  try {
-    // In a real implementation, this would connect to SignalR for streaming
-    // For demo, we simulate with a timeout and mock response
-    await new Promise(resolve => setTimeout(resolve, 1500))
+  // Use SignalR streaming if connected, otherwise fall back to mock
+  if (connectionState.value === 'connected' && authStore.user.teamId) {
+    try {
+      await streamQuery(authStore.user.teamId, query, 5)
+    } catch (error) {
+      console.error('Streaming error:', error)
+      // Fall back to mock response on error
+      await fallbackMockResponse(sid, turn.id, query)
+    }
+  } else {
+    // Fall back to mock response when not connected
+    await fallbackMockResponse(sid, turn.id, query)
+  }
+}
 
-    const mockResponse = `Based on my analysis of the available documents, here's what I found regarding your query: "${query}"
+async function fallbackMockResponse(sid: string, turnId: string, query: string) {
+  // Simulate streaming with mock response
+  await new Promise(resolve => setTimeout(resolve, 1500))
 
-This is a simulated response. In the full implementation, this would be streamed from the backend using SignalR, providing real-time token-by-token output as the LLM generates the response.
+  const mockResponse = `Based on my analysis of the available documents, here's what I found regarding your query: "${query}"
+
+This is a simulated response. Connect to a workspace with indexed documents for real RAG responses.
 
 The response would include:
 - Relevant information from your documents
 - Citations to source materials
 - Follow-up questions to explore the topic further`
 
-    await sessionStore.completeTurn(
-      sid,
-      turn.id,
-      mockResponse,
-      [
-        { documentId: '1', documentName: 'sample-doc.pdf', relevanceScore: 0.92, excerpt: 'Relevant excerpt from the document...' }
-      ],
-      ['What are the key takeaways?', 'Can you provide more details?']
-    )
-  } finally {
-    isLoading.value = false
-    streamingTurnId.value = null
-    scrollToBottom()
-  }
+  await sessionStore.completeTurn(
+    sid,
+    turnId,
+    mockResponse,
+    [
+      { documentId: '1', documentName: 'sample-doc.pdf', relevanceScore: 0.92, excerpt: 'Relevant excerpt from the document...' }
+    ],
+    ['What are the key takeaways?', 'Can you provide more details?']
+  )
+
+  isLoading.value = false
+  streamingTurnId.value = null
+  scrollToBottom()
 }
 
 function handleFollowUp(question: string) {

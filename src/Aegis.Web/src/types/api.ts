@@ -48,6 +48,13 @@ export interface Workspace {
   status: WorkspaceStatus
   createdAt: string
   updatedAt?: string
+  stats?: {
+    documentCount: number
+    queryCount: number
+    totalTokensUsed: number
+    averageResponseTime: number
+    lastActivityAt?: string
+  }
 }
 
 export enum WorkspaceStatus {
