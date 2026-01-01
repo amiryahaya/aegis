@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** 9b0f5d5 - Sprint 33-34: Containerization & Observability
+**Last Commit:** baec73f - Sprint 35-36: Grafana Dashboards & Alerting
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -79,7 +79,16 @@
 - Memory and disk space health monitoring
 - Docker-compose integration with API service
 - AegisMetrics class for query, document, cache, LLM, and auth metrics
-- **Commit:** 9b0f5d5
+- **Commit:** 429efd7
+
+#### Sprint 35-36: Grafana Dashboards & Alerting ✅
+- Grafana provisioning with auto-configured Prometheus datasource
+- AEGIS Overview dashboard (queries, cache, documents, system metrics)
+- API Performance dashboard (HTTP metrics, latency, auth tracking)
+- LLM & RAG Metrics dashboard (token usage, cache performance, ingestion)
+- Prometheus alerting rules for critical metrics
+- Alert categories: API, Query, LLM, Cache, Auth, System, Documents
+- **Commit:** baec73f
 
 ### Current Statistics
 - **Total Unit Tests Passing:** 624 (603 unit + 21 architecture)
@@ -245,6 +254,20 @@ Potential future work:
 - docker/docker-compose.yml (aegis-api service added)
 - docker/prometheus.yml (updated scrape config)
 
+### Files Created (Sprint 35-36)
+
+**Grafana Provisioning:**
+- docker/grafana/provisioning/datasources/prometheus.yml
+- docker/grafana/provisioning/dashboards/dashboards.yml
+
+**Grafana Dashboards:**
+- docker/grafana/dashboards/aegis-overview.json
+- docker/grafana/dashboards/aegis-api-performance.json
+- docker/grafana/dashboards/aegis-llm-rag.json
+
+**Alerting:**
+- docker/prometheus-alerts.yml (comprehensive alerting rules)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -300,6 +323,8 @@ Final Response + Follow-ups to User
 - ✅ OpenTelemetry tracing (OTLP export)
 - ✅ Detailed health checks (liveness, readiness, startup)
 - ✅ AegisMetrics (custom application metrics)
+- ✅ Grafana dashboards (Overview, API Performance, LLM & RAG)
+- ✅ Prometheus alerting rules (7 alert groups, 15+ rules)
 
 ## 📊 Test Commands
 
