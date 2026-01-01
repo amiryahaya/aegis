@@ -24,6 +24,175 @@ Comprehensive implementation roadmap for **AEGIS** (Agentic Entity & Graph Intel
 | Migrations | DbUp | Simple, SQL-based migrations |
 | Testing | xUnit + NSubstitute + FluentAssertions | Industry standard, readable tests |
 
+### TDD Methodology
+
+Test-Driven Development is the **mandatory** development approach for all AEGIS features. Every implementation must follow the Red-Green-Refactor cycle.
+
+#### The Red-Green-Refactor Cycle
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     TDD CYCLE                                    │
+│                                                                  │
+│    ┌─────────┐      ┌─────────┐      ┌──────────┐              │
+│    │  RED    │ ───► │  GREEN  │ ───► │ REFACTOR │ ───┐         │
+│    │  Write  │      │  Write  │      │  Clean   │    │         │
+│    │ Failing │      │ Minimal │      │   Code   │    │         │
+│    │  Test   │      │  Code   │      │          │    │         │
+│    └─────────┘      └─────────┘      └──────────┘    │         │
+│         ▲                                            │         │
+│         └────────────────────────────────────────────┘         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+1. **RED** - Write a failing test that defines the expected behavior
+2. **GREEN** - Write the minimum code necessary to make the test pass
+3. **REFACTOR** - Clean up the code while keeping all tests green
+
+#### TDD Rules
+
+| Rule | Description |
+|------|-------------|
+| **Tests First** | Never write production code without a failing test |
+| **One Test at a Time** | Write one test, make it pass, then write the next |
+| **Minimal Implementation** | Write only enough code to pass the current test |
+| **No Speculation** | Don't add features "just in case" - YAGNI principle |
+| **Refactor Continuously** | Clean code after each green phase |
+| **Run All Tests** | Ensure all tests pass after each change |
+
+#### Test Structure (AAA Pattern)
+
+All tests must follow the Arrange-Act-Assert pattern:
+
+```csharp
+[Fact]
+public async Task MethodName_GivenCondition_ShouldExpectedBehavior()
+{
+    // Arrange - Set up test data and dependencies
+    var mockService = Substitute.For<IMyService>();
+    mockService.GetDataAsync().Returns(Result<Data>.Success(testData));
+    var sut = new MyHandler(mockService);
+
+    // Act - Execute the method under test
+    var result = await sut.Handle(command, CancellationToken.None);
+
+    // Assert - Verify the expected outcome
+    result.IsSuccess.Should().BeTrue();
+    result.Value.Should().NotBeNull();
+    await mockService.Received(1).GetDataAsync();
+}
+```
+
+#### Test Naming Convention
+
+Tests must use descriptive names following the pattern:
+```
+MethodName_GivenCondition_ShouldExpectedBehavior
+```
+
+Examples:
+- `CreateWorkspace_WithValidData_ShouldReturnSuccess`
+- `GetUser_WhenUserNotFound_ShouldReturnNotFoundError`
+- `ExecutePlan_WithCircularDependency_ShouldThrowException`
+
+#### Test Categories
+
+| Category | Project | Purpose | Dependencies |
+|----------|---------|---------|--------------|
+| **Unit Tests** | Aegis.UnitTests | Test isolated components | Mocks only |
+| **Integration Tests** | Aegis.IntegrationTests | Test component interaction | Testcontainers |
+| **Architecture Tests** | Aegis.ArchitectureTests | Enforce architecture rules | NetArchTest |
+| **E2E Tests** | Aegis.E2ETests | Test complete user flows | Full stack |
+
+#### Mocking Guidelines
+
+- Use **NSubstitute** for all mocks
+- Mock at the interface boundary only
+- Use `Substitute.For<IInterface>()` for creating mocks
+- Use `.Returns()` for setting up return values
+- Use `.Received()` for verifying calls
+- Prefer `Result<T>` returns over exceptions
+
+```csharp
+// Creating a mock
+var repository = Substitute.For<IDocumentRepository>();
+
+// Setting up returns
+repository.GetByIdAsync(Arg.Any<Guid>())
+    .Returns(Result<Document>.Success(document));
+
+// Verifying calls
+await repository.Received(1).GetByIdAsync(documentId);
+```
+
+#### Coverage Requirements
+
+| Metric | Target | Enforcement |
+|--------|--------|-------------|
+| Line Coverage | > 80% | CI/CD gate |
+| Branch Coverage | > 75% | CI/CD gate |
+| Critical Paths | 100% | Code review |
+
+#### TDD Workflow Example
+
+```bash
+# 1. Create the test file first
+touch tests/Aegis.UnitTests/Features/MyFeature/MyHandlerTests.cs
+
+# 2. Write the failing test
+# 3. Run test to confirm it fails (RED)
+dotnet test --filter "FullyQualifiedName~MyHandlerTests"
+
+# 4. Create the implementation file
+touch src/Aegis.Api/Features/MyFeature/MyHandler.cs
+
+# 5. Write minimal code to pass (GREEN)
+dotnet test --filter "FullyQualifiedName~MyHandlerTests"
+
+# 6. Refactor if needed, run all tests
+dotnet test
+
+# 7. Commit with descriptive message
+git add . && git commit -m "feat: Add MyFeature handler with tests"
+```
+
+#### When to Write Integration Tests
+
+Write integration tests when:
+- Testing database operations (repositories)
+- Testing external service integrations
+- Testing message queue interactions
+- Testing API endpoints end-to-end
+- Testing cross-cutting concerns (caching, logging)
+
+```csharp
+// Integration test with Testcontainers
+public class DocumentRepositoryTests : IAsyncLifetime
+{
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
+        .WithImage("pgvector/pgvector:pg18")
+        .Build();
+
+    public async Task InitializeAsync() => await _postgres.StartAsync();
+    public async Task DisposeAsync() => await _postgres.DisposeAsync();
+
+    [Fact]
+    public async Task CreateDocument_ShouldPersistToDatabase()
+    {
+        // Arrange
+        var connectionString = _postgres.GetConnectionString();
+        var repository = new DocumentRepository(connectionString);
+
+        // Act
+        var result = await repository.CreateAsync(document);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+}
+```
+
 ---
 
 ## Phase 1: Foundation (Months 1-3)
