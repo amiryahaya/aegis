@@ -71,6 +71,7 @@ try
 
     // Map SignalR hubs
     app.MapHub<QueryHub>("/hubs/query");
+    app.MapHub<NotificationHub>("/hubs/notifications");
 
     // Map a simple root endpoint
     app.MapGet("/", () => Results.Ok(new

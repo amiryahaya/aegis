@@ -239,6 +239,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUserPreferencesService, Aegis.Infrastructure.Services.Configuration.InMemoryUserPreferencesService>();
         services.AddSingleton<IConfigurationService, Aegis.Infrastructure.Services.Configuration.InMemoryConfigurationService>();
 
+        // Register notification services (Sprint 45-46)
+        services.AddSingleton<INotificationService, Aegis.Infrastructure.Services.Notifications.InMemoryNotificationService>();
+        services.AddScoped<Aegis.Infrastructure.Services.Jobs.NotificationDispatcherJob>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
@@ -369,6 +373,9 @@ public static class ServiceCollectionExtensions
 
         // SignalR
         services.AddSignalR();
+
+        // Register notification hub service (Sprint 45-46)
+        services.AddScoped<INotificationHub, Aegis.Api.Hubs.SignalRNotificationHub>();
 
         // OpenAPI/Swagger Documentation (Sprint 31-32)
         services.AddEndpointsApiExplorer();
