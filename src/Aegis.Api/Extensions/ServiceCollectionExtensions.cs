@@ -234,6 +234,11 @@ public static class ServiceCollectionExtensions
         // Register identity provider services (Sprint 31-32)
         services.AddScoped<IIdentityProvider, Aegis.Infrastructure.Services.Identity.InMemoryIdentityProvider>();
 
+        // Register feature flags, user preferences, and configuration services (Sprint 43-44)
+        services.AddSingleton<IFeatureFlagService, Aegis.Infrastructure.Services.Configuration.InMemoryFeatureFlagService>();
+        services.AddSingleton<IUserPreferencesService, Aegis.Infrastructure.Services.Configuration.InMemoryUserPreferencesService>();
+        services.AddSingleton<IConfigurationService, Aegis.Infrastructure.Services.Configuration.InMemoryConfigurationService>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {

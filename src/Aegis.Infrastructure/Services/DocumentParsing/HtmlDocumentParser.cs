@@ -29,7 +29,7 @@ public class HtmlDocumentParser : IDocumentParser
         try
         {
             // Create AngleSharp context
-            var context = BrowsingContext.New(Configuration.Default);
+            var context = BrowsingContext.New(AngleSharp.Configuration.Default);
 
             // Parse HTML from stream
             using var reader = new StreamReader(stream);

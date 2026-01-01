@@ -27,7 +27,7 @@ public class HtmlTableExtractor : ITableExtractor
 
         try
         {
-            var context = BrowsingContext.New(Configuration.Default);
+            var context = BrowsingContext.New(AngleSharp.Configuration.Default);
             var document = await context.OpenAsync(req => req.Content(html), cancellationToken);
 
             var tables = document.QuerySelectorAll("table");
