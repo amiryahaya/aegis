@@ -308,10 +308,8 @@ public static class ServiceCollectionExtensions
             // Note: Schema initialization moved to Program.cs to avoid service provider disposal issues
         }
 
-        // Add health checks
-        services.AddHealthChecks()
-            .AddNpgSql(connectionString, name: "postgresql")
-            .AddRedis(configuration.GetConnectionString("Redis") ?? "localhost:6379", name: "redis");
+        // Add detailed health checks
+        services.AddDetailedHealthChecks(configuration);
 
         return services;
     }

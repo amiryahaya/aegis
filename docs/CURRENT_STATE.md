@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** 4016557 - Sprint 31-32: Authentication & Documentation
+**Last Commit:** 9b0f5d5 - Sprint 33-34: Containerization & Observability
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -69,7 +69,17 @@
 - Swashbuckle.AspNetCore integration
 - Support for multiple identity providers (Azure AD, Okta, Auth0, Keycloak, etc.)
 - **Total: 29 new tests passing**
-- **Commit:** 4016557
+- **Commit:** 4b7cfdb
+
+#### Sprint 33-34: Containerization & Observability ✅
+- Dockerfile for multi-stage production builds
+- Prometheus metrics with prometheus-net (custom application metrics)
+- OpenTelemetry distributed tracing (OTLP export support)
+- Enhanced health checks (liveness, readiness, startup probes)
+- Memory and disk space health monitoring
+- Docker-compose integration with API service
+- AegisMetrics class for query, document, cache, LLM, and auth metrics
+- **Commit:** 9b0f5d5
 
 ### Current Statistics
 - **Total Unit Tests Passing:** 624 (603 unit + 21 architecture)
@@ -89,8 +99,7 @@ The core RAG system is now complete with:
 Potential future work:
 - E2E tests with Playwright (UI automation)
 - Production database migrations
-- CI/CD pipeline setup
-- Monitoring and alerting setup (Prometheus/Grafana)
+- Grafana dashboards for metrics visualization
 - Documentation site
 
 ### Files Created (Sprint 23-24)
@@ -222,6 +231,20 @@ Potential future work:
 - src/Aegis.Api/Extensions/ServiceCollectionExtensions.cs (OpenAPI/Swagger + identity provider)
 - src/Aegis.Api/Program.cs (Swagger UI in development)
 
+### Files Created (Sprint 33-34)
+
+**Docker:**
+- src/Aegis.Api/Dockerfile (multi-stage production build)
+- .dockerignore
+
+**Observability:**
+- src/Aegis.Api/Extensions/ObservabilityExtensions.cs (Prometheus metrics + OpenTelemetry tracing)
+- src/Aegis.Api/Extensions/HealthCheckExtensions.cs (detailed health checks)
+
+**Docker Compose Updates:**
+- docker/docker-compose.yml (aegis-api service added)
+- docker/prometheus.yml (updated scrape config)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -273,6 +296,10 @@ Final Response + Follow-ups to User
 - ✅ InMemoryPerformanceBenchmark (load testing and benchmarking)
 - ✅ InMemoryIdentityProvider (SSO/OIDC with OAuth2, PKCE support)
 - ✅ OpenAPI/Swagger documentation (Swashbuckle.AspNetCore)
+- ✅ Prometheus metrics (prometheus-net)
+- ✅ OpenTelemetry tracing (OTLP export)
+- ✅ Detailed health checks (liveness, readiness, startup)
+- ✅ AegisMetrics (custom application metrics)
 
 ## 📊 Test Commands
 

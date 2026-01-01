@@ -88,6 +88,49 @@ services:
       - aegis-network
 
   # =============================================================================
+  # AEGIS API
+  # =============================================================================
+
+  aegis-api:
+    build:
+      context: ..
+      dockerfile: src/Aegis.Api/Dockerfile
+    container_name: aegis-api
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-aegis};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      ConnectionStrings__Redis: "redis:6379"
+      Neo4j__Uri: "bolt://neo4j:7687"
+      Neo4j__Username: "neo4j"
+      Neo4j__Password: "${NEO4J_PASSWORD:-password}"
+      Qdrant__Host: "qdrant"
+      Qdrant__Port: "6333"
+      OpenTelemetry__OtlpEndpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
+      Jwt__Secret: "${JWT_SECRET:-your-super-secret-key-minimum-32-characters-long!}"
+      Jwt__Issuer: "${JWT_ISSUER:-aegis-api}"
+      Jwt__Audience: "${JWT_AUDIENCE:-aegis-client}"
+      OpenAI__ApiKey: "${OPENAI_API_KEY:-}"
+      Cohere__ApiKey: "${COHERE_API_KEY:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - aegis-network
+    restart: unless-stopped
+
+  # =============================================================================
   # FULL PROFILE SERVICES
   # =============================================================================
 

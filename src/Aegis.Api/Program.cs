@@ -27,7 +27,8 @@ try
     builder.Services
         .AddApplicationServices()
         .AddInfrastructureServices(builder.Configuration)
-        .AddApiServices(builder.Configuration);
+        .AddApiServices(builder.Configuration)
+        .AddObservability(builder.Configuration);
 
     // Configure JSON serialization
     builder.Services.ConfigureHttpJsonOptions(options =>
@@ -59,10 +60,13 @@ try
         });
     }
 
+    // Observability (metrics, tracing)
+    app.UseObservability();
+
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.UseHealthChecks("/health");
+    app.MapDetailedHealthChecks();
     app.MapCarter();
 
     // Map SignalR hubs
@@ -75,7 +79,8 @@ try
         version = "1.0.0",
         status = "running",
         documentation = app.Environment.IsDevelopment() ? "/swagger" : null,
-        health = "/health"
+        health = "/health",
+        metrics = "/metrics"
     }));
 
     app.Run();
