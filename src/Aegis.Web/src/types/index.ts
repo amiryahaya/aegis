@@ -4,6 +4,7 @@ export * from './session'
 export * from './api'
 export * from './notification'
 export * from './admin'
+export * from './search'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

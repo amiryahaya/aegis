@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 2, 2026
-**Last Commit:** Sprint 55-56: Settings & Admin Dashboard UI
+**Last Commit:** Sprint 57-58: Global Search & Document Preview UI
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -243,6 +243,23 @@
 - Router guards for admin-only routes
 - Updated sidebar with Settings and Admin navigation (conditional visibility)
 - **Files Added:** 4 new Vue/TypeScript files (SettingsView, AdminView, admin.ts store, settings.ts store, admin.ts types)
+
+#### Sprint 57-58: Global Search & Document Preview UI ✅
+- SearchView with full-text search across sessions, documents, workspaces, and messages
+- Search store with Pinia for results, pagination, filters, and recent searches
+- Search types for results, facets, filters, and document preview
+- Global search bar in AppHeader with responsive design (mobile search button)
+- Search filters by type (session, document, workspace, message)
+- Search filters by date range (today, week, month, year)
+- Search filters by workspace with multi-select
+- Recent searches stored in localStorage with result counts
+- Search result highlighting with relevance scores
+- Infinite scroll / load more for search results
+- DocumentPreviewModal component for document content viewing
+- Document chunk display with page numbers
+- Document metadata sidebar (workspace, uploader, file size, word count)
+- Updated router with /search route
+- **Files Added:** 5 new Vue/TypeScript files (SearchView, search.ts store, search.ts types, DocumentPreviewModal)
 
 ### Current Statistics
 - **Total Unit Tests Passing:** 865 (844 unit + 21 architecture)
@@ -649,6 +666,26 @@ Potential future work:
 - src/Aegis.Web/src/router/index.ts (added /settings and /admin routes with guards)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Settings and Admin navigation)
 
+### Files Created (Sprint 57-58)
+
+**Types:**
+- src/Aegis.Web/src/types/search.ts (SearchResult, SearchRequest, SearchResponse, SearchFilter, DocumentPreview types)
+
+**Stores:**
+- src/Aegis.Web/src/stores/search.ts (search state, filters, recent searches, document preview)
+
+**Views:**
+- src/Aegis.Web/src/views/SearchView.vue (full search page with results, filters, recent searches)
+
+**Components:**
+- src/Aegis.Web/src/components/common/DocumentPreviewModal.vue (document preview with chunks and metadata)
+
+**Updated Files:**
+- src/Aegis.Web/src/components/common/AppHeader.vue (added global search bar with responsive design)
+- src/Aegis.Web/src/stores/workspace.ts (made teamId optional in fetchWorkspaces)
+- src/Aegis.Web/src/types/index.ts (added search types export)
+- src/Aegis.Web/src/router/index.ts (added /search route)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -807,10 +844,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 57-58: Global Search & Document Preview UI
   - Sprint 55-56: Settings & Admin Dashboard UI
   - Sprint 53-54: SignalR Streaming & Extended Frontend
   - Sprint 51-52: Vue 3 + TailwindCSS Frontend
-  - Sprint 49-50: Collaboration & Real-Time Features
 
 ## 💡 Tips for Next Session
 

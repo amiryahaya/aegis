@@ -6,7 +6,8 @@ import {
   MoonIcon,
   SunIcon,
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -19,6 +20,18 @@ const emit = defineEmits<{
 const authStore = useAuthStore()
 const router = useRouter()
 const isDark = ref(document.documentElement.classList.contains('dark'))
+const searchQuery = ref('')
+
+function handleSearch() {
+  if (searchQuery.value.trim()) {
+    router.push({ path: '/search', query: { q: searchQuery.value.trim() } })
+    searchQuery.value = ''
+  }
+}
+
+function navigateToSearch() {
+  router.push('/search')
+}
 
 function toggleDarkMode() {
   isDark.value = !isDark.value
@@ -52,8 +65,30 @@ function logout() {
       <Bars3Icon class="h-5 w-5" />
     </button>
 
-    <!-- Spacer -->
-    <div class="flex-1" />
+    <!-- Search Bar -->
+    <div class="hidden sm:flex flex-1 max-w-md mx-4">
+      <form @submit.prevent="handleSearch" class="relative w-full">
+        <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search..."
+          class="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-aegis-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-600"
+        />
+      </form>
+    </div>
+
+    <!-- Mobile search button -->
+    <button
+      type="button"
+      class="btn-ghost p-2 sm:hidden"
+      @click="navigateToSearch"
+    >
+      <MagnifyingGlassIcon class="h-5 w-5" />
+    </button>
+
+    <!-- Spacer (for mobile) -->
+    <div class="flex-1 sm:hidden" />
 
     <!-- Right side actions -->
     <div class="flex items-center gap-2">

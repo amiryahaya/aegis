@@ -31,11 +31,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   )
 
   // Actions - Workspaces
-  async function fetchWorkspaces(teamId: string): Promise<Workspace[]> {
+  async function fetchWorkspaces(teamId?: string): Promise<Workspace[]> {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.get<PagedResponse<Workspace>>(`/workspaces`, { teamId })
+      const params = teamId ? { teamId } : undefined
+      const response = await api.get<PagedResponse<Workspace>>(`/workspaces`, params)
       workspaces.value = response.items
       return response.items
     } catch (err) {
