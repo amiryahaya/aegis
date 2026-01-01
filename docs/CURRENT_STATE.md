@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 1, 2026
-**Last Commit:** 31e7064 - Sprint 37-38: Background Jobs & Async Processing
+**Last Commit:** 3cfa139 - Sprint 39-40: API Resilience & Versioning
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -101,10 +101,23 @@
 - Hangfire dashboard at /hangfire for job monitoring
 - Enhanced cache interfaces with stats and eviction methods
 - **Total: 16 new tests passing**
-- **Commit:** 31e7064
+- **Commit:** bd4a896
+
+#### Sprint 39-40: API Resilience & Versioning ✅
+- API versioning with Asp.Versioning.Http (URL, header, query string support)
+- Rate limiting middleware with X-RateLimit headers and 429 responses
+- IResilienceService interface with circuit breaker, retry, and timeout patterns
+- PollyResilienceService implementation using Polly v8 (16 tests)
+- Resilient HTTP client factory for external services (OpenAI, Cohere, Ollama, Qdrant)
+- Pre-configured resilience options for LLM, VectorDB, Database, and External APIs
+- Exponential backoff with jitter for retry policies
+- Circuit breaker state tracking (Closed, Open, HalfOpen)
+- Extended Error class with ServiceUnavailable, Timeout, TooManyRequests
+- **Total: 16 new tests passing**
+- **Commit:** 3cfa139
 
 ### Current Statistics
-- **Total Unit Tests Passing:** 640 (619 unit + 21 architecture)
+- **Total Unit Tests Passing:** 656 (635 unit + 21 architecture)
 - **Test Coverage:** >80% maintained
 - **Build Status:** ✅ Passing
 - **Warnings:** 0
@@ -311,6 +324,27 @@ Potential future work:
 **Docker Compose Updates:**
 - docker/docker-compose.yml (Hangfire dashboard configuration)
 
+### Files Created (Sprint 39-40)
+
+**Domain Interfaces:**
+- src/Aegis.Domain/Services/IResilienceService.cs (resilience patterns interface)
+
+**API Extensions:**
+- src/Aegis.Api/Extensions/ApiVersioningExtensions.cs (API versioning configuration)
+- src/Aegis.Api/Extensions/ResilientHttpClientExtensions.cs (resilient HTTP clients)
+
+**Middleware:**
+- src/Aegis.Api/Middleware/RateLimitingMiddleware.cs (rate limiting with headers)
+
+**Resilience Infrastructure:**
+- src/Aegis.Infrastructure/Services/Resilience/PollyResilienceService.cs
+
+**Tests:**
+- tests/Aegis.UnitTests/Services/Resilience/ResilienceServiceTests.cs (16 tests)
+
+**Updated Files:**
+- src/Aegis.Domain/Common/Error.cs (added ServiceUnavailable, Timeout, TooManyRequests)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -373,6 +407,10 @@ Final Response + Follow-ups to User
 - ✅ DataSourceSyncJob (scheduled data source sync)
 - ✅ CleanupJob (cache eviction, audit log archiving)
 - ✅ Hangfire dashboard (/hangfire)
+- ✅ API versioning (URL, header, query string)
+- ✅ Rate limiting middleware (X-RateLimit headers)
+- ✅ PollyResilienceService (circuit breaker, retry, timeout)
+- ✅ Resilient HTTP clients (OpenAI, Cohere, Ollama, Qdrant)
 
 ## 📊 Test Commands
 
@@ -438,9 +476,9 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
-  - 31e7064: Sprint 37-38 (Background Jobs & Async Processing)
+  - 3cfa139: Sprint 39-40 (API Resilience & Versioning)
+  - bd4a896: Sprint 37-38 (Background Jobs & Async Processing)
   - c6fc73e: Sprint 35-36 (Grafana Dashboards & Alerting)
-  - 429efd7: Sprint 33-34 (Containerization & Observability)
 
 ## 💡 Tips for Next Session
 

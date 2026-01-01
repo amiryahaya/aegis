@@ -14,6 +14,9 @@ public record Error(string Code, string Message)
     public static Error Unauthorized(string code, string message) => new($"Unauthorized.{code}", message);
     public static Error Forbidden(string code, string message) => new($"Forbidden.{code}", message);
     public static Error Internal(string code, string message) => new($"Internal.{code}", message);
+    public static Error ServiceUnavailable(string code, string message) => new($"ServiceUnavailable.{code}", message);
+    public static Error Timeout(string code, string message) => new($"Timeout.{code}", message);
+    public static Error TooManyRequests(string code, string message) => new($"TooManyRequests.{code}", message);
 }
 
 /// <summary>
