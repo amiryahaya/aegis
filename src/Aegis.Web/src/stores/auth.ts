@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, LoginRequest, LoginResponse } from '@/types'
+import { UserRole } from '@/types'
 import api from '@/services/api'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -14,6 +15,9 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const userName = computed(() => user.value?.name || 'User')
   const userRole = computed(() => user.value?.role || 'Viewer')
+  const isAdmin = computed(() =>
+    user.value?.role === UserRole.Admin || user.value?.role === UserRole.SystemAdmin
+  )
 
   // Initialize from localStorage
   function initialize() {
@@ -85,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userName,
     userRole,
+    isAdmin,
     // Actions
     login,
     logout,

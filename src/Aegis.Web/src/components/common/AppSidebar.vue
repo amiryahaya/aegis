@@ -8,7 +8,9 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   PlusIcon,
-  FolderIcon
+  FolderIcon,
+  Cog6ToothIcon,
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
@@ -27,12 +29,25 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
 
-const navigation = computed(() => [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, current: route.path === '/' },
-  { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, current: route.path.startsWith('/chat') },
-  { name: 'Sessions', href: '/sessions', icon: ClockIcon, current: route.path === '/sessions' },
-  { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') }
-])
+const navigation = computed(() => {
+  const items = [
+    { name: 'Dashboard', href: '/', icon: HomeIcon, current: route.path === '/' },
+    { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, current: route.path.startsWith('/chat') },
+    { name: 'Sessions', href: '/sessions', icon: ClockIcon, current: route.path === '/sessions' },
+    { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') }
+  ]
+  return items
+})
+
+const bottomNavigation = computed(() => {
+  const items = [
+    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: route.path === '/settings' }
+  ]
+  if (authStore.isAdmin) {
+    items.push({ name: 'Admin', href: '/admin', icon: ShieldCheckIcon, current: route.path === '/admin' })
+  }
+  return items
+})
 
 async function createNewSession() {
   if (!authStore.user) return
@@ -125,6 +140,22 @@ async function createNewSession() {
                     </RouterLink>
                   </li>
                 </ul>
+
+                <!-- Bottom navigation -->
+                <ul role="list" class="mt-auto border-t border-gray-200 pt-4 dark:border-gray-700">
+                  <li v-for="item in bottomNavigation" :key="item.name">
+                    <RouterLink
+                      :to="item.href"
+                      :class="[
+                        item.current ? 'sidebar-link-active' : 'sidebar-link-inactive'
+                      ]"
+                      @click="emit('close')"
+                    >
+                      <component :is="item.icon" class="h-5 w-5 shrink-0" />
+                      {{ item.name }}
+                    </RouterLink>
+                  </li>
+                </ul>
               </nav>
             </div>
           </DialogPanel>
@@ -159,6 +190,23 @@ async function createNewSession() {
       <nav class="flex flex-1 flex-col">
         <ul role="list" class="flex flex-1 flex-col gap-y-1">
           <li v-for="item in navigation" :key="item.name">
+            <RouterLink
+              :to="item.href"
+              :class="[
+                item.current ? 'sidebar-link-active' : 'sidebar-link-inactive',
+                !open && 'justify-center'
+              ]"
+              :title="!open ? item.name : undefined"
+            >
+              <component :is="item.icon" class="h-5 w-5 shrink-0" />
+              <span v-if="open">{{ item.name }}</span>
+            </RouterLink>
+          </li>
+        </ul>
+
+        <!-- Bottom navigation -->
+        <ul role="list" class="mt-auto border-t border-gray-200 pt-4 dark:border-gray-700">
+          <li v-for="item in bottomNavigation" :key="item.name">
             <RouterLink
               :to="item.href"
               :class="[
