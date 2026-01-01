@@ -45,6 +45,18 @@ try
     {
         app.UseDeveloperExceptionPage();
         app.UseHangfireDashboard("/hangfire");
+
+        // Enable Swagger in development
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "AEGIS RAG API v1");
+            options.RoutePrefix = "swagger";
+            options.DocumentTitle = "AEGIS RAG API Documentation";
+            options.EnableDeepLinking();
+            options.EnableFilter();
+            options.EnableTryItOutByDefault();
+        });
     }
 
     app.UseAuthentication();
@@ -61,7 +73,9 @@ try
     {
         name = "AEGIS API",
         version = "1.0.0",
-        status = "running"
+        status = "running",
+        documentation = app.Environment.IsDevelopment() ? "/swagger" : null,
+        health = "/health"
     }));
 
     app.Run();

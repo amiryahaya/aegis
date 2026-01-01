@@ -231,6 +231,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRAGEvaluator, Aegis.Infrastructure.Services.Evaluation.InMemoryRAGEvaluator>();
         services.AddSingleton<IPerformanceBenchmark, Aegis.Infrastructure.Services.Evaluation.InMemoryPerformanceBenchmark>();
 
+        // Register identity provider services (Sprint 31-32)
+        services.AddScoped<IIdentityProvider, Aegis.Infrastructure.Services.Identity.InMemoryIdentityProvider>();
+
         // Register task executor with agent dictionary
         services.AddScoped<ITaskExecutor>(sp =>
         {
@@ -363,6 +366,70 @@ public static class ServiceCollectionExtensions
 
         // SignalR
         services.AddSignalR();
+
+        // OpenAPI/Swagger Documentation (Sprint 31-32)
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            {
+                Title = "AEGIS RAG API",
+                Version = "v1",
+                Description = "Enterprise-grade Retrieval-Augmented Generation API with SSO/OIDC support",
+                Contact = new Microsoft.OpenApi.Models.OpenApiContact
+                {
+                    Name = "AEGIS Team",
+                    Email = "support@aegis.local"
+                },
+                License = new Microsoft.OpenApi.Models.OpenApiLicense
+                {
+                    Name = "MIT",
+                    Url = new Uri("https://opensource.org/licenses/MIT")
+                }
+            });
+
+            // Add JWT Bearer Authentication to Swagger
+            options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
+                Name = "Authorization",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            {
+                {
+                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                    {
+                        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                        {
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            // Group endpoints by tags
+            options.TagActionsBy(api =>
+            {
+                if (api.GroupName != null) return new[] { api.GroupName };
+                if (api.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor controllerActionDescriptor)
+                    return new[] { controllerActionDescriptor.ControllerName };
+                return new[] { "Other" };
+            });
+
+            // Include XML comments if available
+            var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+        });
 
         return services;
     }
