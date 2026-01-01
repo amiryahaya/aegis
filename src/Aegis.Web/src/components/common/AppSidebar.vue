@@ -10,7 +10,8 @@ import {
   PlusIcon,
   FolderIcon,
   Cog6ToothIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  RssIcon
 } from '@heroicons/vue/24/outline'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
@@ -34,7 +35,8 @@ const navigation = computed(() => {
     { name: 'Dashboard', href: '/', icon: HomeIcon, current: route.path === '/' },
     { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, current: route.path.startsWith('/chat') },
     { name: 'Sessions', href: '/sessions', icon: ClockIcon, current: route.path === '/sessions' },
-    { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') }
+    { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') },
+    { name: 'Activity', href: '/activity', icon: RssIcon, current: route.path === '/activity' }
   ]
   return items
 })

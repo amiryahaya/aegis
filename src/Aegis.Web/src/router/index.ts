@@ -83,6 +83,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/activity',
+      name: 'activity',
+      component: () => import('@/views/ActivityFeedView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/'
     }

@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 2, 2026
-**Last Commit:** Sprint 59-60: User Profile & Help Center UI
+**Last Commit:** Sprint 61-62: Activity Feed & Comments UI
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -277,6 +277,23 @@
 - FAQ with search functionality and accordion display
 - User menu updated with Profile, Settings, Help links
 - **Files Added:** 6 new Vue/TypeScript files (ProfileView, HelpView, profile.ts store, profile.ts types, useKeyboardShortcuts.ts)
+
+#### Sprint 61-62: Activity Feed & Comments UI ✅
+- ActivityFeedView with activity list, filtering by type, workspace, and personalized feeds
+- Activity store with Pinia for activity feed state, pagination, subscriptions, and stats
+- Activity types for activities, filters, subscriptions, aggregations, and statistics
+- ActivityFeedView with tabbed interface (All Activity, My Activity, Following)
+- CommentThread component for threaded discussions with @mentions, reactions, pinning
+- Comments store with Pinia for comments, replies, reactions, and mentions
+- Comments types for comments, threads, reactions, anchors, and attachments
+- Presence composable for real-time presence tracking via API
+- PresenceIndicator component for showing who's viewing a resource
+- Presence types for user presence, cursors, and status
+- Reaction picker with emoji reactions (Like, Love, Laugh, Celebrate, Insightful, Question, Agree, Disagree)
+- Comment actions (edit, delete, resolve, reopen, pin, unpin)
+- Updated router with /activity route
+- Updated sidebar navigation with Activity link
+- **Files Added:** 10 new Vue/TypeScript files (ActivityFeedView.vue, CommentThread.vue, PresenceIndicator.vue, activity.ts store, activity.ts types, comments.ts store, comments.ts types, presence.ts types, usePresence.ts composable)
 
 ### Current Statistics
 - **Total Unit Tests Passing:** 865 (844 unit + 21 architecture)
@@ -722,6 +739,32 @@ Potential future work:
 - src/Aegis.Web/src/components/common/AppHeader.vue (user menu with Profile, Settings, Help links)
 - src/Aegis.Web/src/types/index.ts (added profile types export)
 - src/Aegis.Web/src/router/index.ts (added /profile and /help routes)
+
+### Files Created (Sprint 61-62)
+
+**Types:**
+- src/Aegis.Web/src/types/activity.ts (Activity, ActivityFilter, ActivityStats, ActivitySubscription types)
+- src/Aegis.Web/src/types/comments.ts (Comment, CommentReaction, CommentMention, CommentAnchor types)
+- src/Aegis.Web/src/types/presence.ts (UserPresence, PresenceStatus, CursorPosition types)
+
+**Stores:**
+- src/Aegis.Web/src/stores/activity.ts (activity feed state, subscriptions, stats)
+- src/Aegis.Web/src/stores/comments.ts (comments, replies, reactions, mentions)
+
+**Views:**
+- src/Aegis.Web/src/views/ActivityFeedView.vue (activity feed with tabs, filters, infinite scroll)
+
+**Components:**
+- src/Aegis.Web/src/components/comments/CommentThread.vue (threaded discussions with reactions, pinning)
+- src/Aegis.Web/src/components/presence/PresenceIndicator.vue (who's viewing indicator)
+
+**Composables:**
+- src/Aegis.Web/src/composables/usePresence.ts (real-time presence tracking)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added activity, comments, presence types export)
+- src/Aegis.Web/src/router/index.ts (added /activity route)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (added Activity navigation with RssIcon)
 
 ## 🔧 Key Architecture Components
 
