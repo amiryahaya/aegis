@@ -17,19 +17,25 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 67-68: Error Handling & Accessibility ✅ (January 2026)
+- **Error Boundary** - Graceful error handling with retry/reload options
+- **Toast Notifications** - Success, error, warning, info with auto-dismiss
+- **Error Tracking** - Global error capture with external service integration ready
+- **Skip to Content** - Keyboard navigation accessibility
+- **Focus Trap** - Modal/dialog focus management
+- **Screen Reader Support** - ARIA live regions for announcements
+
 ### Sprint 65-66: CI/CD Pipeline & Frontend Optimization ✅ (January 2026)
 - **GitHub Actions CI/CD** - Automated lint, type-check, unit tests, E2E tests, and Docker build
 - **PWA Support** - Installable app with offline caching via Workbox service worker
 - **Build Optimization** - Code splitting with manual chunks (~555KB precached)
-- **Bundle Analyzer** - Treemap visualization with gzip/brotli sizes
-- **Production Docker** - 3-stage build with non-root user and security headers
 
 ### Sprint 63-64: E2E Testing with Playwright ✅ (January 2026)
 - **Playwright E2E Tests** - 70+ tests for auth, chat, sessions, workspaces, search
 - **Vitest Unit Tests** - 76 component and store tests
 - **Test Coverage** - ChatMessage, ChatInput, auth store, session store
 
-### Vue 3 Frontend (Sprint 51-66) ✅
+### Vue 3 Frontend (Sprint 51-68) ✅
 Complete Vue 3 + TailwindCSS frontend with:
 - Chat interface with SignalR streaming
 - Session and workspace management
@@ -38,6 +44,8 @@ Complete Vue 3 + TailwindCSS frontend with:
 - User profile and API key management
 - Activity feed with comments and reactions
 - PWA support with offline caching
+- Error handling and toast notifications
+- Accessibility (skip links, focus traps, ARIA)
 - Comprehensive test suite (E2E + Unit)
 
 ### UUID v7 Migration (December 2025)
