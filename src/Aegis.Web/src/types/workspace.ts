@@ -4,6 +4,9 @@
 
 import type { Workspace as BaseWorkspace } from './api'
 
+// Re-export the base Workspace type for convenience
+export type { Workspace } from './api'
+
 // Extended workspace with stats (used in UI)
 export interface WorkspaceWithStats extends BaseWorkspace {
   settings?: WorkspaceSettings

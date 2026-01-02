@@ -1,7 +1,7 @@
 # Current Development State
 
-**Last Updated:** January 2, 2026
-**Last Commit:** Sprint 83-84: Responsive Mobile Design & Touch Gestures
+**Last Updated:** January 3, 2026
+**Last Commit:** Sprint 85-86: Offline Support & Data Sync
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -500,6 +500,27 @@
 - **Files Added:** 13 new Vue/TypeScript files (useMediaQuery.ts, useTouchGestures.ts, MobileBottomNav.vue, MobileHeader.vue, FloatingActionButton.vue, PullToRefreshIndicator.vue, SwipeableCard.vue, MobileChatHeader.vue, MobileChatInput.vue, MobileMessageBubble.vue, MobileSourcesSheet.vue, MobileWorkspaceCard.vue)
 - **Files Updated:** App.vue, ChatView.vue, SessionsView.vue, WorkspacesView.vue
 - **Build Size:** 1038.63 KB precached
+
+#### Sprint 85-86: Offline Support & Data Sync ✅
+- IndexedDB storage service for offline data persistence
+- 6 object stores: sessions, workspaces, documents, pendingOperations, cacheMetadata, userData
+- Offline queue composable for pending operations with auto-sync
+- Sync service for data reconciliation between IndexedDB and API
+- Optimistic updates with conflict resolution strategies
+- Cache staleness thresholds (sessions: 5min, workspaces: 10min, documents: 15min)
+- OfflineIndicator component showing connection status and sync state
+- SyncStatusPanel component for detailed cache statistics and management
+- useOfflineData composables (useOfflineSessions, useOfflineWorkspaces, useOfflineCache)
+- API service extended with `patch` method for partial updates
+- Workspace type re-exported from types/workspace.ts for convenience
+- Automatic sync on reconnection with online/offline event handling
+- Pending operations queue with retry logic
+- Toast notifications for sync status feedback
+- Clear cache functionality with confirmation
+- offline.ts types (OperationType, SyncStatus, PendingOperation, CacheMetadata, SyncState, OfflineCacheStats)
+- **Files Added:** 6 new TypeScript files (indexeddb.service.ts, sync.service.ts, useOfflineQueue.ts, useOfflineData.ts, OfflineIndicator.vue, SyncStatusPanel.vue, offline.ts)
+- **Files Updated:** App.vue, api.ts, types/index.ts, types/workspace.ts
+- **Build Size:** 1047.25 KB precached
 
 ### Current Statistics
 - **Total Backend Tests Passing:** 865 (844 unit + 21 architecture)
@@ -1184,6 +1205,29 @@ Potential future work:
 - src/Aegis.Web/src/views/SessionsView.vue (pull-to-refresh, FAB)
 - src/Aegis.Web/src/views/WorkspacesView.vue (mobile list view, FAB)
 
+### Files Created (Sprint 85-86)
+
+**Services:**
+- src/Aegis.Web/src/services/indexeddb.service.ts (IndexedDB storage with CRUD operations)
+- src/Aegis.Web/src/services/sync.service.ts (data reconciliation between IndexedDB and API)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useOfflineQueue.ts (offline queue with auto-sync)
+- src/Aegis.Web/src/composables/useOfflineData.ts (offline-first data access patterns)
+
+**Components:**
+- src/Aegis.Web/src/components/common/OfflineIndicator.vue (connection status banner)
+- src/Aegis.Web/src/components/common/SyncStatusPanel.vue (detailed sync status for settings)
+
+**Types:**
+- src/Aegis.Web/src/types/offline.ts (offline and sync-related types)
+
+**Updated Files:**
+- src/Aegis.Web/src/App.vue (OfflineIndicator, useOfflineQueue integration)
+- src/Aegis.Web/src/services/api.ts (added patch method)
+- src/Aegis.Web/src/types/index.ts (added offline types export)
+- src/Aegis.Web/src/types/workspace.ts (re-exported Workspace type)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -1342,10 +1386,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 85-86: Offline Support & Data Sync
   - Sprint 83-84: Responsive Mobile Design & Touch Gestures
   - Sprint 81-82: Real-Time Connection Status & Presence
   - Sprint 79-80: Onboarding & Feature Tour
-  - Sprint 77-78: Command Palette & Keyboard Navigation
 
 ## 💡 Tips for Next Session
 

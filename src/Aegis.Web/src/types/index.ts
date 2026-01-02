@@ -13,6 +13,7 @@ export * from './upload'
 export * from './command'
 export * from './onboarding'
 export * from './connection'
+export * from './offline'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

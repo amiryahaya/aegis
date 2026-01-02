@@ -7,12 +7,14 @@ import ToastContainer from '@/components/common/ToastContainer.vue'
 import SkipToContent from '@/components/common/SkipToContent.vue'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import CommandPalette from '@/components/common/CommandPalette.vue'
+import OfflineIndicator from '@/components/common/OfflineIndicator.vue'
 import OnboardingModal from '@/components/onboarding/OnboardingModal.vue'
 import FeatureTour from '@/components/onboarding/FeatureTour.vue'
 import MobileBottomNav from '@/components/mobile/MobileBottomNav.vue'
 import { useErrorTracking } from '@/composables/useErrorTracking'
 import { useCommandPalette } from '@/composables/useCommandPalette'
 import { useOnboarding } from '@/composables/useOnboarding'
+import { useOfflineQueue } from '@/composables/useOfflineQueue'
 
 const route = useRoute()
 const isAuthPage = computed(() => route.meta.requiresAuth === false)
@@ -22,6 +24,9 @@ const { trackCritical } = useErrorTracking()
 
 // Initialize command palette (registers keyboard shortcuts)
 useCommandPalette()
+
+// Initialize offline queue (syncs pending operations)
+useOfflineQueue()
 
 // Initialize onboarding
 const { shouldShowOnboarding, showWelcome } = useOnboarding()
@@ -63,8 +68,11 @@ const handleCriticalError = (error: Error, info: string) => {
       </component>
     </ErrorBoundary>
 
-    <!-- PWA update prompts and offline indicator -->
+    <!-- PWA update prompts -->
     <PWAUpdatePrompt />
+
+    <!-- Offline status indicator -->
+    <OfflineIndicator />
 
     <!-- Toast notifications -->
     <ToastContainer />
