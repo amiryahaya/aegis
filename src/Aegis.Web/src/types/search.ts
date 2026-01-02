@@ -108,3 +108,55 @@ export interface RecentSearch {
   timestamp: string
   resultCount: number
 }
+
+// Saved Searches
+export interface SavedSearch {
+  id: string
+  name: string
+  query: string
+  filters: SearchFilter
+  createdAt: string
+  updatedAt: string
+  useCount: number
+  lastUsedAt?: string
+  isDefault?: boolean
+  color?: SavedSearchColor
+  icon?: string
+}
+
+export type SavedSearchColor = 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal' | 'red' | 'yellow'
+
+export interface CreateSavedSearchRequest {
+  name: string
+  query: string
+  filters?: SearchFilter
+  color?: SavedSearchColor
+  icon?: string
+}
+
+export interface UpdateSavedSearchRequest {
+  name?: string
+  query?: string
+  filters?: SearchFilter
+  color?: SavedSearchColor
+  icon?: string
+  isDefault?: boolean
+}
+
+// Search Suggestions
+export interface SearchSuggestion {
+  type: 'query' | 'recent' | 'saved' | 'document' | 'workspace'
+  text: string
+  icon?: string
+  metadata?: {
+    savedSearchId?: string
+    documentId?: string
+    workspaceId?: string
+    count?: number
+  }
+}
+
+export interface SearchSuggestionResponse {
+  suggestions: SearchSuggestion[]
+  query: string
+}

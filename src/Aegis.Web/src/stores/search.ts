@@ -8,10 +8,16 @@ import type {
   SearchFilter,
   SearchResultType,
   RecentSearch,
-  DocumentPreview
+  DocumentPreview,
+  SavedSearch,
+  CreateSavedSearchRequest,
+  UpdateSavedSearchRequest,
+  SearchSuggestion
 } from '@/types/search'
 
 const MAX_RECENT_SEARCHES = 10
+const MAX_SAVED_SEARCHES = 20
+const SAVED_SEARCHES_KEY = 'savedSearches'
 
 export const useSearchStore = defineStore('search', () => {
   // State
@@ -35,6 +41,12 @@ export const useSearchStore = defineStore('search', () => {
   const documentPreview = ref<DocumentPreview | null>(null)
   const isPreviewLoading = ref(false)
 
+  // Saved searches state
+  const savedSearches = ref<SavedSearch[]>(loadSavedSearches())
+  const suggestions = ref<SearchSuggestion[]>([])
+  const isSuggestionsLoading = ref(false)
+  const showSuggestions = ref(false)
+
   // Computed
   const hasResults = computed(() => results.value.length > 0)
   const hasMorePages = computed(() => currentPage.value < totalPages.value)
@@ -57,6 +69,24 @@ export const useSearchStore = defineStore('search', () => {
       }
     }
     return []
+  }
+
+  // Load saved searches from localStorage
+  function loadSavedSearches(): SavedSearch[] {
+    const stored = localStorage.getItem(SAVED_SEARCHES_KEY)
+    if (stored) {
+      try {
+        return JSON.parse(stored)
+      } catch {
+        return []
+      }
+    }
+    return []
+  }
+
+  // Save saved searches to localStorage
+  function persistSavedSearches() {
+    localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(savedSearches.value))
   }
 
   // Save recent searches to localStorage
@@ -219,6 +249,153 @@ export const useSearchStore = defineStore('search', () => {
     error.value = null
   }
 
+  // ============================================
+  // SAVED SEARCHES ACTIONS
+  // ============================================
+
+  function createSavedSearch(request: CreateSavedSearchRequest): SavedSearch {
+    const newSearch: SavedSearch = {
+      id: crypto.randomUUID(),
+      name: request.name,
+      query: request.query,
+      filters: request.filters || { types: [], workspaceIds: [], dateRange: null },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      useCount: 0,
+      color: request.color || 'blue',
+      icon: request.icon
+    }
+
+    savedSearches.value.unshift(newSearch)
+
+    if (savedSearches.value.length > MAX_SAVED_SEARCHES) {
+      savedSearches.value = savedSearches.value.slice(0, MAX_SAVED_SEARCHES)
+    }
+
+    persistSavedSearches()
+    return newSearch
+  }
+
+  function updateSavedSearch(id: string, updates: UpdateSavedSearchRequest): SavedSearch | null {
+    const index = savedSearches.value.findIndex(s => s.id === id)
+    if (index === -1) return null
+
+    const search = savedSearches.value[index]
+    const updated: SavedSearch = {
+      ...search,
+      ...updates,
+      filters: updates.filters || search.filters,
+      updatedAt: new Date().toISOString()
+    }
+
+    savedSearches.value[index] = updated
+    persistSavedSearches()
+    return updated
+  }
+
+  function deleteSavedSearch(id: string): boolean {
+    const index = savedSearches.value.findIndex(s => s.id === id)
+    if (index === -1) return false
+
+    savedSearches.value.splice(index, 1)
+    persistSavedSearches()
+    return true
+  }
+
+  function executeSavedSearch(id: string): Promise<SearchResponse | null> {
+    const savedSearch = savedSearches.value.find(s => s.id === id)
+    if (!savedSearch) return Promise.resolve(null)
+
+    // Update use count
+    const index = savedSearches.value.findIndex(s => s.id === id)
+    if (index !== -1) {
+      savedSearches.value[index] = {
+        ...savedSearches.value[index],
+        useCount: savedSearches.value[index].useCount + 1,
+        lastUsedAt: new Date().toISOString()
+      }
+      persistSavedSearches()
+    }
+
+    // Apply filters
+    filters.value = { ...savedSearch.filters }
+
+    // Execute search
+    return search(savedSearch.query)
+  }
+
+  function setDefaultSavedSearch(id: string): void {
+    savedSearches.value = savedSearches.value.map(s => ({
+      ...s,
+      isDefault: s.id === id
+    }))
+    persistSavedSearches()
+  }
+
+  function getDefaultSavedSearch(): SavedSearch | undefined {
+    return savedSearches.value.find(s => s.isDefault)
+  }
+
+  // ============================================
+  // SEARCH SUGGESTIONS ACTIONS
+  // ============================================
+
+  function generateSuggestions(query: string): SearchSuggestion[] {
+    if (!query.trim()) {
+      showSuggestions.value = false
+      return []
+    }
+
+    const lowerQuery = query.toLowerCase()
+    const allSuggestions: SearchSuggestion[] = []
+
+    // Add matching saved searches
+    const matchingSaved = savedSearches.value
+      .filter(s => s.name.toLowerCase().includes(lowerQuery) || s.query.toLowerCase().includes(lowerQuery))
+      .slice(0, 3)
+      .map(s => ({
+        type: 'saved' as const,
+        text: s.query,
+        icon: s.icon || 'bookmark',
+        metadata: { savedSearchId: s.id, count: s.useCount }
+      }))
+    allSuggestions.push(...matchingSaved)
+
+    // Add matching recent searches
+    const matchingRecent = recentSearches.value
+      .filter(r => r.query.toLowerCase().includes(lowerQuery))
+      .slice(0, 3)
+      .map(r => ({
+        type: 'recent' as const,
+        text: r.query,
+        icon: 'clock',
+        metadata: { count: r.resultCount }
+      }))
+    allSuggestions.push(...matchingRecent)
+
+    // Add query suggestion if not already in results
+    if (!allSuggestions.some(s => s.text.toLowerCase() === lowerQuery)) {
+      allSuggestions.unshift({
+        type: 'query' as const,
+        text: query,
+        icon: 'search'
+      })
+    }
+
+    suggestions.value = allSuggestions.slice(0, 8)
+    showSuggestions.value = allSuggestions.length > 0
+    return suggestions.value
+  }
+
+  function clearSuggestions() {
+    suggestions.value = []
+    showSuggestions.value = false
+  }
+
+  function hideSuggestions() {
+    showSuggestions.value = false
+  }
+
   return {
     // State
     results,
@@ -234,6 +411,10 @@ export const useSearchStore = defineStore('search', () => {
     recentSearches,
     documentPreview,
     isPreviewLoading,
+    savedSearches,
+    suggestions,
+    isSuggestionsLoading,
+    showSuggestions,
 
     // Computed
     hasResults,
@@ -251,6 +432,19 @@ export const useSearchStore = defineStore('search', () => {
     clearResults,
     clearRecentSearches,
     closeDocumentPreview,
-    clearError
+    clearError,
+
+    // Saved Searches
+    createSavedSearch,
+    updateSavedSearch,
+    deleteSavedSearch,
+    executeSavedSearch,
+    setDefaultSavedSearch,
+    getDefaultSavedSearch,
+
+    // Suggestions
+    generateSuggestions,
+    clearSuggestions,
+    hideSuggestions
   }
 })

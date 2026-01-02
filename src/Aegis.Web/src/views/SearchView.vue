@@ -3,7 +3,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   MagnifyingGlassIcon,
-  FunnelIcon,
   ClockIcon,
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
@@ -12,10 +11,12 @@ import {
   XMarkIcon,
   ArrowPathIcon
 } from '@heroicons/vue/24/outline'
-import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { useSearchStore } from '@/stores/search'
 import { useWorkspaceStore } from '@/stores/workspace'
-import type { SearchResultType } from '@/types/search'
+import type { SearchResultType, SearchSuggestion } from '@/types/search'
+import AdvancedFilters from '@/components/search/AdvancedFilters.vue'
+import SearchSuggestions from '@/components/search/SearchSuggestions.vue'
+import SavedSearches from '@/components/search/SavedSearches.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,23 +24,8 @@ const searchStore = useSearchStore()
 const workspaceStore = useWorkspaceStore()
 
 const searchInput = ref('')
-const showFilters = ref(false)
-
-const typeOptions: { value: SearchResultType; label: string; icon: typeof DocumentTextIcon }[] = [
-  { value: 'session', label: 'Sessions', icon: ChatBubbleLeftRightIcon },
-  { value: 'document', label: 'Documents', icon: DocumentTextIcon },
-  { value: 'workspace', label: 'Workspaces', icon: FolderIcon },
-  { value: 'message', label: 'Messages', icon: ChatBubbleOvalLeftIcon }
-]
-
-const datePresets = [
-  { value: 'today', label: 'Today' },
-  { value: 'week', label: 'Past Week' },
-  { value: 'month', label: 'Past Month' },
-  { value: 'year', label: 'Past Year' }
-]
-
-const selectedDatePreset = ref<string | null>(null)
+const showSuggestions = ref(false)
+const searchInputFocused = ref(false)
 
 const resultTypeIcon = computed(() => (type: SearchResultType) => {
   switch (type) {
@@ -90,57 +76,44 @@ async function performSearch() {
 }
 
 function handleSearchSubmit() {
+  showSuggestions.value = false
   performSearch()
 }
 
 function selectRecentSearch(query: string) {
   searchInput.value = query
+  showSuggestions.value = false
   performSearch()
 }
 
-function toggleTypeFilter(type: SearchResultType) {
-  const current = [...searchStore.filters.types]
-  const index = current.indexOf(type)
-  if (index === -1) {
-    current.push(type)
-  } else {
-    current.splice(index, 1)
+function handleSuggestionSelect(suggestion: SearchSuggestion) {
+  searchInput.value = suggestion.text
+  showSuggestions.value = false
+  performSearch()
+}
+
+function handleSearchInputFocus() {
+  searchInputFocused.value = true
+  if (searchInput.value) {
+    showSuggestions.value = true
   }
-  searchStore.setTypeFilter(current)
+}
+
+function handleSearchInputBlur() {
+  // Delay to allow suggestion click
+  setTimeout(() => {
+    searchInputFocused.value = false
+    showSuggestions.value = false
+  }, 200)
+}
+
+function handleFiltersApply() {
   if (searchInput.value) {
     performSearch()
   }
 }
 
-function selectDatePreset(preset: string) {
-  selectedDatePreset.value = preset
-  const now = new Date()
-  let from: string | null = null
-
-  switch (preset) {
-    case 'today':
-      from = new Date(now.setHours(0, 0, 0, 0)).toISOString()
-      break
-    case 'week':
-      from = new Date(now.setDate(now.getDate() - 7)).toISOString()
-      break
-    case 'month':
-      from = new Date(now.setMonth(now.getMonth() - 1)).toISOString()
-      break
-    case 'year':
-      from = new Date(now.setFullYear(now.getFullYear() - 1)).toISOString()
-      break
-  }
-
-  searchStore.setDateRangeFilter(from, null)
-  if (searchInput.value) {
-    performSearch()
-  }
-}
-
-function clearAllFilters() {
-  searchStore.clearFilters()
-  selectedDatePreset.value = null
+function handleFiltersClear() {
   if (searchInput.value) {
     performSearch()
   }
@@ -198,150 +171,68 @@ function highlightText(text: string, highlights: string[]): string {
             type="text"
             placeholder="Search sessions, documents, workspaces..."
             class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-aegis-500 focus:border-transparent"
+            @focus="handleSearchInputFocus"
+            @blur="handleSearchInputBlur"
+            @input="showSuggestions = searchInput.length > 0"
+          />
+
+          <!-- Search Suggestions Dropdown -->
+          <SearchSuggestions
+            :query="searchInput"
+            :show="showSuggestions && searchInputFocused"
+            @select="handleSuggestionSelect"
+            @close="showSuggestions = false"
           />
         </form>
 
-        <!-- Filter Toggle -->
-        <div class="flex items-center justify-between mt-4">
-          <button
-            @click="showFilters = !showFilters"
-            class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-          >
-            <FunnelIcon class="h-4 w-4" />
-            Filters
-            <span v-if="searchStore.activeFilterCount > 0" class="px-1.5 py-0.5 bg-aegis-100 dark:bg-aegis-900 text-aegis-700 dark:text-aegis-300 rounded-full text-xs">
-              {{ searchStore.activeFilterCount }}
-            </span>
-          </button>
-
-          <button
-            v-if="searchStore.activeFilterCount > 0"
-            @click="clearAllFilters"
-            class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Clear all filters
-          </button>
-        </div>
-
-        <!-- Filters Panel -->
-        <div v-if="showFilters" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-4">
-          <!-- Type Filters -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="type in typeOptions"
-                :key="type.value"
-                @click="toggleTypeFilter(type.value)"
-                :class="[
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
-                  searchStore.filters.types.includes(type.value)
-                    ? 'bg-aegis-100 dark:bg-aegis-900 text-aegis-700 dark:text-aegis-300 border border-aegis-300 dark:border-aegis-700'
-                    : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500'
-                ]"
-              >
-                <component :is="type.icon" class="h-4 w-4" />
-                {{ type.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Date Filters -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="preset in datePresets"
-                :key="preset.value"
-                @click="selectDatePreset(preset.value)"
-                :class="[
-                  'px-3 py-1.5 rounded-full text-sm transition-colors',
-                  selectedDatePreset === preset.value
-                    ? 'bg-aegis-100 dark:bg-aegis-900 text-aegis-700 dark:text-aegis-300 border border-aegis-300 dark:border-aegis-700'
-                    : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500'
-                ]"
-              >
-                {{ preset.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Workspace Filter -->
-          <div v-if="workspaceStore.workspaces.length > 0">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Workspace</label>
-            <Listbox
-              :model-value="searchStore.filters.workspaceIds"
-              @update:model-value="searchStore.setWorkspaceFilter($event); searchInput && performSearch()"
-              multiple
-            >
-              <div class="relative">
-                <ListboxButton class="relative w-full py-2 pl-3 pr-10 text-left bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-aegis-500">
-                  <span class="block truncate text-gray-700 dark:text-gray-300">
-                    {{ searchStore.filters.workspaceIds.length > 0
-                      ? `${searchStore.filters.workspaceIds.length} workspace(s) selected`
-                      : 'All workspaces' }}
-                  </span>
-                </ListboxButton>
-                <ListboxOptions class="absolute z-10 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg focus:outline-none">
-                  <ListboxOption
-                    v-for="workspace in workspaceStore.workspaces"
-                    :key="workspace.id"
-                    :value="workspace.id"
-                    v-slot="{ active, selected }"
-                    as="template"
-                  >
-                    <li
-                      :class="[
-                        'cursor-pointer select-none relative py-2 pl-10 pr-4',
-                        active ? 'bg-aegis-100 dark:bg-aegis-900 text-aegis-900 dark:text-aegis-100' : 'text-gray-900 dark:text-gray-100'
-                      ]"
-                    >
-                      <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                        {{ workspace.name }}
-                      </span>
-                      <span
-                        v-if="selected"
-                        class="absolute inset-y-0 left-0 flex items-center pl-3 text-aegis-600 dark:text-aegis-400"
-                      >
-                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </span>
-                    </li>
-                  </ListboxOption>
-                </ListboxOptions>
-              </div>
-            </Listbox>
-          </div>
+        <!-- Advanced Filters -->
+        <div class="mt-4">
+          <AdvancedFilters
+            @apply="handleFiltersApply"
+            @clear="handleFiltersClear"
+          />
         </div>
       </div>
     </div>
 
     <div class="max-w-5xl mx-auto px-4 py-6">
-      <!-- Recent Searches (when no query) -->
-      <div v-if="!searchStore.currentQuery && searchStore.recentSearches.length > 0" class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <ClockIcon class="h-5 w-5 text-gray-400" />
-            Recent Searches
-          </h2>
-          <button
-            @click="searchStore.clearRecentSearches()"
-            class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Clear
-          </button>
+      <!-- No Query State: Show Saved Searches and Recent Searches -->
+      <div v-if="!searchStore.currentQuery" class="grid md:grid-cols-2 gap-6 mb-8">
+        <!-- Saved Searches -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <SavedSearches />
         </div>
-        <div class="space-y-2">
-          <button
-            v-for="recent in searchStore.recentSearches"
-            :key="recent.query"
-            @click="selectRecentSearch(recent.query)"
-            class="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-          >
-            <span class="text-gray-900 dark:text-gray-100">{{ recent.query }}</span>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ recent.resultCount }} results</span>
-          </button>
+
+        <!-- Recent Searches -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <ClockIcon class="h-4 w-4" />
+              Recent Searches
+            </h3>
+            <button
+              v-if="searchStore.recentSearches.length > 0"
+              @click="searchStore.clearRecentSearches()"
+              class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Clear
+            </button>
+          </div>
+          <div v-if="searchStore.recentSearches.length > 0" class="space-y-2">
+            <button
+              v-for="recent in searchStore.recentSearches"
+              :key="recent.query"
+              @click="selectRecentSearch(recent.query)"
+              class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors text-left"
+            >
+              <span class="text-sm text-gray-900 dark:text-gray-100 truncate">{{ recent.query }}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">{{ recent.resultCount }} results</span>
+            </button>
+          </div>
+          <div v-else class="text-center py-6 text-gray-500 dark:text-gray-400">
+            <ClockIcon class="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p class="text-sm">No recent searches</p>
+          </div>
         </div>
       </div>
 
@@ -419,14 +310,6 @@ function highlightText(text: string, highlights: string[]): string {
         </p>
       </div>
 
-      <!-- Initial State -->
-      <div v-else-if="!searchStore.currentQuery && searchStore.recentSearches.length === 0" class="text-center py-12">
-        <MagnifyingGlassIcon class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Search AEGIS</h3>
-        <p class="text-gray-600 dark:text-gray-400">
-          Search across your sessions, documents, and workspaces.
-        </p>
-      </div>
 
       <!-- Error State -->
       <div v-if="searchStore.error" class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
