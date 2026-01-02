@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { z } from 'zod'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
@@ -13,6 +16,7 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/vue/24/outline'
 import { SessionType, type SessionStatus, type ExportFormat } from '@/types'
+import { FormField } from '@/components/form'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -22,8 +26,30 @@ const searchQuery = ref('')
 const statusFilter = ref<SessionStatus | ''>('')
 const typeFilter = ref<SessionType | ''>('')
 const showNewSessionDialog = ref(false)
-const newSessionTitle = ref('')
-const newSessionType = ref<SessionType>(SessionType.QuickQuery)
+
+// Form validation schema for new session
+const createSessionSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Session title is required')
+    .min(3, 'Title must be at least 3 characters')
+    .max(200, 'Title must be less than 200 characters'),
+  type: z.nativeEnum(SessionType)
+})
+
+type CreateSessionFormData = z.infer<typeof createSessionSchema>
+
+const { defineField, handleSubmit, errors, resetForm, meta } = useForm<CreateSessionFormData>({
+  validationSchema: toTypedSchema(createSessionSchema),
+  initialValues: {
+    title: '',
+    type: SessionType.QuickQuery
+  }
+})
+
+const [title] = defineField('title')
+const [sessionType] = defineField('type')
+const titleTouched = ref(false)
 
 const filteredSessions = computed(() => {
   let sessions = sessionStore.sessions
@@ -68,21 +94,28 @@ watch(searchQuery, () => {
   }, 300)
 })
 
-async function createSession() {
-  if (!authStore.user || !newSessionTitle.value.trim()) return
+// Reset form when dialog is closed
+watch(showNewSessionDialog, (isOpen) => {
+  if (!isOpen) {
+    resetForm()
+    titleTouched.value = false
+  }
+})
+
+const createSession = handleSubmit(async (values) => {
+  if (!authStore.user) return
 
   const session = await sessionStore.createSession({
     userId: authStore.user.id,
-    title: newSessionTitle.value.trim(),
-    type: newSessionType.value
+    title: values.title.trim(),
+    type: values.type
   })
 
   if (session) {
     showNewSessionDialog.value = false
-    newSessionTitle.value = ''
     router.push(`/chat/${session.id}`)
   }
-}
+})
 
 async function deleteSession(sessionId: string) {
   if (confirm('Are you sure you want to delete this session?')) {
@@ -134,6 +167,11 @@ const sessionTypes: SessionType[] = [
   SessionType.Exploration,
   SessionType.Comparison
 ]
+
+const sessionTypeOptions = sessionTypes.map(type => ({
+  value: type,
+  label: type.replace(/([A-Z])/g, ' $1').trim()
+}))
 </script>
 
 <template>
@@ -332,30 +370,30 @@ const sessionTypes: SessionType[] = [
                   Create New Session
                 </DialogTitle>
 
-                <form @submit.prevent="createSession" class="mt-4 space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Session Title
-                    </label>
-                    <input
-                      v-model="newSessionTitle"
-                      type="text"
-                      class="input mt-1"
-                      placeholder="Enter a title for your session"
-                      required
-                    />
-                  </div>
+                <form @submit.prevent="createSession" class="mt-4 space-y-4" novalidate>
+                  <FormField
+                    v-model="title"
+                    name="title"
+                    label="Session Title"
+                    type="text"
+                    placeholder="Enter a title for your session"
+                    :error="errors.title"
+                    :touched="titleTouched"
+                    :required="true"
+                    hint="Give your session a descriptive name"
+                    @blur="titleTouched = true"
+                  />
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Session Type
-                    </label>
-                    <select v-model="newSessionType" class="input mt-1">
-                      <option v-for="type in sessionTypes" :key="type" :value="type">
-                        {{ type }}
-                      </option>
-                    </select>
-                  </div>
+                  <FormField
+                    v-model="sessionType"
+                    name="type"
+                    label="Session Type"
+                    type="select"
+                    :options="sessionTypeOptions"
+                    :error="errors.type"
+                    :touched="true"
+                    hint="Choose a template that matches your use case"
+                  />
 
                   <div class="flex justify-end gap-3 pt-4">
                     <button
@@ -368,7 +406,7 @@ const sessionTypes: SessionType[] = [
                     <button
                       type="submit"
                       class="btn-primary"
-                      :disabled="!newSessionTitle.trim()"
+                      :disabled="!meta.valid"
                     >
                       Create Session
                     </button>

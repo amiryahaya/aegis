@@ -1,30 +1,52 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
 import { useAuthStore } from '@/stores/auth'
+import { loginSchema, type LoginFormData } from '@/validation/schemas'
+import { FormField, FormCheckbox } from '@/components/form'
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const email = ref('')
-const password = ref('')
 const loading = ref(false)
-const error = ref('')
+const serverError = ref('')
 
-async function handleSubmit() {
-  if (!email.value || !password.value) {
-    error.value = 'Please enter both email and password'
-    return
+// Set up VeeValidate with Zod schema
+const { defineField, handleSubmit, errors, meta } = useForm<LoginFormData>({
+  validationSchema: toTypedSchema(loginSchema),
+  initialValues: {
+    email: '',
+    password: '',
+    rememberMe: false
   }
+})
 
+// Define form fields
+const [email] = defineField('email')
+const [password] = defineField('password')
+const [rememberMe] = defineField('rememberMe')
+
+// Track touched fields
+const emailTouched = ref(false)
+const passwordTouched = ref(false)
+
+// Computed for button disabled state
+const isSubmitDisabled = computed(() => {
+  return loading.value || !meta.value.valid
+})
+
+// Handle form submission
+const onSubmit = handleSubmit(async (values) => {
   loading.value = true
-  error.value = ''
+  serverError.value = ''
 
   const success = await authStore.login({
-    email: email.value,
-    password: password.value
+    email: values.email,
+    password: values.password
   })
 
   loading.value = false
@@ -33,8 +55,14 @@ async function handleSubmit() {
     const redirect = route.query.redirect as string || '/'
     router.push(redirect)
   } else {
-    error.value = authStore.error || 'Login failed. Please try again.'
+    serverError.value = authStore.error || 'Login failed. Please try again.'
   }
+})
+
+// Mark fields as touched on blur
+function handleBlur(field: 'email' | 'password') {
+  if (field === 'email') emailTouched.value = true
+  if (field === 'password') passwordTouched.value = true
 }
 </script>
 
@@ -55,53 +83,58 @@ async function handleSubmit() {
           Sign in to your account
         </h2>
 
-        <!-- Error message -->
+        <!-- Server error message -->
         <div
-          v-if="error"
+          v-if="serverError"
           class="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400"
+          role="alert"
         >
           <ExclamationCircleIcon class="h-5 w-5 shrink-0" />
-          {{ error }}
+          {{ serverError }}
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form @submit.prevent="onSubmit" class="space-y-4" novalidate>
           <!-- Email -->
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email address
-            </label>
-            <input
-              id="email"
-              v-model="email"
-              type="email"
-              autocomplete="email"
-              required
-              class="input mt-1"
-              placeholder="you@example.com"
-            />
-          </div>
+          <FormField
+            v-model="email"
+            name="email"
+            label="Email address"
+            type="email"
+            placeholder="you@example.com"
+            :error="errors.email"
+            :touched="emailTouched"
+            :required="true"
+            :show-success-icon="true"
+            @blur="handleBlur('email')"
+          />
 
           <!-- Password -->
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="input mt-1"
-              placeholder="••••••••"
-            />
-          </div>
+          <FormField
+            v-model="password"
+            name="password"
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            :error="errors.password"
+            :touched="passwordTouched"
+            :required="true"
+            :show-success-icon="true"
+            @blur="handleBlur('password')"
+          />
+
+          <!-- Remember me -->
+          <FormCheckbox
+            v-model="rememberMe"
+            name="rememberMe"
+            label="Remember me"
+            description="Stay signed in for 30 days"
+          />
 
           <!-- Submit button -->
           <button
             type="submit"
-            :disabled="loading"
-            class="btn-primary w-full py-2.5"
+            :disabled="isSubmitDisabled"
+            class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <template v-if="loading">
               <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
@@ -121,7 +154,7 @@ async function handleSubmit() {
           <p class="text-xs text-gray-500 dark:text-gray-400">
             <strong>Demo credentials:</strong><br />
             Email: demo@aegis.local<br />
-            Password: demo123
+            Password: demo1234
           </p>
         </div>
       </div>

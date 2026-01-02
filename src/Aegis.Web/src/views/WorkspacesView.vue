@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useAuthStore } from '@/stores/auth'
+import { createWorkspaceSchema, type CreateWorkspaceFormData } from '@/validation/schemas'
 import {
   PlusIcon,
   FolderIcon,
@@ -25,6 +28,7 @@ import {
 } from '@headlessui/vue'
 import type { Workspace } from '@/types'
 import type { CreateWorkspaceRequest } from '@/types/workspace'
+import { FormField } from '@/components/form'
 
 const router = useRouter()
 const workspaceStore = useWorkspaceStore()
@@ -32,8 +36,21 @@ const authStore = useAuthStore()
 
 const searchQuery = ref('')
 const isCreateDialogOpen = ref(false)
-const newWorkspaceName = ref('')
-const newWorkspaceDescription = ref('')
+
+// Form validation
+const { defineField, handleSubmit, errors, resetForm, meta } = useForm<CreateWorkspaceFormData>({
+  validationSchema: toTypedSchema(createWorkspaceSchema),
+  initialValues: {
+    name: '',
+    description: '',
+    visibility: 'private'
+  }
+})
+
+const [name] = defineField('name')
+const [description] = defineField('description')
+const nameTouched = ref(false)
+const descriptionTouched = ref(false)
 
 const filteredWorkspaces = computed(() => {
   if (!searchQuery.value) return workspaceStore.workspaces
@@ -50,23 +67,30 @@ onMounted(async () => {
   }
 })
 
-async function createWorkspace() {
-  if (!newWorkspaceName.value.trim() || !authStore.user?.teamId) return
+// Reset form when dialog closes
+watch(isCreateDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    resetForm()
+    nameTouched.value = false
+    descriptionTouched.value = false
+  }
+})
+
+const createWorkspace = handleSubmit(async (values) => {
+  if (!authStore.user?.teamId) return
 
   const request: CreateWorkspaceRequest = {
     teamId: authStore.user.teamId,
-    name: newWorkspaceName.value.trim(),
-    description: newWorkspaceDescription.value.trim() || undefined
+    name: values.name.trim(),
+    description: values.description?.trim() || undefined
   }
 
   const workspace = await workspaceStore.createWorkspace(request)
   if (workspace) {
     isCreateDialogOpen.value = false
-    newWorkspaceName.value = ''
-    newWorkspaceDescription.value = ''
     router.push(`/workspaces/${workspace.id}`)
   }
-}
+})
 
 function openWorkspace(workspace: Workspace) {
   router.push(`/workspaces/${workspace.id}`)
@@ -261,44 +285,50 @@ function formatDate(dateString: string) {
                   Create New Workspace
                 </DialogTitle>
 
-                <div class="mt-4 space-y-4">
-                  <div>
-                    <label class="label">Name</label>
-                    <input
-                      v-model="newWorkspaceName"
-                      type="text"
-                      class="input w-full"
-                      placeholder="My Workspace"
-                      @keydown.enter="createWorkspace"
-                    />
-                  </div>
+                <form @submit.prevent="createWorkspace" class="mt-4 space-y-4" novalidate>
+                  <FormField
+                    v-model="name"
+                    name="name"
+                    label="Name"
+                    type="text"
+                    placeholder="My Workspace"
+                    :error="errors.name"
+                    :touched="nameTouched"
+                    :required="true"
+                    hint="Choose a unique name for your workspace"
+                    @blur="nameTouched = true"
+                  />
 
-                  <div>
-                    <label class="label">Description (optional)</label>
-                    <textarea
-                      v-model="newWorkspaceDescription"
-                      class="input w-full"
-                      rows="3"
-                      placeholder="What is this workspace for?"
-                    />
-                  </div>
-                </div>
+                  <FormField
+                    v-model="description"
+                    name="description"
+                    label="Description"
+                    type="textarea"
+                    placeholder="What is this workspace for?"
+                    :rows="3"
+                    :error="errors.description"
+                    :touched="descriptionTouched"
+                    hint="Optional: Describe the purpose of this workspace"
+                    @blur="descriptionTouched = true"
+                  />
 
-                <div class="mt-6 flex justify-end gap-3">
-                  <button
-                    class="btn-ghost"
-                    @click="isCreateDialogOpen = false"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    class="btn-primary"
-                    :disabled="!newWorkspaceName.trim()"
-                    @click="createWorkspace"
-                  >
-                    Create
-                  </button>
-                </div>
+                  <div class="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      class="btn-ghost"
+                      @click="isCreateDialogOpen = false"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="btn-primary"
+                      :disabled="!meta.valid"
+                    >
+                      Create
+                    </button>
+                  </div>
+                </form>
               </DialogPanel>
             </TransitionChild>
           </div>
