@@ -7,8 +7,13 @@ import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import LivePresence from '@/components/connection/LivePresence.vue'
 import TypingIndicator from '@/components/connection/TypingIndicator.vue'
+import MobileChatHeader from '@/components/mobile/MobileChatHeader.vue'
+import MobileChatInput from '@/components/mobile/MobileChatInput.vue'
+import MobileMessageBubble from '@/components/mobile/MobileMessageBubble.vue'
+import MobileSourcesSheet from '@/components/mobile/MobileSourcesSheet.vue'
 import { useQueryStream } from '@/composables/useSignalR'
 import { useConnection } from '@/composables/useConnection'
+import { useBreakpoints } from '@/composables/useMediaQuery'
 import {
   PencilIcon,
   TrashIcon,
@@ -16,7 +21,7 @@ import {
   EllipsisVerticalIcon
 } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { SessionType, type ExportFormat } from '@/types'
+import { SessionType, type ExportFormat, type SourceReference } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,14 +29,20 @@ const sessionStore = useSessionStore()
 const authStore = useAuthStore()
 const { connectionState, streamState, connect, disconnect, streamQuery, resetStream } = useQueryStream()
 const { joinResource, leaveResource, sendTypingIndicator } = useConnection()
+const { isMobile } = useBreakpoints()
 
 const chatContainerRef = ref<HTMLDivElement>()
 const chatInputRef = ref<InstanceType<typeof ChatInput>>()
+const mobileChatInputRef = ref<InstanceType<typeof MobileChatInput>>()
 const isLoading = ref(false)
 const streamingTurnId = ref<string | null>(null)
 const isEditingTitle = ref(false)
 const editTitle = ref('')
 const streamingResponse = ref('')
+
+// Mobile-specific state
+const showSourcesSheet = ref(false)
+const selectedSources = ref<SourceReference[]>([])
 
 const sessionId = computed(() => route.params.sessionId as string | undefined)
 
@@ -196,8 +207,17 @@ The response would include:
 }
 
 function handleFollowUp(question: string) {
-  chatInputRef.value?.setQuery(question)
-  chatInputRef.value?.focus()
+  if (isMobile.value) {
+    mobileChatInputRef.value?.setQuery(question)
+  } else {
+    chatInputRef.value?.setQuery(question)
+    chatInputRef.value?.focus()
+  }
+}
+
+function openSourcesSheet(sources: SourceReference[]) {
+  selectedSources.value = sources
+  showSourcesSheet.value = true
 }
 
 function scrollToBottom() {
@@ -249,8 +269,21 @@ async function handleExport(format: ExportFormat) {
 
 <template>
   <div class="flex h-full flex-col">
-    <!-- Header -->
-    <div v-if="currentSession" class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+    <!-- Mobile Header -->
+    <MobileChatHeader
+      v-if="currentSession && isMobile"
+      :title="currentSession.title"
+      :subtitle="`${currentSession.turnCount} turns`"
+      :is-editing="isEditingTitle"
+      v-model:edit-title="editTitle"
+      @edit="startEditTitle"
+      @save-title="saveTitle"
+      @delete="handleDelete"
+      @export="(format: string) => handleExport(format as ExportFormat)"
+    />
+
+    <!-- Desktop Header -->
+    <div v-if="currentSession && !isMobile" class="hidden md:flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
       <div class="flex items-center gap-2 min-w-0">
         <template v-if="isEditingTitle">
           <input
@@ -343,27 +376,27 @@ async function handleExport(format: ExportFormat) {
       ref="chatContainerRef"
       class="flex-1 overflow-y-auto scrollbar-thin"
     >
-      <div class="mx-auto max-w-3xl px-4 py-6">
-        <!-- Empty state -->
-        <div
-          v-if="!currentSession || turns.length === 0"
-          class="flex h-full flex-col items-center justify-center py-12 text-center"
-        >
-          <div class="rounded-full bg-aegis-100 p-4 dark:bg-aegis-900/50">
-            <svg class="h-12 w-12 text-aegis-600 dark:text-aegis-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <h2 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
-            Start a conversation
-          </h2>
-          <p class="mt-2 max-w-sm text-gray-500 dark:text-gray-400">
-            Ask questions about your documents and I'll help you find the answers.
-          </p>
+      <!-- Empty state -->
+      <div
+        v-if="!currentSession || turns.length === 0"
+        class="flex h-full flex-col items-center justify-center px-4 py-12 text-center"
+      >
+        <div class="rounded-full bg-aegis-100 p-4 dark:bg-aegis-900/50">
+          <svg class="h-12 w-12 text-aegis-600 dark:text-aegis-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
         </div>
+        <h2 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
+          Start a conversation
+        </h2>
+        <p class="mt-2 max-w-sm text-gray-500 dark:text-gray-400">
+          Ask questions about your documents and I'll help you find the answers.
+        </p>
+      </div>
 
-        <!-- Messages -->
-        <div v-else class="space-y-6">
+      <!-- Desktop Messages -->
+      <div v-else-if="!isMobile" class="mx-auto max-w-3xl px-4 py-6">
+        <div class="space-y-6">
           <ChatMessage
             v-for="turn in turns"
             :key="turn.id"
@@ -373,6 +406,18 @@ async function handleExport(format: ExportFormat) {
           />
         </div>
       </div>
+
+      <!-- Mobile Messages -->
+      <div v-else class="py-4 space-y-4">
+        <MobileMessageBubble
+          v-for="turn in turns"
+          :key="turn.id"
+          :turn="turn"
+          :is-streaming="turn.id === streamingTurnId"
+          @ask-follow-up="handleFollowUp"
+          @view-sources="turn.sources && openSourcesSheet(turn.sources)"
+        />
+      </div>
     </div>
 
     <!-- Typing indicator -->
@@ -381,13 +426,32 @@ async function handleExport(format: ExportFormat) {
       :session-id="sessionId"
     />
 
-    <!-- Input -->
+    <!-- Desktop Input -->
     <ChatInput
+      v-if="!isMobile"
       ref="chatInputRef"
+      :loading="isLoading"
+      class="hidden md:block"
+      @send="handleSend"
+      @stop="isLoading = false"
+      @input="handleTyping"
+    />
+
+    <!-- Mobile Input -->
+    <MobileChatInput
+      v-if="isMobile"
+      ref="mobileChatInputRef"
       :loading="isLoading"
       @send="handleSend"
       @stop="isLoading = false"
       @input="handleTyping"
+    />
+
+    <!-- Mobile Sources Sheet -->
+    <MobileSourcesSheet
+      :sources="selectedSources"
+      :open="showSourcesSheet"
+      @close="showSourcesSheet = false"
     />
   </div>
 </template>

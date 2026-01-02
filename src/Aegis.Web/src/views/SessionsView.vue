@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
 import { useBulkSelection } from '@/composables/useBulkSelection'
+import { useBreakpoints } from '@/composables/useMediaQuery'
+import { usePullToRefresh } from '@/composables/useTouchGestures'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
   MagnifyingGlassIcon,
@@ -20,10 +22,22 @@ import {
 import { SessionType, type SessionStatus, type ExportFormat, type BulkAction } from '@/types'
 import { FormField } from '@/components/form'
 import BulkActionsToolbar from '@/components/common/BulkActionsToolbar.vue'
+import FloatingActionButton from '@/components/mobile/FloatingActionButton.vue'
+import PullToRefreshIndicator from '@/components/mobile/PullToRefreshIndicator.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
+const { isMobile } = useBreakpoints()
+
+// Pull to refresh
+const sessionsListRef = ref<HTMLElement | null>(null)
+const pullToRefresh = usePullToRefresh(sessionsListRef, {
+  threshold: 80,
+  onRefresh: async () => {
+    await sessionStore.fetchSessions({ page: 1 })
+  }
+})
 
 // Bulk selection
 const bulkSelection = useBulkSelection({
@@ -229,34 +243,47 @@ const sessionTypeOptions = sessionTypes.map(type => ({
 </script>
 
 <template>
-  <div class="p-6">
-    <!-- Header -->
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Sessions</h1>
-        <p class="mt-1 text-gray-500 dark:text-gray-400">
-          Manage your conversation history
-        </p>
-      </div>
+  <div class="relative h-full">
+    <!-- Pull to refresh indicator -->
+    <PullToRefreshIndicator
+      v-if="isMobile"
+      :pull-distance="pullToRefresh.pullDistance"
+      :progress="pullToRefresh.progress"
+      :is-refreshing="pullToRefresh.isRefreshing"
+    />
 
-      <div class="flex items-center gap-2">
-        <button
-          class="btn-secondary gap-2"
-          :class="{ 'ring-2 ring-aegis-500': bulkSelection.isSelectionMode.value }"
-          @click="bulkSelection.toggleSelectionMode()"
-        >
-          <CheckIcon class="h-5 w-5" />
-          {{ bulkSelection.isSelectionMode.value ? 'Cancel' : 'Select' }}
-        </button>
-        <button
-          class="btn-primary gap-2"
-          @click="showNewSessionDialog = true"
-        >
-          <PlusIcon class="h-5 w-5" />
-          New Session
-        </button>
+    <div
+      ref="sessionsListRef"
+      class="h-full overflow-y-auto p-4 sm:p-6"
+    >
+      <!-- Header -->
+      <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Sessions</h1>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Manage your conversation history
+          </p>
+        </div>
+
+        <!-- Desktop buttons - hidden on mobile -->
+        <div class="hidden sm:flex items-center gap-2">
+          <button
+            class="btn-secondary gap-2"
+            :class="{ 'ring-2 ring-aegis-500': bulkSelection.isSelectionMode.value }"
+            @click="bulkSelection.toggleSelectionMode()"
+          >
+            <CheckIcon class="h-5 w-5" />
+            {{ bulkSelection.isSelectionMode.value ? 'Cancel' : 'Select' }}
+          </button>
+          <button
+            class="btn-primary gap-2"
+            @click="showNewSessionDialog = true"
+          >
+            <PlusIcon class="h-5 w-5" />
+            New Session
+          </button>
+        </div>
       </div>
-    </div>
 
     <!-- Filters -->
     <div class="mb-6 flex flex-col gap-4 sm:flex-row">
@@ -521,5 +548,12 @@ const sessionTypeOptions = sessionTypes.map(type => ({
         </div>
       </Dialog>
     </TransitionRoot>
+    </div>
+
+    <!-- Mobile FAB for new session -->
+    <FloatingActionButton
+      :icon="PlusIcon"
+      @click="showNewSessionDialog = true"
+    />
   </div>
 </template>

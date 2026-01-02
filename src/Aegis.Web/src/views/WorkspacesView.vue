@@ -5,6 +5,7 @@ import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useAuthStore } from '@/stores/auth'
+import { useBreakpoints } from '@/composables/useMediaQuery'
 import { createWorkspaceSchema, type CreateWorkspaceFormData } from '@/validation/schemas'
 import {
   PlusIcon,
@@ -29,10 +30,13 @@ import {
 import type { Workspace } from '@/types'
 import type { CreateWorkspaceRequest } from '@/types/workspace'
 import { FormField } from '@/components/form'
+import MobileWorkspaceCard from '@/components/mobile/MobileWorkspaceCard.vue'
+import FloatingActionButton from '@/components/mobile/FloatingActionButton.vue'
 
 const router = useRouter()
 const workspaceStore = useWorkspaceStore()
 const authStore = useAuthStore()
+const { isMobile } = useBreakpoints()
 
 const searchQuery = ref('')
 const isCreateDialogOpen = ref(false)
@@ -112,18 +116,19 @@ function formatDate(dateString: string) {
 </script>
 
 <template>
-  <div class="space-y-6 p-6">
+  <div class="space-y-4 md:space-y-6 p-4 md:p-6">
     <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Workspaces</h1>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Workspaces</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Manage your knowledge bases and data sources
         </p>
       </div>
 
+      <!-- Desktop button -->
       <button
-        class="btn-primary inline-flex items-center gap-2"
+        class="btn-primary hidden md:inline-flex items-center gap-2"
         @click="isCreateDialogOpen = true"
       >
         <PlusIcon class="h-5 w-5" />
@@ -168,7 +173,17 @@ function formatDate(dateString: string) {
       </button>
     </div>
 
-    <!-- Workspace grid -->
+    <!-- Mobile Workspace List -->
+    <div v-else-if="isMobile" class="-mx-4 bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+      <MobileWorkspaceCard
+        v-for="workspace in filteredWorkspaces"
+        :key="workspace.id"
+        :workspace="workspace"
+        @click="openWorkspace"
+      />
+    </div>
+
+    <!-- Desktop Workspace grid -->
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div
         v-for="workspace in filteredWorkspaces"
@@ -253,6 +268,11 @@ function formatDate(dateString: string) {
         </div>
       </div>
     </div>
+
+    <!-- Mobile FAB -->
+    <FloatingActionButton
+      @click="isCreateDialogOpen = true"
+    />
 
     <!-- Create Dialog -->
     <TransitionRoot appear :show="isCreateDialogOpen" as="template">

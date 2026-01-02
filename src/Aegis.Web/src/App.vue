@@ -9,6 +9,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import CommandPalette from '@/components/common/CommandPalette.vue'
 import OnboardingModal from '@/components/onboarding/OnboardingModal.vue'
 import FeatureTour from '@/components/onboarding/FeatureTour.vue'
+import MobileBottomNav from '@/components/mobile/MobileBottomNav.vue'
 import { useErrorTracking } from '@/composables/useErrorTracking'
 import { useCommandPalette } from '@/composables/useCommandPalette'
 import { useOnboarding } from '@/composables/useOnboarding'
@@ -74,5 +75,17 @@ const handleCriticalError = (error: Error, info: string) => {
     <!-- Onboarding -->
     <OnboardingModal />
     <FeatureTour />
+
+    <!-- Mobile bottom navigation -->
+    <MobileBottomNav v-if="!isAuthPage" />
   </div>
 </template>
+
+<style>
+/* Add padding for mobile bottom navigation */
+@media (max-width: 767px) {
+  #main-content {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+</style>
