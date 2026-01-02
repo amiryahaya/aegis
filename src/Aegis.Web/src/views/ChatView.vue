@@ -5,7 +5,10 @@ import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
+import LivePresence from '@/components/connection/LivePresence.vue'
+import TypingIndicator from '@/components/connection/TypingIndicator.vue'
 import { useQueryStream } from '@/composables/useSignalR'
+import { useConnection } from '@/composables/useConnection'
 import {
   PencilIcon,
   TrashIcon,
@@ -20,6 +23,7 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
 const { connectionState, streamState, connect, disconnect, streamQuery, resetStream } = useQueryStream()
+const { joinResource, leaveResource, sendTypingIndicator } = useConnection()
 
 const chatContainerRef = ref<HTMLDivElement>()
 const chatInputRef = ref<InstanceType<typeof ChatInput>>()
@@ -35,11 +39,18 @@ const currentSession = computed(() => sessionStore.currentSession)
 const turns = computed(() => sessionStore.currentTurns)
 
 // Load session on mount or route change
-watch(sessionId, async (id) => {
+watch(sessionId, async (id, oldId) => {
+  // Leave previous session
+  if (oldId) {
+    leaveResource('session', oldId)
+  }
+
   if (id) {
     await sessionStore.fetchSession(id)
     await sessionStore.fetchTurns(id)
     scrollToBottom()
+    // Join new session for presence
+    joinResource('session', id)
   } else {
     sessionStore.clearCurrent()
   }
@@ -52,7 +63,31 @@ onMounted(async () => {
 
 onUnmounted(() => {
   disconnect()
+  // Leave session presence
+  if (sessionId.value) {
+    leaveResource('session', sessionId.value)
+  }
 })
+
+// Handle typing indicator
+let typingTimeout: ReturnType<typeof setTimeout> | null = null
+function handleTyping() {
+  if (!sessionId.value) return
+
+  sendTypingIndicator(sessionId.value, true)
+
+  // Clear existing timeout
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+
+  // Stop typing after 2 seconds of inactivity
+  typingTimeout = setTimeout(() => {
+    if (sessionId.value) {
+      sendTypingIndicator(sessionId.value, false)
+    }
+  }, 2000)
+}
 
 // Watch for streaming updates
 watch(() => streamState.value.fullResponse, (newResponse) => {
@@ -239,7 +274,16 @@ async function handleExport(format: ExportFormat) {
         </template>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
+        <!-- Live presence for this session -->
+        <LivePresence
+          v-if="sessionId"
+          resource-type="session"
+          :resource-id="sessionId"
+          :max-avatars="3"
+          :show-count="false"
+        />
+
         <span class="text-sm text-gray-500 dark:text-gray-400">
           {{ currentSession.turnCount }} turns
         </span>
@@ -331,12 +375,19 @@ async function handleExport(format: ExportFormat) {
       </div>
     </div>
 
+    <!-- Typing indicator -->
+    <TypingIndicator
+      v-if="sessionId"
+      :session-id="sessionId"
+    />
+
     <!-- Input -->
     <ChatInput
       ref="chatInputRef"
       :loading="isLoading"
       @send="handleSend"
       @stop="isLoading = false"
+      @input="handleTyping"
     />
   </div>
 </template>

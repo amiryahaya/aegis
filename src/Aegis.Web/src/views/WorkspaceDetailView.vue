@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useFileUpload } from '@/composables/useFileUpload'
+import { useConnection } from '@/composables/useConnection'
+import LivePresence from '@/components/connection/LivePresence.vue'
 import {
   DocumentTextIcon,
   CloudArrowUpIcon,
@@ -32,6 +34,7 @@ import FileUploadProgress from '@/components/upload/FileUploadProgress.vue'
 const route = useRoute()
 const router = useRouter()
 const workspaceStore = useWorkspaceStore()
+const { joinResource, leaveResource } = useConnection()
 
 const workspaceId = computed(() => route.params.workspaceId as string)
 const workspace = computed(() => workspaceStore.currentWorkspace)
@@ -62,10 +65,25 @@ const dataSourceTypes: { type: DataSourceType; label: string; icon: string }[] =
 
 onMounted(async () => {
   await loadWorkspace()
+  if (workspaceId.value) {
+    joinResource('workspace', workspaceId.value)
+  }
 })
 
-watch(workspaceId, async () => {
+onUnmounted(() => {
+  if (workspaceId.value) {
+    leaveResource('workspace', workspaceId.value)
+  }
+})
+
+watch(workspaceId, async (newId, oldId) => {
+  if (oldId) {
+    leaveResource('workspace', oldId)
+  }
   await loadWorkspace()
+  if (newId) {
+    joinResource('workspace', newId)
+  }
 })
 
 async function loadWorkspace() {
@@ -207,7 +225,14 @@ function formatDate(dateString: string) {
             </p>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
+            <!-- Live presence for this workspace -->
+            <LivePresence
+              resource-type="workspace"
+              :resource-id="workspaceId"
+              :max-avatars="4"
+            />
+
             <button
               class="btn-ghost inline-flex items-center gap-2"
               @click="router.push(`/workspaces/${workspaceId}/settings`)"

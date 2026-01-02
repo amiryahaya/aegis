@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 2, 2026
-**Last Commit:** Sprint 79-80: Onboarding & Feature Tour
+**Last Commit:** Sprint 81-82: Real-Time Connection Status & Presence
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -458,6 +458,25 @@
 - onboarding.ts types (TourStep, Tour, OnboardingState, WelcomeSlide)
 - **Files Added:** 5 new Vue/TypeScript files (OnboardingModal.vue, FeatureTour.vue, TourTooltip.vue, useOnboarding.ts, onboarding.ts types)
 - **Files Updated:** types/index.ts, App.vue, AppHeader.vue, AppSidebar.vue
+
+#### Sprint 81-82: Real-Time Connection Status & Presence ✅
+- useConnection composable for SignalR presence hub connection management
+- Singleton connection pattern with automatic reconnection (exponential backoff)
+- ConnectionStatus component with popover showing connection details
+- Connection state colors (connected=green, connecting/reconnecting=yellow, error=red)
+- LivePresence component for displaying active users in a resource
+- Avatar stack with status indicators (active=green, idle=yellow, away=gray)
+- Popover with full user list, status, and current location
+- TypingIndicator component with animated dots for chat sessions
+- Toast notifications for connection/disconnection events
+- Resource-based presence tracking (workspace, session, document)
+- Presence integration in ChatView with typing indicator
+- Presence integration in WorkspaceDetailView header
+- ConnectionStatus integrated in AppHeader
+- connection.ts types (ConnectionState, ConnectionStatus, LiveUser, PresenceUpdate, TypingIndicator)
+- **Files Added:** 5 new Vue/TypeScript files (ConnectionStatus.vue, LivePresence.vue, TypingIndicator.vue, useConnection.ts, connection.ts types)
+- **Files Updated:** types/index.ts, AppHeader.vue, ChatView.vue, ChatInput.vue, WorkspaceDetailView.vue
+- **Build Size:** 1009.19 KB precached
 
 ### Current Statistics
 - **Total Backend Tests Passing:** 865 (844 unit + 21 architecture)
@@ -1098,6 +1117,26 @@ Potential future work:
 - src/Aegis.Web/src/components/common/AppHeader.vue (data-tour attributes)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (data-tour attributes)
 
+### Files Created (Sprint 81-82)
+
+**Connection Components:**
+- src/Aegis.Web/src/components/connection/ConnectionStatus.vue (connection status popover)
+- src/Aegis.Web/src/components/connection/LivePresence.vue (live users avatar stack)
+- src/Aegis.Web/src/components/connection/TypingIndicator.vue (typing indicator dots)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useConnection.ts (SignalR presence connection management)
+
+**Types:**
+- src/Aegis.Web/src/types/connection.ts (ConnectionState, ConnectionStatus, LiveUser, PresenceUpdate, TypingIndicator)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added connection types export)
+- src/Aegis.Web/src/components/common/AppHeader.vue (ConnectionStatus component)
+- src/Aegis.Web/src/components/chat/ChatInput.vue (input event emit for typing)
+- src/Aegis.Web/src/views/ChatView.vue (LivePresence, TypingIndicator, presence tracking)
+- src/Aegis.Web/src/views/WorkspaceDetailView.vue (LivePresence, presence tracking)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -1256,10 +1295,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 81-82: Real-Time Connection Status & Presence
   - Sprint 79-80: Onboarding & Feature Tour
   - Sprint 77-78: Command Palette & Keyboard Navigation
   - Sprint 75-76: Drag & Drop, File Upload & Bulk Operations
-  - Sprint 73-74: Advanced Search & Filtering
 
 ## 💡 Tips for Next Session
 

@@ -10,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   send: [query: string]
   stop: []
+  input: []
 }>()
 
 const query = ref('')
@@ -63,6 +64,7 @@ defineExpose({
             class="input min-h-[44px] max-h-[200px] resize-none pr-12 py-3"
             placeholder="Ask anything about your documents..."
             @keydown="handleKeydown"
+            @input="emit('input')"
           />
         </div>
 

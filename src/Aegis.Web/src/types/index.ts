@@ -12,6 +12,7 @@ export * from './presence'
 export * from './upload'
 export * from './command'
 export * from './onboarding'
+export * from './connection'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

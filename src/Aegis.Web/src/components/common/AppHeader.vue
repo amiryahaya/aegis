@@ -16,6 +16,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { useCommandPalette } from '@/composables/useCommandPalette'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
+import ConnectionStatus from '@/components/connection/ConnectionStatus.vue'
 
 const emit = defineEmits<{
   toggleSidebar: []
@@ -114,6 +115,9 @@ function logout() {
 
     <!-- Right side actions -->
     <div class="flex items-center gap-2">
+      <!-- Connection status -->
+      <ConnectionStatus />
+
       <!-- Dark mode toggle -->
       <button
         type="button"
