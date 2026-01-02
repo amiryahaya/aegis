@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/common/AppLayout.vue'
+import PWAUpdatePrompt from '@/components/common/PWAUpdatePrompt.vue'
 
 const route = useRoute()
 const isAuthPage = computed(() => route.meta.requiresAuth === false)
@@ -12,5 +13,7 @@ const isAuthPage = computed(() => route.meta.requiresAuth === false)
     <component :is="isAuthPage ? 'div' : AppLayout">
       <RouterView />
     </component>
+    <!-- PWA update prompts and offline indicator -->
+    <PWAUpdatePrompt />
   </div>
 </template>

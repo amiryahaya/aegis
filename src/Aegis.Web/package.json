@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:analyze": "ANALYZE=true vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "type-check": "vue-tsc --noEmit",
@@ -17,7 +18,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "test:all": "npm run test:unit && npm run test:e2e"
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "bundle-report": "open dist/stats.html"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.22",
@@ -47,10 +49,13 @@
     "happy-dom": "^20.0.11",
     "jsdom": "^27.4.0",
     "postcss": "^8.4.47",
+    "rollup-plugin-visualizer": "^6.0.5",
     "tailwindcss": "^3.4.14",
     "typescript": "~5.5.4",
     "vite": "^5.4.9",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16",
-    "vue-tsc": "^2.1.6"
+    "vue-tsc": "^2.1.6",
+    "workbox-window": "^7.4.0"
   }
 }

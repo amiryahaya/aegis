@@ -2,14 +2,51 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEGIS - Agentic Entity & Graph Intelligence System</title>
+
+    <!-- Primary Meta Tags -->
+    <title>AEGIS - AI-Enhanced Knowledge System</title>
+    <meta name="title" content="AEGIS - AI-Enhanced Knowledge System">
+    <meta name="description" content="Enterprise-grade RAG system for intelligent document retrieval and knowledge management">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AEGIS">
+    <meta name="application-name" content="AEGIS">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-512x512.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="mask-icon" href="/icons/icon-512x512.svg" color="#3b82f6">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AEGIS - AI-Enhanced Knowledge System">
+    <meta property="og:description" content="Enterprise-grade RAG system for intelligent document retrieval and knowledge management">
+    <meta property="og:image" content="/icons/icon-512x512.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AEGIS - AI-Enhanced Knowledge System">
+    <meta name="twitter:description" content="Enterprise-grade RAG system for intelligent document retrieval and knowledge management">
+    <meta name="twitter:image" content="/icons/icon-512x512.svg">
   </head>
-  <body class="antialiased">
+  <body class="antialiased bg-gray-50 dark:bg-gray-900">
+    <noscript>
+      <div style="padding: 20px; text-align: center; background: #fef2f2; color: #991b1b;">
+        AEGIS requires JavaScript to be enabled. Please enable JavaScript in your browser settings.
+      </div>
+    </noscript>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
