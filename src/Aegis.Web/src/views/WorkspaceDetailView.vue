@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWorkspaceStore } from '@/stores/workspace'
+import { useFileUpload } from '@/composables/useFileUpload'
 import {
   DocumentTextIcon,
   CloudArrowUpIcon,
@@ -25,6 +26,8 @@ import {
   TabPanel
 } from '@headlessui/vue'
 import type { DataSourceType } from '@/types/workspace'
+import DragDropZone from '@/components/upload/DragDropZone.vue'
+import FileUploadProgress from '@/components/upload/FileUploadProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,9 +38,13 @@ const workspace = computed(() => workspaceStore.currentWorkspace)
 
 const isUploadDialogOpen = ref(false)
 const isAddDataSourceDialogOpen = ref(false)
-const selectedFiles = ref<File[]>([])
-const uploadProgress = ref(0)
-const isUploading = ref(false)
+const uploadError = ref<string | null>(null)
+
+// File upload composable
+const fileUpload = useFileUpload({
+  url: `/api/workspaces/${workspaceId.value}/documents/upload`,
+  autoUpload: false
+})
 
 const newDataSourceName = ref('')
 const newDataSourceType = ref<DataSourceType>('WebCrawler')
@@ -71,29 +78,34 @@ async function loadWorkspace() {
   }
 }
 
-function handleFileSelect(event: Event) {
-  const input = event.target as HTMLInputElement
-  if (input.files) {
-    selectedFiles.value = Array.from(input.files)
-  }
+function handleFilesSelected(files: File[]) {
+  uploadError.value = null
+  fileUpload.addFiles(files)
 }
 
-async function uploadFiles() {
-  if (selectedFiles.value.length === 0) return
+function handleUploadError(message: string) {
+  uploadError.value = message
+}
 
-  isUploading.value = true
-  uploadProgress.value = 0
+async function startUpload() {
+  if (fileUpload.files.value.length === 0) return
 
-  for (let i = 0; i < selectedFiles.value.length; i++) {
-    await workspaceStore.uploadDocument(workspaceId.value, selectedFiles.value[i])
-    uploadProgress.value = ((i + 1) / selectedFiles.value.length) * 100
-  }
+  fileUpload.startAllUploads()
+}
 
-  isUploading.value = false
+function closeUploadDialog() {
   isUploadDialogOpen.value = false
-  selectedFiles.value = []
-  uploadProgress.value = 0
+  fileUpload.clearAll()
+  uploadError.value = null
 }
+
+// Watch for all uploads completed
+watch(() => fileUpload.completedCount.value, (completed) => {
+  if (completed > 0 && completed === fileUpload.files.value.length && !fileUpload.isUploading.value) {
+    // Refresh documents list after all uploads complete
+    workspaceStore.fetchDocuments(workspaceId.value)
+  }
+})
 
 async function addDataSource() {
   if (!newDataSourceName.value.trim()) return
@@ -429,7 +441,7 @@ function formatDate(dateString: string) {
 
     <!-- Upload Dialog -->
     <TransitionRoot appear :show="isUploadDialogOpen" as="template">
-      <Dialog as="div" class="relative z-50" @close="isUploadDialogOpen = false">
+      <Dialog as="div" class="relative z-50" @close="closeUploadDialog">
         <TransitionChild
           as="template"
           enter="ease-out duration-300"
@@ -453,75 +465,55 @@ function formatDate(dateString: string) {
               leave-from="opacity-100 scale-100"
               leave-to="opacity-0 scale-95"
             >
-              <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all dark:bg-gray-800">
+              <DialogPanel class="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all dark:bg-gray-800">
                 <DialogTitle class="text-lg font-medium text-gray-900 dark:text-white">
                   Upload Documents
                 </DialogTitle>
 
-                <div class="mt-4">
-                  <label
-                    class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
+                <div class="mt-4 space-y-4">
+                  <!-- Drag and Drop Zone -->
+                  <DragDropZone
+                    accept=".pdf,.docx,.doc,.txt,.md,.html,.json,.csv"
+                    :max-size="50"
+                    :max-files="20"
+                    :disabled="fileUpload.isUploading.value"
+                    @files-selected="handleFilesSelected"
+                    @error="handleUploadError"
+                  />
+
+                  <!-- Error message -->
+                  <div
+                    v-if="uploadError"
+                    class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300"
                   >
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                      <CloudArrowUpIcon class="w-8 h-8 mb-3 text-gray-400" />
-                      <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span class="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">
-                        PDF, DOCX, TXT, MD, HTML (MAX 50MB)
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      class="hidden"
-                      multiple
-                      accept=".pdf,.docx,.doc,.txt,.md,.html,.json,.csv"
-                      @change="handleFileSelect"
-                    />
-                  </label>
-
-                  <div v-if="selectedFiles.length > 0" class="mt-4 space-y-2">
-                    <div
-                      v-for="file in selectedFiles"
-                      :key="file.name"
-                      class="flex items-center justify-between rounded-lg bg-gray-100 px-3 py-2 dark:bg-gray-700"
-                    >
-                      <span class="text-sm text-gray-700 dark:text-gray-300 truncate">
-                        {{ file.name }}
-                      </span>
-                      <span class="text-xs text-gray-500">
-                        {{ formatBytes(file.size) }}
-                      </span>
-                    </div>
+                    {{ uploadError }}
                   </div>
 
-                  <div v-if="isUploading" class="mt-4">
-                    <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                      <div
-                        class="h-2 rounded-full bg-aegis-600 transition-all"
-                        :style="{ width: `${uploadProgress}%` }"
-                      />
-                    </div>
-                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                      Uploading... {{ Math.round(uploadProgress) }}%
-                    </p>
-                  </div>
+                  <!-- File Upload Progress -->
+                  <FileUploadProgress
+                    :files="fileUpload.files.value"
+                    @cancel="fileUpload.cancelUpload($event)"
+                    @retry="fileUpload.retryUpload($event)"
+                    @remove="fileUpload.removeFile($event)"
+                    @clear-completed="fileUpload.clearCompleted()"
+                  />
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
                   <button
                     class="btn-ghost"
-                    :disabled="isUploading"
-                    @click="isUploadDialogOpen = false"
+                    :disabled="fileUpload.isUploading.value"
+                    @click="closeUploadDialog"
                   >
-                    Cancel
+                    {{ fileUpload.completedCount.value > 0 ? 'Done' : 'Cancel' }}
                   </button>
                   <button
+                    v-if="fileUpload.pendingCount.value > 0"
                     class="btn-primary"
-                    :disabled="selectedFiles.length === 0 || isUploading"
-                    @click="uploadFiles"
+                    :disabled="fileUpload.files.value.length === 0 || fileUpload.isUploading.value"
+                    @click="startUpload"
                   >
-                    {{ isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''}` }}
+                    {{ fileUpload.isUploading.value ? 'Uploading...' : `Upload ${fileUpload.pendingCount.value} file${fileUpload.pendingCount.value !== 1 ? 's' : ''}` }}
                   </button>
                 </div>
               </DialogPanel>

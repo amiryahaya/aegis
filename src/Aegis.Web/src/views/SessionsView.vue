@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
+import { useBulkSelection } from '@/composables/useBulkSelection'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
   MagnifyingGlassIcon,
@@ -13,14 +14,67 @@ import {
   FunnelIcon,
   ChatBubbleLeftRightIcon,
   TrashIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  CheckIcon
 } from '@heroicons/vue/24/outline'
-import { SessionType, type SessionStatus, type ExportFormat } from '@/types'
+import { SessionType, type SessionStatus, type ExportFormat, type BulkAction } from '@/types'
 import { FormField } from '@/components/form'
+import BulkActionsToolbar from '@/components/common/BulkActionsToolbar.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
+
+// Bulk selection
+const bulkSelection = useBulkSelection({
+  items: () => filteredSessions.value,
+  getId: (session) => session.id,
+  onAction: handleBulkAction
+})
+
+const sessionBulkActions: BulkAction[] = [
+  {
+    id: 'export',
+    label: 'Export',
+    icon: 'ArrowDownTrayIcon',
+    variant: 'default'
+  },
+  {
+    id: 'archive',
+    label: 'Archive',
+    icon: 'ArchiveBoxIcon',
+    variant: 'warning',
+    requiresConfirmation: true,
+    confirmationMessage: 'Are you sure you want to archive the selected sessions?'
+  },
+  {
+    id: 'delete',
+    label: 'Delete',
+    icon: 'TrashIcon',
+    variant: 'danger',
+    requiresConfirmation: true,
+    confirmationMessage: 'Are you sure you want to delete the selected sessions? This action cannot be undone.'
+  }
+]
+
+async function handleBulkAction(action: BulkAction, selectedIds: string[]): Promise<void> {
+  switch (action.id) {
+    case 'delete':
+      for (const id of selectedIds) {
+        await sessionStore.deleteSession(id)
+      }
+      break
+    case 'export':
+      for (const id of selectedIds) {
+        await exportSession(id, 'Markdown' as ExportFormat)
+      }
+      break
+    case 'archive':
+      // Archive implementation would go here
+      console.log('Archive sessions:', selectedIds)
+      break
+  }
+}
 
 const searchQuery = ref('')
 const statusFilter = ref<SessionStatus | ''>('')
@@ -185,13 +239,23 @@ const sessionTypeOptions = sessionTypes.map(type => ({
         </p>
       </div>
 
-      <button
-        class="btn-primary gap-2"
-        @click="showNewSessionDialog = true"
-      >
-        <PlusIcon class="h-5 w-5" />
-        New Session
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          class="btn-secondary gap-2"
+          :class="{ 'ring-2 ring-aegis-500': bulkSelection.isSelectionMode.value }"
+          @click="bulkSelection.toggleSelectionMode()"
+        >
+          <CheckIcon class="h-5 w-5" />
+          {{ bulkSelection.isSelectionMode.value ? 'Cancel' : 'Select' }}
+        </button>
+        <button
+          class="btn-primary gap-2"
+          @click="showNewSessionDialog = true"
+        >
+          <PlusIcon class="h-5 w-5" />
+          New Session
+        </button>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -256,13 +320,48 @@ const sessionTypeOptions = sessionTypes.map(type => ({
       </button>
     </div>
 
-    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <template v-else>
+      <!-- Bulk Actions Toolbar -->
+      <BulkActionsToolbar
+        v-if="bulkSelection.isSelectionMode.value"
+        :selected-count="bulkSelection.selectedCount.value"
+        :all-selected="bulkSelection.allSelected.value"
+        :some-selected="bulkSelection.someSelected.value"
+        :actions="sessionBulkActions"
+        :is-processing="bulkSelection.isProcessing.value"
+        item-label="session"
+        @toggle-all="bulkSelection.toggleAll()"
+        @clear-selection="bulkSelection.clearSelection()"
+        @action="bulkSelection.executeAction($event)"
+      />
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div
         v-for="session in filteredSessions"
         :key="session.id"
         class="card group relative p-4 transition-shadow hover:shadow-md"
+        :class="{ 'ring-2 ring-aegis-500': bulkSelection.isSelected(session.id) }"
+        @click="bulkSelection.isSelectionMode.value ? bulkSelection.toggleItem(session.id) : null"
       >
-        <RouterLink :to="`/chat/${session.id}`" class="block">
+        <!-- Selection checkbox -->
+        <div
+          v-if="bulkSelection.isSelectionMode.value"
+          class="absolute left-3 top-3 z-10"
+          @click.stop="bulkSelection.toggleItem(session.id)"
+        >
+          <input
+            type="checkbox"
+            :checked="bulkSelection.isSelected(session.id)"
+            class="h-5 w-5 rounded border-gray-300 text-aegis-600 focus:ring-aegis-500 cursor-pointer"
+            @change="bulkSelection.toggleItem(session.id)"
+          />
+        </div>
+
+        <RouterLink
+          :to="bulkSelection.isSelectionMode.value ? '' : `/chat/${session.id}`"
+          class="block"
+          :class="{ 'pl-8': bulkSelection.isSelectionMode.value, 'pointer-events-none': bulkSelection.isSelectionMode.value }"
+        >
           <div class="mb-2 flex items-start justify-between">
             <h3 class="font-semibold text-gray-900 line-clamp-1 dark:text-white">
               {{ session.title }}
@@ -308,8 +407,11 @@ const sessionTypeOptions = sessionTypes.map(type => ({
           </div>
         </RouterLink>
 
-        <!-- Actions (visible on hover) -->
-        <div class="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <!-- Actions (visible on hover, hidden in selection mode) -->
+        <div
+          v-if="!bulkSelection.isSelectionMode.value"
+          class="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+        >
           <button
             class="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
             title="Export"
@@ -326,18 +428,19 @@ const sessionTypeOptions = sessionTypes.map(type => ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
 
-    <!-- Pagination -->
-    <div v-if="sessionStore.hasMore" class="mt-6 text-center">
-      <button
-        class="btn-secondary"
-        :disabled="sessionStore.loading"
-        @click="sessionStore.fetchSessions({ page: sessionStore.currentPage + 1 })"
-      >
-        Load more
-      </button>
-    </div>
+      <!-- Pagination -->
+      <div v-if="sessionStore.hasMore" class="mt-6 text-center">
+        <button
+          class="btn-secondary"
+          :disabled="sessionStore.loading"
+          @click="sessionStore.fetchSessions({ page: sessionStore.currentPage + 1 })"
+        >
+          Load more
+        </button>
+      </div>
+    </template>
 
     <!-- New Session Dialog -->
     <TransitionRoot appear :show="showNewSessionDialog" as="template">
