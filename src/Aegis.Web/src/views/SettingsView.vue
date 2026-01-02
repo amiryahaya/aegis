@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
+import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '@/i18n'
 import {
   SunIcon,
   MoonIcon,
@@ -9,7 +11,8 @@ import {
   BellIcon,
   ShieldCheckIcon,
   UserCircleIcon,
-  KeyIcon
+  KeyIcon,
+  LanguageIcon
 } from '@heroicons/vue/24/outline'
 import {
   Switch,
@@ -21,8 +24,14 @@ import {
 } from '@headlessui/vue'
 import type { ThemeMode } from '@/types/admin'
 
+const { locale, t } = useI18n()
 const settingsStore = useSettingsStore()
 const authStore = useAuthStore()
+
+// Handle language change
+const handleLanguageChange = (newLocale: LocaleCode) => {
+  setLocale(newLocale)
+}
 
 const themeOptions: { value: ThemeMode; label: string; icon: typeof SunIcon }[] = [
   { value: 'light', label: 'Light', icon: SunIcon },
@@ -232,10 +241,11 @@ const currentTheme = computed(() => settingsStore.settings.theme)
           <!-- Appearance Tab -->
           <TabPanel>
             <div class="card space-y-6 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.tabs.appearance') }}</h2>
 
+              <!-- Theme Selection -->
               <div>
-                <label class="label mb-3">Theme</label>
+                <label class="label mb-3">{{ t('settings.appearance.theme') }}</label>
                 <div class="flex gap-4">
                   <button
                     v-for="option in themeOptions"
@@ -259,7 +269,36 @@ const currentTheme = computed(() => settingsStore.settings.theme)
                         ? 'text-aegis-700 dark:text-aegis-300'
                         : 'text-gray-600 dark:text-gray-400'"
                     >
-                      {{ option.label }}
+                      {{ t(`settings.appearance.themes.${option.value}`) }}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Language Selection -->
+              <div class="border-t border-gray-200 pt-6 dark:border-gray-700">
+                <label class="label mb-3 flex items-center gap-2">
+                  <LanguageIcon class="h-5 w-5 text-gray-400" />
+                  {{ t('settings.appearance.language') }}
+                </label>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+                  <button
+                    v-for="lang in SUPPORTED_LOCALES"
+                    :key="lang.code"
+                    class="flex items-center gap-2 rounded-lg border-2 p-3 text-left transition-all"
+                    :class="locale === lang.code
+                      ? 'border-aegis-500 bg-aegis-50 dark:bg-aegis-900/20'
+                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'"
+                    @click="handleLanguageChange(lang.code)"
+                  >
+                    <span class="text-xl">{{ lang.flag }}</span>
+                    <span
+                      class="text-sm font-medium"
+                      :class="locale === lang.code
+                        ? 'text-aegis-700 dark:text-aegis-300'
+                        : 'text-gray-600 dark:text-gray-400'"
+                    >
+                      {{ lang.name }}
                     </span>
                   </button>
                 </div>

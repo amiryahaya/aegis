@@ -1,0 +1,329 @@
+{
+  "common": {
+    "appName": "Aegis",
+    "loading": "加载中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "clear": "清除",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否",
+    "ok": "确定",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "retry": "重试",
+    "reload": "重新加载",
+    "noResults": "未找到结果",
+    "viewAll": "查看全部",
+    "showMore": "显示更多",
+    "showLess": "显示更少"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "email": "电子邮箱",
+    "password": "密码",
+    "rememberMe": "记住我",
+    "forgotPassword": "忘记密码？",
+    "signIn": "登录",
+    "signingIn": "登录中...",
+    "welcomeBack": "欢迎回来",
+    "loginSubtitle": "登录您的账户以继续",
+    "invalidCredentials": "邮箱或密码无效",
+    "sessionExpired": "您的会话已过期，请重新登录。"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "chat": "对话",
+    "sessions": "会话",
+    "workspaces": "工作区",
+    "search": "搜索",
+    "notifications": "通知",
+    "activity": "动态",
+    "settings": "设置",
+    "admin": "管理",
+    "profile": "个人资料",
+    "help": "帮助"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcomeMessage": "欢迎回来，{name}！",
+    "quickActions": "快捷操作",
+    "newSession": "新建会话",
+    "recentSessions": "最近会话",
+    "noRecentSessions": "没有最近的会话",
+    "stats": {
+      "totalSessions": "会话总数",
+      "totalQueries": "查询总数",
+      "avgResponseTime": "平均响应时间",
+      "documentsProcessed": "已处理文档"
+    }
+  },
+  "chat": {
+    "title": "对话",
+    "newChat": "新对话",
+    "placeholder": "输入您的消息...",
+    "send": "发送",
+    "thinking": "思考中...",
+    "generating": "生成回复中...",
+    "sources": "来源",
+    "noSources": "未找到来源",
+    "followUp": "后续问题",
+    "copyMessage": "复制消息",
+    "regenerate": "重新生成回复",
+    "stopGenerating": "停止生成",
+    "emptyState": {
+      "title": "开始对话",
+      "subtitle": "提出问题，开始使用您的 RAG 助手"
+    }
+  },
+  "sessions": {
+    "title": "会话",
+    "newSession": "新建会话",
+    "searchPlaceholder": "搜索会话...",
+    "noSessions": "未找到会话",
+    "createFirst": "创建您的第一个会话以开始",
+    "delete": "删除会话",
+    "deleteConfirm": "您确定要删除此会话吗？",
+    "export": "导出",
+    "exportFormats": {
+      "json": "导出为 JSON",
+      "markdown": "导出为 Markdown",
+      "text": "导出为文本"
+    },
+    "filters": {
+      "all": "全部",
+      "active": "活跃",
+      "archived": "已归档"
+    },
+    "sort": {
+      "newest": "最新优先",
+      "oldest": "最旧优先",
+      "mostMessages": "消息最多"
+    },
+    "sessionCard": {
+      "messages": "{count} 条消息",
+      "lastActive": "最后活跃 {time}"
+    }
+  },
+  "workspaces": {
+    "title": "工作区",
+    "newWorkspace": "新建工作区",
+    "searchPlaceholder": "搜索工作区...",
+    "noWorkspaces": "未找到工作区",
+    "createFirst": "创建您的第一个工作区来组织文档",
+    "documents": "文档",
+    "dataSources": "数据源",
+    "members": "成员",
+    "settings": "设置",
+    "upload": "上传文档",
+    "addDataSource": "添加数据源",
+    "sync": "同步",
+    "syncing": "同步中...",
+    "lastSynced": "最后同步 {time}"
+  },
+  "search": {
+    "title": "搜索",
+    "placeholder": "搜索所有内容...",
+    "recentSearches": "最近搜索",
+    "clearRecent": "清除记录",
+    "filters": {
+      "type": "类型",
+      "dateRange": "日期范围",
+      "workspace": "工作区"
+    },
+    "types": {
+      "all": "全部",
+      "sessions": "会话",
+      "documents": "文档",
+      "workspaces": "工作区",
+      "messages": "消息"
+    },
+    "dateRanges": {
+      "today": "今天",
+      "week": "本周",
+      "month": "本月",
+      "year": "今年"
+    },
+    "results": "{count} 个结果",
+    "noResults": "未找到 \"{query}\" 的结果"
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部标为已读",
+    "noNotifications": "没有通知",
+    "settings": "通知设置",
+    "types": {
+      "query": "查询",
+      "document": "文档",
+      "system": "系统",
+      "user": "用户"
+    }
+  },
+  "activity": {
+    "title": "动态",
+    "tabs": {
+      "all": "全部动态",
+      "mine": "我的动态",
+      "following": "关注的"
+    },
+    "noActivity": "没有动态可显示",
+    "filters": {
+      "type": "动态类型",
+      "workspace": "工作区"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "tabs": {
+      "profile": "个人资料",
+      "appearance": "外观",
+      "notifications": "通知",
+      "privacy": "隐私",
+      "apiKeys": "API 密钥"
+    },
+    "profile": {
+      "displayName": "显示名称",
+      "email": "电子邮箱",
+      "avatar": "头像",
+      "changeAvatar": "更换头像",
+      "removeAvatar": "移除头像"
+    },
+    "appearance": {
+      "theme": "主题",
+      "themes": {
+        "light": "浅色",
+        "dark": "深色",
+        "system": "跟随系统"
+      },
+      "language": "语言",
+      "timezone": "时区",
+      "dateFormat": "日期格式"
+    },
+    "notifications": {
+      "emailNotifications": "邮件通知",
+      "pushNotifications": "推送通知",
+      "queryCompleted": "查询完成",
+      "documentProcessed": "文档已处理",
+      "systemUpdates": "系统更新",
+      "mentions": "提及"
+    },
+    "privacy": {
+      "activityStatus": "显示活动状态",
+      "allowMentions": "允许提及"
+    },
+    "apiKeys": {
+      "title": "API 密钥",
+      "create": "创建新密钥",
+      "name": "密钥名称",
+      "scopes": "权限范围",
+      "expires": "过期时间",
+      "lastUsed": "最后使用",
+      "revoke": "撤销",
+      "revokeConfirm": "您确定要撤销此 API 密钥吗？"
+    },
+    "saved": "设置已保存",
+    "saveError": "保存设置失败"
+  },
+  "admin": {
+    "title": "管理仪表板",
+    "overview": "概览",
+    "systemHealth": "系统健康",
+    "healthy": "健康",
+    "degraded": "降级",
+    "unhealthy": "不健康",
+    "stats": {
+      "totalUsers": "用户总数",
+      "activeUsers": "活跃用户",
+      "totalWorkspaces": "工作区总数",
+      "totalDocuments": "文档总数",
+      "totalQueries": "查询总数",
+      "cacheHitRate": "缓存命中率"
+    },
+    "tabs": {
+      "queries": "查询",
+      "documents": "文档",
+      "cache": "缓存",
+      "users": "用户"
+    },
+    "metrics": {
+      "queriesPerHour": "每小时查询",
+      "avgResponseTime": "平均响应时间",
+      "documentsIngested": "已导入文档",
+      "processingTime": "处理时间",
+      "cacheHits": "缓存命中",
+      "cacheMisses": "缓存未命中",
+      "activeUsers": "活跃用户",
+      "newUsers": "新用户"
+    },
+    "charts": {
+      "queryTrends": "查询趋势",
+      "documentStats": "文档统计",
+      "cachePerformance": "缓存性能",
+      "userActivity": "用户活动"
+    }
+  },
+  "profile": {
+    "title": "个人资料",
+    "tabs": {
+      "profile": "个人资料",
+      "activity": "动态",
+      "apiKeys": "API 密钥",
+      "security": "安全"
+    },
+    "stats": {
+      "totalSessions": "会话总数",
+      "totalQueries": "查询总数",
+      "totalWorkspaces": "工作区",
+      "avgResponseTime": "平均响应时间"
+    },
+    "security": {
+      "changePassword": "更改密码",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认密码",
+      "deleteAccount": "删除账户",
+      "deleteWarning": "此操作无法撤销。您的所有数据将被永久删除。"
+    }
+  },
+  "help": {
+    "title": "帮助中心",
+    "gettingStarted": "入门指南",
+    "keyboardShortcuts": "键盘快捷键",
+    "faq": "常见问题",
+    "contact": "联系支持",
+    "shortcuts": {
+      "navigation": "导航",
+      "search": "搜索",
+      "general": "通用"
+    }
+  },
+  "errors": {
+    "generic": "出了点问题",
+    "network": "网络错误，请检查您的连接。",
+    "notFound": "页面未找到",
+    "unauthorized": "您无权查看此页面",
+    "forbidden": "访问被拒绝",
+    "serverError": "服务器错误，请稍后重试。",
+    "validation": "请检查您的输入并重试"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前",
+    "daysAgo": "{count} 天前",
+    "weeksAgo": "{count} 周前"
+  }
+}

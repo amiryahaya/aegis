@@ -1,0 +1,329 @@
+{
+  "common": {
+    "appName": "Aegis",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "retry": "Reintentar",
+    "reload": "Recargar",
+    "noResults": "No se encontraron resultados",
+    "viewAll": "Ver Todo",
+    "showMore": "Mostrar Más",
+    "showLess": "Mostrar Menos"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signIn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "welcomeBack": "Bienvenido de nuevo",
+    "loginSubtitle": "Inicia sesión en tu cuenta para continuar",
+    "invalidCredentials": "Correo electrónico o contraseña inválidos",
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "chat": "Chat",
+    "sessions": "Sesiones",
+    "workspaces": "Espacios de Trabajo",
+    "search": "Buscar",
+    "notifications": "Notificaciones",
+    "activity": "Actividad",
+    "settings": "Configuración",
+    "admin": "Administración",
+    "profile": "Perfil",
+    "help": "Ayuda"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "welcomeMessage": "¡Bienvenido de nuevo, {name}!",
+    "quickActions": "Acciones Rápidas",
+    "newSession": "Nueva Sesión",
+    "recentSessions": "Sesiones Recientes",
+    "noRecentSessions": "No hay sesiones recientes",
+    "stats": {
+      "totalSessions": "Sesiones Totales",
+      "totalQueries": "Consultas Totales",
+      "avgResponseTime": "Tiempo de Respuesta Promedio",
+      "documentsProcessed": "Documentos Procesados"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "newChat": "Nuevo Chat",
+    "placeholder": "Escribe tu mensaje...",
+    "send": "Enviar",
+    "thinking": "Pensando...",
+    "generating": "Generando respuesta...",
+    "sources": "Fuentes",
+    "noSources": "No se encontraron fuentes",
+    "followUp": "Preguntas de seguimiento",
+    "copyMessage": "Copiar mensaje",
+    "regenerate": "Regenerar respuesta",
+    "stopGenerating": "Detener generación",
+    "emptyState": {
+      "title": "Inicia una conversación",
+      "subtitle": "Haz una pregunta para comenzar con tu asistente potenciado por RAG"
+    }
+  },
+  "sessions": {
+    "title": "Sesiones",
+    "newSession": "Nueva Sesión",
+    "searchPlaceholder": "Buscar sesiones...",
+    "noSessions": "No se encontraron sesiones",
+    "createFirst": "Crea tu primera sesión para comenzar",
+    "delete": "Eliminar Sesión",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta sesión?",
+    "export": "Exportar",
+    "exportFormats": {
+      "json": "Exportar como JSON",
+      "markdown": "Exportar como Markdown",
+      "text": "Exportar como Texto"
+    },
+    "filters": {
+      "all": "Todas",
+      "active": "Activas",
+      "archived": "Archivadas"
+    },
+    "sort": {
+      "newest": "Más recientes primero",
+      "oldest": "Más antiguas primero",
+      "mostMessages": "Más mensajes"
+    },
+    "sessionCard": {
+      "messages": "{count} mensajes",
+      "lastActive": "Última actividad {time}"
+    }
+  },
+  "workspaces": {
+    "title": "Espacios de Trabajo",
+    "newWorkspace": "Nuevo Espacio de Trabajo",
+    "searchPlaceholder": "Buscar espacios de trabajo...",
+    "noWorkspaces": "No se encontraron espacios de trabajo",
+    "createFirst": "Crea tu primer espacio de trabajo para organizar tus documentos",
+    "documents": "Documentos",
+    "dataSources": "Fuentes de Datos",
+    "members": "Miembros",
+    "settings": "Configuración",
+    "upload": "Subir Documento",
+    "addDataSource": "Agregar Fuente de Datos",
+    "sync": "Sincronizar",
+    "syncing": "Sincronizando...",
+    "lastSynced": "Última sincronización {time}"
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar en todo el contenido...",
+    "recentSearches": "Búsquedas Recientes",
+    "clearRecent": "Limpiar recientes",
+    "filters": {
+      "type": "Tipo",
+      "dateRange": "Rango de Fechas",
+      "workspace": "Espacio de Trabajo"
+    },
+    "types": {
+      "all": "Todo",
+      "sessions": "Sesiones",
+      "documents": "Documentos",
+      "workspaces": "Espacios de Trabajo",
+      "messages": "Mensajes"
+    },
+    "dateRanges": {
+      "today": "Hoy",
+      "week": "Esta Semana",
+      "month": "Este Mes",
+      "year": "Este Año"
+    },
+    "results": "{count} resultados",
+    "noResults": "No se encontraron resultados para \"{query}\""
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "noNotifications": "No hay notificaciones",
+    "settings": "Configuración de Notificaciones",
+    "types": {
+      "query": "Consulta",
+      "document": "Documento",
+      "system": "Sistema",
+      "user": "Usuario"
+    }
+  },
+  "activity": {
+    "title": "Actividad",
+    "tabs": {
+      "all": "Toda la Actividad",
+      "mine": "Mi Actividad",
+      "following": "Siguiendo"
+    },
+    "noActivity": "No hay actividad para mostrar",
+    "filters": {
+      "type": "Tipo de Actividad",
+      "workspace": "Espacio de Trabajo"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "tabs": {
+      "profile": "Perfil",
+      "appearance": "Apariencia",
+      "notifications": "Notificaciones",
+      "privacy": "Privacidad",
+      "apiKeys": "Claves API"
+    },
+    "profile": {
+      "displayName": "Nombre para Mostrar",
+      "email": "Correo Electrónico",
+      "avatar": "Avatar",
+      "changeAvatar": "Cambiar Avatar",
+      "removeAvatar": "Eliminar Avatar"
+    },
+    "appearance": {
+      "theme": "Tema",
+      "themes": {
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+      },
+      "language": "Idioma",
+      "timezone": "Zona Horaria",
+      "dateFormat": "Formato de Fecha"
+    },
+    "notifications": {
+      "emailNotifications": "Notificaciones por Correo",
+      "pushNotifications": "Notificaciones Push",
+      "queryCompleted": "Consulta completada",
+      "documentProcessed": "Documento procesado",
+      "systemUpdates": "Actualizaciones del sistema",
+      "mentions": "Menciones"
+    },
+    "privacy": {
+      "activityStatus": "Mostrar estado de actividad",
+      "allowMentions": "Permitir menciones"
+    },
+    "apiKeys": {
+      "title": "Claves API",
+      "create": "Crear Nueva Clave",
+      "name": "Nombre de la Clave",
+      "scopes": "Alcances",
+      "expires": "Expira",
+      "lastUsed": "Último Uso",
+      "revoke": "Revocar",
+      "revokeConfirm": "¿Estás seguro de que quieres revocar esta clave API?"
+    },
+    "saved": "Configuración guardada",
+    "saveError": "Error al guardar la configuración"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "overview": "Resumen",
+    "systemHealth": "Estado del Sistema",
+    "healthy": "Saludable",
+    "degraded": "Degradado",
+    "unhealthy": "No Saludable",
+    "stats": {
+      "totalUsers": "Usuarios Totales",
+      "activeUsers": "Usuarios Activos",
+      "totalWorkspaces": "Espacios de Trabajo Totales",
+      "totalDocuments": "Documentos Totales",
+      "totalQueries": "Consultas Totales",
+      "cacheHitRate": "Tasa de Aciertos de Caché"
+    },
+    "tabs": {
+      "queries": "Consultas",
+      "documents": "Documentos",
+      "cache": "Caché",
+      "users": "Usuarios"
+    },
+    "metrics": {
+      "queriesPerHour": "Consultas por Hora",
+      "avgResponseTime": "Tiempo de Respuesta Promedio",
+      "documentsIngested": "Documentos Ingestados",
+      "processingTime": "Tiempo de Procesamiento",
+      "cacheHits": "Aciertos de Caché",
+      "cacheMisses": "Fallos de Caché",
+      "activeUsers": "Usuarios Activos",
+      "newUsers": "Nuevos Usuarios"
+    },
+    "charts": {
+      "queryTrends": "Tendencias de Consultas",
+      "documentStats": "Estadísticas de Documentos",
+      "cachePerformance": "Rendimiento de Caché",
+      "userActivity": "Actividad de Usuarios"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "tabs": {
+      "profile": "Perfil",
+      "activity": "Actividad",
+      "apiKeys": "Claves API",
+      "security": "Seguridad"
+    },
+    "stats": {
+      "totalSessions": "Sesiones Totales",
+      "totalQueries": "Consultas Totales",
+      "totalWorkspaces": "Espacios de Trabajo",
+      "avgResponseTime": "Tiempo de Respuesta Promedio"
+    },
+    "security": {
+      "changePassword": "Cambiar Contraseña",
+      "currentPassword": "Contraseña Actual",
+      "newPassword": "Nueva Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "deleteAccount": "Eliminar Cuenta",
+      "deleteWarning": "Esta acción no se puede deshacer. Todos tus datos serán eliminados permanentemente."
+    }
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "gettingStarted": "Primeros Pasos",
+    "keyboardShortcuts": "Atajos de Teclado",
+    "faq": "Preguntas Frecuentes",
+    "contact": "Contactar Soporte",
+    "shortcuts": {
+      "navigation": "Navegación",
+      "search": "Búsqueda",
+      "general": "General"
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal",
+    "network": "Error de red. Por favor, verifica tu conexión.",
+    "notFound": "Página no encontrada",
+    "unauthorized": "No estás autorizado para ver esta página",
+    "forbidden": "Acceso denegado",
+    "serverError": "Error del servidor. Por favor, intenta de nuevo más tarde.",
+    "validation": "Por favor, verifica tu entrada e intenta de nuevo"
+  },
+  "time": {
+    "justNow": "Ahora mismo",
+    "minutesAgo": "hace {count} minuto | hace {count} minutos",
+    "hoursAgo": "hace {count} hora | hace {count} horas",
+    "daysAgo": "hace {count} día | hace {count} días",
+    "weeksAgo": "hace {count} semana | hace {count} semanas"
+  }
+}

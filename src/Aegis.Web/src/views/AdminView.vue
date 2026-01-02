@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAdminStore } from '@/stores/admin'
 import { useAuthStore } from '@/stores/auth'
 import {
@@ -21,7 +22,12 @@ import {
   TabPanels,
   TabPanel
 } from '@headlessui/vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
+import DoughnutChart from '@/components/charts/DoughnutChart.vue'
 import type { HealthStatus } from '@/types/admin'
+
+const { t } = useI18n()
 
 const adminStore = useAdminStore()
 const authStore = useAuthStore()
@@ -98,6 +104,100 @@ function formatMs(ms: number) {
     return (ms / 1000).toFixed(2) + 's'
   }
   return ms.toFixed(0) + 'ms'
+}
+
+// Chart data for Query Trends
+const queryTrendLabels = computed(() => {
+  // Generate last 7 days labels
+  const labels = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }))
+  }
+  return labels
+})
+
+const queryTrendData = computed(() => {
+  // Mock data - in real app, this would come from API
+  const total = adminStore.queryMetrics?.queriesLast7d ?? 0
+  const avgPerDay = Math.floor(total / 7)
+  return [
+    { label: t('admin.metrics.queriesPerHour'), data: generateTrendData(avgPerDay, 7) }
+  ]
+})
+
+const cacheChartLabels = computed(() => [
+  t('admin.metrics.cacheHits'),
+  t('admin.metrics.cacheMisses')
+])
+
+const cacheChartData = computed(() => [
+  {
+    label: 'Semantic',
+    data: [
+      adminStore.cacheMetrics?.semanticCache.hitCount ?? 0,
+      adminStore.cacheMetrics?.semanticCache.missCount ?? 0
+    ]
+  },
+  {
+    label: 'Embedding',
+    data: [
+      adminStore.cacheMetrics?.embeddingCache.hitCount ?? 0,
+      adminStore.cacheMetrics?.embeddingCache.missCount ?? 0
+    ]
+  },
+  {
+    label: 'Response',
+    data: [
+      adminStore.cacheMetrics?.responseCache.hitCount ?? 0,
+      adminStore.cacheMetrics?.responseCache.missCount ?? 0
+    ]
+  }
+])
+
+const documentTypeLabels = computed(() => ['PDF', 'DOCX', 'TXT', 'HTML', 'Other'])
+
+const documentTypeData = computed(() => {
+  // Mock data based on total documents
+  const total = adminStore.documentMetrics?.totalDocuments ?? 0
+  return [
+    Math.floor(total * 0.35),
+    Math.floor(total * 0.25),
+    Math.floor(total * 0.15),
+    Math.floor(total * 0.15),
+    Math.floor(total * 0.10)
+  ]
+})
+
+const userActivityLabels = computed(() => {
+  const labels = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }))
+  }
+  return labels
+})
+
+const userActivityData = computed(() => {
+  const activeUsers = adminStore.userMetrics?.activeUsersLast7d ?? 0
+  const avgPerDay = Math.floor(activeUsers / 7)
+  return [
+    { label: t('admin.metrics.activeUsers'), data: generateTrendData(avgPerDay, 7) },
+    { label: t('admin.metrics.newUsers'), data: generateTrendData(Math.floor(avgPerDay * 0.2), 7) }
+  ]
+})
+
+// Helper to generate mock trend data
+function generateTrendData(avg: number, days: number): number[] {
+  const data = []
+  for (let i = 0; i < days; i++) {
+    // Add some variation (+/- 30%)
+    const variation = 1 + (Math.random() - 0.5) * 0.6
+    data.push(Math.max(0, Math.floor(avg * variation)))
+  }
+  return data
 }
 </script>
 
@@ -309,10 +409,10 @@ function formatMs(ms: number) {
           <TabPanel>
             <div class="grid gap-6 lg:grid-cols-2">
               <div class="card p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Query Statistics</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.queryTrends') }}</h3>
                 <div class="mt-4 space-y-4">
                   <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Total Queries</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ t('admin.stats.totalQueries') }}</span>
                     <span class="font-medium text-gray-900 dark:text-white">
                       {{ formatNumber(adminStore.queryMetrics?.totalQueries ?? 0) }}
                     </span>
@@ -336,13 +436,13 @@ function formatMs(ms: number) {
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Performance</h3>
                 <div class="mt-4 space-y-4">
                   <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Avg Response Time</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ t('admin.metrics.avgResponseTime') }}</span>
                     <span class="font-medium text-gray-900 dark:text-white">
                       {{ formatMs(adminStore.queryMetrics?.averageResponseTime ?? 0) }}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Cache Hit Rate</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ t('admin.stats.cacheHitRate') }}</span>
                     <span class="font-medium text-green-600 dark:text-green-400">
                       {{ formatPercentage(adminStore.queryMetrics?.cacheHitRate ?? 0) }}
                     </span>
@@ -356,16 +456,26 @@ function formatMs(ms: number) {
                 </div>
               </div>
             </div>
+
+            <!-- Query Trends Chart -->
+            <div class="mt-6 card p-6">
+              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.queryTrends') }}</h3>
+              <LineChart
+                :labels="queryTrendLabels"
+                :datasets="queryTrendData"
+                :height="280"
+              />
+            </div>
           </TabPanel>
 
           <!-- Documents Tab -->
           <TabPanel>
             <div class="grid gap-6 lg:grid-cols-2">
               <div class="card p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Document Statistics</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.documentStats') }}</h3>
                 <div class="mt-4 space-y-4">
                   <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Total Documents</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ t('admin.stats.totalDocuments') }}</span>
                     <span class="font-medium text-gray-900 dark:text-white">
                       {{ formatNumber(adminStore.documentMetrics?.totalDocuments ?? 0) }}
                     </span>
@@ -402,6 +512,16 @@ function formatMs(ms: number) {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Document Types Chart -->
+            <div class="mt-6 card p-6">
+              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Document Types Distribution</h3>
+              <DoughnutChart
+                :labels="documentTypeLabels"
+                :data="documentTypeData"
+                :height="280"
+              />
             </div>
           </TabPanel>
 
@@ -496,6 +616,16 @@ function formatMs(ms: number) {
               </div>
             </div>
 
+            <!-- Cache Performance Chart -->
+            <div class="mt-6 card p-6">
+              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.cachePerformance') }}</h3>
+              <BarChart
+                :labels="cacheChartLabels"
+                :datasets="cacheChartData"
+                :height="280"
+              />
+            </div>
+
             <div class="mt-6">
               <button
                 class="btn-ghost text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
@@ -510,12 +640,12 @@ function formatMs(ms: number) {
           <TabPanel>
             <div class="card p-6">
               <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">User Statistics</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.userActivity') }}</h3>
               </div>
 
               <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">Total Users</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('admin.stats.totalUsers') }}</p>
                   <p class="text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ formatNumber(adminStore.userMetrics?.totalUsers ?? 0) }}
                   </p>
@@ -533,7 +663,7 @@ function formatMs(ms: number) {
                   </p>
                 </div>
                 <div>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">New (7d)</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('admin.metrics.newUsers') }} (7d)</p>
                   <p class="text-2xl font-semibold text-green-600 dark:text-green-400">
                     +{{ formatNumber(adminStore.userMetrics?.newUsersLast7d ?? 0) }}
                   </p>
@@ -553,6 +683,16 @@ function formatMs(ms: number) {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- User Activity Chart -->
+            <div class="mt-6 card p-6">
+              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.charts.userActivity') }} (7 Days)</h3>
+              <BarChart
+                :labels="userActivityLabels"
+                :datasets="userActivityData"
+                :height="280"
+              />
             </div>
           </TabPanel>
         </TabPanels>

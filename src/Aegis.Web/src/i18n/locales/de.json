@@ -1,0 +1,329 @@
+{
+  "common": {
+    "appName": "Aegis",
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "clear": "Löschen",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "info": "Information",
+    "retry": "Erneut versuchen",
+    "reload": "Neu laden",
+    "noResults": "Keine Ergebnisse gefunden",
+    "viewAll": "Alle Anzeigen",
+    "showMore": "Mehr Anzeigen",
+    "showLess": "Weniger Anzeigen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "rememberMe": "Angemeldet bleiben",
+    "forgotPassword": "Passwort vergessen?",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung...",
+    "welcomeBack": "Willkommen zurück",
+    "loginSubtitle": "Melden Sie sich an, um fortzufahren",
+    "invalidCredentials": "Ungültige E-Mail oder Passwort",
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "chat": "Chat",
+    "sessions": "Sitzungen",
+    "workspaces": "Arbeitsbereiche",
+    "search": "Suchen",
+    "notifications": "Benachrichtigungen",
+    "activity": "Aktivität",
+    "settings": "Einstellungen",
+    "admin": "Administration",
+    "profile": "Profil",
+    "help": "Hilfe"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcomeMessage": "Willkommen zurück, {name}!",
+    "quickActions": "Schnellaktionen",
+    "newSession": "Neue Sitzung",
+    "recentSessions": "Letzte Sitzungen",
+    "noRecentSessions": "Keine aktuellen Sitzungen",
+    "stats": {
+      "totalSessions": "Sitzungen Gesamt",
+      "totalQueries": "Abfragen Gesamt",
+      "avgResponseTime": "Durchschn. Antwortzeit",
+      "documentsProcessed": "Verarbeitete Dokumente"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "newChat": "Neuer Chat",
+    "placeholder": "Ihre Nachricht eingeben...",
+    "send": "Senden",
+    "thinking": "Denke nach...",
+    "generating": "Antwort wird generiert...",
+    "sources": "Quellen",
+    "noSources": "Keine Quellen gefunden",
+    "followUp": "Folgefragen",
+    "copyMessage": "Nachricht kopieren",
+    "regenerate": "Antwort neu generieren",
+    "stopGenerating": "Generierung stoppen",
+    "emptyState": {
+      "title": "Gespräch starten",
+      "subtitle": "Stellen Sie eine Frage, um mit Ihrem RAG-Assistenten zu beginnen"
+    }
+  },
+  "sessions": {
+    "title": "Sitzungen",
+    "newSession": "Neue Sitzung",
+    "searchPlaceholder": "Sitzungen suchen...",
+    "noSessions": "Keine Sitzungen gefunden",
+    "createFirst": "Erstellen Sie Ihre erste Sitzung",
+    "delete": "Sitzung Löschen",
+    "deleteConfirm": "Sind Sie sicher, dass Sie diese Sitzung löschen möchten?",
+    "export": "Exportieren",
+    "exportFormats": {
+      "json": "Als JSON exportieren",
+      "markdown": "Als Markdown exportieren",
+      "text": "Als Text exportieren"
+    },
+    "filters": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "sort": {
+      "newest": "Neueste zuerst",
+      "oldest": "Älteste zuerst",
+      "mostMessages": "Meiste Nachrichten"
+    },
+    "sessionCard": {
+      "messages": "{count} Nachrichten",
+      "lastActive": "Zuletzt aktiv {time}"
+    }
+  },
+  "workspaces": {
+    "title": "Arbeitsbereiche",
+    "newWorkspace": "Neuer Arbeitsbereich",
+    "searchPlaceholder": "Arbeitsbereiche suchen...",
+    "noWorkspaces": "Keine Arbeitsbereiche gefunden",
+    "createFirst": "Erstellen Sie Ihren ersten Arbeitsbereich",
+    "documents": "Dokumente",
+    "dataSources": "Datenquellen",
+    "members": "Mitglieder",
+    "settings": "Einstellungen",
+    "upload": "Dokument Hochladen",
+    "addDataSource": "Datenquelle Hinzufügen",
+    "sync": "Synchronisieren",
+    "syncing": "Synchronisierung...",
+    "lastSynced": "Zuletzt synchronisiert {time}"
+  },
+  "search": {
+    "title": "Suchen",
+    "placeholder": "Alle Inhalte durchsuchen...",
+    "recentSearches": "Letzte Suchen",
+    "clearRecent": "Verlauf löschen",
+    "filters": {
+      "type": "Typ",
+      "dateRange": "Zeitraum",
+      "workspace": "Arbeitsbereich"
+    },
+    "types": {
+      "all": "Alle",
+      "sessions": "Sitzungen",
+      "documents": "Dokumente",
+      "workspaces": "Arbeitsbereiche",
+      "messages": "Nachrichten"
+    },
+    "dateRanges": {
+      "today": "Heute",
+      "week": "Diese Woche",
+      "month": "Diesen Monat",
+      "year": "Dieses Jahr"
+    },
+    "results": "{count} Ergebnisse",
+    "noResults": "Keine Ergebnisse für \"{query}\" gefunden"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "noNotifications": "Keine Benachrichtigungen",
+    "settings": "Benachrichtigungseinstellungen",
+    "types": {
+      "query": "Abfrage",
+      "document": "Dokument",
+      "system": "System",
+      "user": "Benutzer"
+    }
+  },
+  "activity": {
+    "title": "Aktivität",
+    "tabs": {
+      "all": "Alle Aktivitäten",
+      "mine": "Meine Aktivität",
+      "following": "Verfolgt"
+    },
+    "noActivity": "Keine Aktivität vorhanden",
+    "filters": {
+      "type": "Aktivitätstyp",
+      "workspace": "Arbeitsbereich"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "tabs": {
+      "profile": "Profil",
+      "appearance": "Erscheinungsbild",
+      "notifications": "Benachrichtigungen",
+      "privacy": "Datenschutz",
+      "apiKeys": "API-Schlüssel"
+    },
+    "profile": {
+      "displayName": "Anzeigename",
+      "email": "E-Mail",
+      "avatar": "Avatar",
+      "changeAvatar": "Avatar Ändern",
+      "removeAvatar": "Avatar Entfernen"
+    },
+    "appearance": {
+      "theme": "Design",
+      "themes": {
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      },
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "dateFormat": "Datumsformat"
+    },
+    "notifications": {
+      "emailNotifications": "E-Mail-Benachrichtigungen",
+      "pushNotifications": "Push-Benachrichtigungen",
+      "queryCompleted": "Abfrage abgeschlossen",
+      "documentProcessed": "Dokument verarbeitet",
+      "systemUpdates": "Systemaktualisierungen",
+      "mentions": "Erwähnungen"
+    },
+    "privacy": {
+      "activityStatus": "Aktivitätsstatus anzeigen",
+      "allowMentions": "Erwähnungen erlauben"
+    },
+    "apiKeys": {
+      "title": "API-Schlüssel",
+      "create": "Neuen Schlüssel Erstellen",
+      "name": "Schlüsselname",
+      "scopes": "Bereiche",
+      "expires": "Läuft Ab",
+      "lastUsed": "Zuletzt Verwendet",
+      "revoke": "Widerrufen",
+      "revokeConfirm": "Sind Sie sicher, dass Sie diesen API-Schlüssel widerrufen möchten?"
+    },
+    "saved": "Einstellungen gespeichert",
+    "saveError": "Einstellungen konnten nicht gespeichert werden"
+  },
+  "admin": {
+    "title": "Admin-Dashboard",
+    "overview": "Übersicht",
+    "systemHealth": "Systemzustand",
+    "healthy": "Gesund",
+    "degraded": "Beeinträchtigt",
+    "unhealthy": "Ungesund",
+    "stats": {
+      "totalUsers": "Benutzer Gesamt",
+      "activeUsers": "Aktive Benutzer",
+      "totalWorkspaces": "Arbeitsbereiche Gesamt",
+      "totalDocuments": "Dokumente Gesamt",
+      "totalQueries": "Abfragen Gesamt",
+      "cacheHitRate": "Cache-Trefferrate"
+    },
+    "tabs": {
+      "queries": "Abfragen",
+      "documents": "Dokumente",
+      "cache": "Cache",
+      "users": "Benutzer"
+    },
+    "metrics": {
+      "queriesPerHour": "Abfragen pro Stunde",
+      "avgResponseTime": "Durchschn. Antwortzeit",
+      "documentsIngested": "Eingepflegte Dokumente",
+      "processingTime": "Verarbeitungszeit",
+      "cacheHits": "Cache-Treffer",
+      "cacheMisses": "Cache-Fehlschläge",
+      "activeUsers": "Aktive Benutzer",
+      "newUsers": "Neue Benutzer"
+    },
+    "charts": {
+      "queryTrends": "Abfragetrends",
+      "documentStats": "Dokumentstatistiken",
+      "cachePerformance": "Cache-Leistung",
+      "userActivity": "Benutzeraktivität"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "tabs": {
+      "profile": "Profil",
+      "activity": "Aktivität",
+      "apiKeys": "API-Schlüssel",
+      "security": "Sicherheit"
+    },
+    "stats": {
+      "totalSessions": "Sitzungen Gesamt",
+      "totalQueries": "Abfragen Gesamt",
+      "totalWorkspaces": "Arbeitsbereiche",
+      "avgResponseTime": "Durchschn. Antwortzeit"
+    },
+    "security": {
+      "changePassword": "Passwort Ändern",
+      "currentPassword": "Aktuelles Passwort",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort Bestätigen",
+      "deleteAccount": "Konto Löschen",
+      "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht."
+    }
+  },
+  "help": {
+    "title": "Hilfezentrum",
+    "gettingStarted": "Erste Schritte",
+    "keyboardShortcuts": "Tastaturkürzel",
+    "faq": "Häufige Fragen",
+    "contact": "Support Kontaktieren",
+    "shortcuts": {
+      "navigation": "Navigation",
+      "search": "Suche",
+      "general": "Allgemein"
+    }
+  },
+  "errors": {
+    "generic": "Etwas ist schiefgelaufen",
+    "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
+    "notFound": "Seite nicht gefunden",
+    "unauthorized": "Sie sind nicht berechtigt, diese Seite anzuzeigen",
+    "forbidden": "Zugriff verweigert",
+    "serverError": "Serverfehler. Bitte versuchen Sie es später erneut.",
+    "validation": "Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut"
+  },
+  "time": {
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {count} Minute | vor {count} Minuten",
+    "hoursAgo": "vor {count} Stunde | vor {count} Stunden",
+    "daysAgo": "vor {count} Tag | vor {count} Tagen",
+    "weeksAgo": "vor {count} Woche | vor {count} Wochen"
+  }
+}
