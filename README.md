@@ -17,20 +17,28 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
-### Sprint 61-62: Activity Feed & Comments UI ✅ (January 2026)
-- **Activity Feed** - View activity across workspaces with filtering and tabs
-- **Comments System** - Threaded discussions with @mentions and reactions
-- **Presence Indicators** - Real-time "who's viewing" for resources
-- **8 Emoji Reactions** - Like, Love, Laugh, Celebrate, Insightful, Question, Agree, Disagree
+### Sprint 65-66: CI/CD Pipeline & Frontend Optimization ✅ (January 2026)
+- **GitHub Actions CI/CD** - Automated lint, type-check, unit tests, E2E tests, and Docker build
+- **PWA Support** - Installable app with offline caching via Workbox service worker
+- **Build Optimization** - Code splitting with manual chunks (~555KB precached)
+- **Bundle Analyzer** - Treemap visualization with gzip/brotli sizes
+- **Production Docker** - 3-stage build with non-root user and security headers
 
-### Vue 3 Frontend (Sprint 51-62) ✅
+### Sprint 63-64: E2E Testing with Playwright ✅ (January 2026)
+- **Playwright E2E Tests** - 70+ tests for auth, chat, sessions, workspaces, search
+- **Vitest Unit Tests** - 76 component and store tests
+- **Test Coverage** - ChatMessage, ChatInput, auth store, session store
+
+### Vue 3 Frontend (Sprint 51-66) ✅
 Complete Vue 3 + TailwindCSS frontend with:
 - Chat interface with SignalR streaming
 - Session and workspace management
 - Admin dashboard with metrics
 - Global search and document preview
 - User profile and API key management
-- Keyboard shortcuts and dark mode
+- Activity feed with comments and reactions
+- PWA support with offline caching
+- Comprehensive test suite (E2E + Unit)
 
 ### UUID v7 Migration (December 2025)
 - **Time-Ordered Identifiers** - All entities use UUID v7 for better database performance

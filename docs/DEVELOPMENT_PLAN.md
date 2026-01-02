@@ -2437,6 +2437,8 @@ public class VectorSearchPlugin
 - [x] Global Search & Document Preview UI (Sprint 57-58: Full-text search, Filters, Document preview modal)
 - [x] User Profile & Help Center UI (Sprint 59-60: Profile management, API keys, Keyboard shortcuts, FAQ)
 - [x] Activity Feed & Comments UI (Sprint 61-62: Activity feed, Comments with reactions, Presence indicators)
+- [x] E2E Testing with Playwright & Component Tests (Sprint 63-64: Playwright E2E, Vitest unit tests, 76+ frontend tests)
+- [x] CI/CD Pipeline & Frontend Optimization (Sprint 65-66: GitHub Actions, PWA support, code splitting, Docker optimization)
 
 ---
 
