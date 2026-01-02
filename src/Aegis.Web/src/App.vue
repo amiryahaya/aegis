@@ -6,13 +6,18 @@ import PWAUpdatePrompt from '@/components/common/PWAUpdatePrompt.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
 import SkipToContent from '@/components/common/SkipToContent.vue'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import CommandPalette from '@/components/common/CommandPalette.vue'
 import { useErrorTracking } from '@/composables/useErrorTracking'
+import { useCommandPalette } from '@/composables/useCommandPalette'
 
 const route = useRoute()
 const isAuthPage = computed(() => route.meta.requiresAuth === false)
 
 // Initialize error tracking
 const { trackCritical } = useErrorTracking()
+
+// Initialize command palette (registers keyboard shortcuts)
+useCommandPalette()
 
 // Handle critical errors from error boundary
 const handleCriticalError = (error: Error, info: string) => {
@@ -46,5 +51,8 @@ const handleCriticalError = (error: Error, info: string) => {
 
     <!-- Toast notifications -->
     <ToastContainer />
+
+    <!-- Command Palette (Cmd+K / Ctrl+K) -->
+    <CommandPalette />
   </div>
 </template>

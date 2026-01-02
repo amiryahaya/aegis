@@ -27,7 +27,7 @@ export function useKeyboardShortcuts() {
     { key: 'g p', handler: () => router.push('/profile'), description: 'Go to Profile' },
     { key: 'g ?', handler: () => router.push('/help'), description: 'Go to Help' },
 
-    // Search
+    // Search (/ key focuses search input, Ctrl+K is handled by command palette)
     {
       key: '/',
       handler: () => {
@@ -39,12 +39,6 @@ export function useKeyboardShortcuts() {
         }
       },
       description: 'Focus search'
-    },
-    {
-      key: 'k',
-      ctrl: true,
-      handler: () => router.push('/search'),
-      description: 'Open search'
     },
 
     // Theme toggle

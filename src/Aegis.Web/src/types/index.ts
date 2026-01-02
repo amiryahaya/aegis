@@ -10,6 +10,7 @@ export * from './activity'
 export * from './comments'
 export * from './presence'
 export * from './upload'
+export * from './command'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

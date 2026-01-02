@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import {
   Bars3Icon,
@@ -9,10 +9,12 @@ import {
   ArrowRightOnRectangleIcon,
   MagnifyingGlassIcon,
   Cog6ToothIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  CommandLineIcon
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useCommandPalette } from '@/composables/useCommandPalette'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
 
 const emit = defineEmits<{
@@ -21,7 +23,9 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore()
 const router = useRouter()
+const { open: openCommandPalette } = useCommandPalette()
 const isDark = ref(document.documentElement.classList.contains('dark'))
+const isMac = computed(() => navigator.platform.toUpperCase().indexOf('MAC') >= 0)
 const searchQuery = ref('')
 
 function handleSearch() {
@@ -67,9 +71,9 @@ function logout() {
       <Bars3Icon class="h-5 w-5" />
     </button>
 
-    <!-- Search Bar -->
-    <div class="hidden sm:flex flex-1 max-w-md mx-4">
-      <form @submit.prevent="handleSearch" class="relative w-full">
+    <!-- Search Bar + Command Palette Trigger -->
+    <div class="hidden sm:flex flex-1 max-w-lg mx-4 gap-2">
+      <form @submit.prevent="handleSearch" class="relative flex-1">
         <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
           v-model="searchQuery"
@@ -78,6 +82,21 @@ function logout() {
           class="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-aegis-500 focus:border-transparent focus:bg-white dark:focus:bg-gray-600"
         />
       </form>
+
+      <!-- Command Palette Button -->
+      <button
+        type="button"
+        @click="openCommandPalette"
+        class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+        title="Open command palette"
+      >
+        <CommandLineIcon class="h-4 w-4" />
+        <span class="hidden lg:inline text-xs">Commands</span>
+        <kbd class="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-mono bg-gray-200 dark:bg-gray-600 rounded">
+          <span>{{ isMac ? '⌘' : 'Ctrl' }}</span>
+          <span>K</span>
+        </kbd>
+      </button>
     </div>
 
     <!-- Mobile search button -->
