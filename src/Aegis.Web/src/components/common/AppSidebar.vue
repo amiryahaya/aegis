@@ -170,6 +170,7 @@ async function createNewSession() {
   <div
     class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300"
     :class="open ? 'lg:w-64' : 'lg:w-20'"
+    data-tour="sidebar"
   >
     <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-4 pb-4 dark:border-gray-700 dark:bg-gray-800">
       <!-- Logo -->
@@ -182,6 +183,7 @@ async function createNewSession() {
       <button
         class="btn-primary gap-2"
         :class="open ? 'w-full' : 'w-12 h-12 p-0'"
+        data-tour="new-chat"
         @click="createNewSession"
       >
         <PlusIcon class="h-5 w-5" />

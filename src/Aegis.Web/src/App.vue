@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/common/AppLayout.vue'
 import PWAUpdatePrompt from '@/components/common/PWAUpdatePrompt.vue'
@@ -7,8 +7,11 @@ import ToastContainer from '@/components/common/ToastContainer.vue'
 import SkipToContent from '@/components/common/SkipToContent.vue'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import CommandPalette from '@/components/common/CommandPalette.vue'
+import OnboardingModal from '@/components/onboarding/OnboardingModal.vue'
+import FeatureTour from '@/components/onboarding/FeatureTour.vue'
 import { useErrorTracking } from '@/composables/useErrorTracking'
 import { useCommandPalette } from '@/composables/useCommandPalette'
+import { useOnboarding } from '@/composables/useOnboarding'
 
 const route = useRoute()
 const isAuthPage = computed(() => route.meta.requiresAuth === false)
@@ -18,6 +21,19 @@ const { trackCritical } = useErrorTracking()
 
 // Initialize command palette (registers keyboard shortcuts)
 useCommandPalette()
+
+// Initialize onboarding
+const { shouldShowOnboarding, showWelcome } = useOnboarding()
+
+// Show onboarding for new users
+onMounted(() => {
+  if (shouldShowOnboarding() && !isAuthPage.value) {
+    // Delay slightly to let the app render first
+    setTimeout(() => {
+      showWelcome()
+    }, 500)
+  }
+})
 
 // Handle critical errors from error boundary
 const handleCriticalError = (error: Error, info: string) => {
@@ -54,5 +70,9 @@ const handleCriticalError = (error: Error, info: string) => {
 
     <!-- Command Palette (Cmd+K / Ctrl+K) -->
     <CommandPalette />
+
+    <!-- Onboarding -->
+    <OnboardingModal />
+    <FeatureTour />
   </div>
 </template>

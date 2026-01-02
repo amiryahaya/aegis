@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 2, 2026
-**Last Commit:** Sprint 77-78: Command Palette & Keyboard Navigation
+**Last Commit:** Sprint 79-80: Onboarding & Feature Tour
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -442,6 +442,22 @@
 - command.ts types (Command, CommandGroup, CommandCategory, CommandPaletteState)
 - **Files Added:** 3 new Vue/TypeScript files (CommandPalette.vue, useCommandPalette.ts, command.ts types)
 - **Files Updated:** types/index.ts, App.vue, AppHeader.vue, useKeyboardShortcuts.ts
+
+#### Sprint 79-80: Onboarding & Feature Tour ✅
+- OnboardingModal component with welcome slides for first-time users
+- 4 welcome slides (Welcome, Workspaces, Chat, Collaborate) with icons
+- FeatureTour component for step-by-step feature walkthrough
+- TourTooltip component with dynamic positioning and spotlight effect
+- 6 tour steps targeting sidebar, search, command palette, new chat, notifications, theme
+- useOnboarding composable for tour state management
+- Tour state persistence with localStorage
+- Keyboard navigation for tour (Escape, Arrow keys, Enter)
+- Progress indicators with step dots
+- Skip tour and complete tour callbacks
+- data-tour attributes on sidebar, header elements for tour targeting
+- onboarding.ts types (TourStep, Tour, OnboardingState, WelcomeSlide)
+- **Files Added:** 5 new Vue/TypeScript files (OnboardingModal.vue, FeatureTour.vue, TourTooltip.vue, useOnboarding.ts, onboarding.ts types)
+- **Files Updated:** types/index.ts, App.vue, AppHeader.vue, AppSidebar.vue
 
 ### Current Statistics
 - **Total Backend Tests Passing:** 865 (844 unit + 21 architecture)
@@ -1063,6 +1079,25 @@ Potential future work:
 - src/Aegis.Web/src/components/common/AppHeader.vue (command palette trigger button)
 - src/Aegis.Web/src/composables/useKeyboardShortcuts.ts (removed Ctrl+K conflict)
 
+### Files Created (Sprint 79-80)
+
+**Onboarding Components:**
+- src/Aegis.Web/src/components/onboarding/OnboardingModal.vue (welcome modal with slides)
+- src/Aegis.Web/src/components/onboarding/FeatureTour.vue (tour orchestration)
+- src/Aegis.Web/src/components/onboarding/TourTooltip.vue (positioned tour tooltip)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useOnboarding.ts (tour state management)
+
+**Types:**
+- src/Aegis.Web/src/types/onboarding.ts (TourStep, Tour, OnboardingState, WelcomeSlide types)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added onboarding types export)
+- src/Aegis.Web/src/App.vue (OnboardingModal, FeatureTour integration)
+- src/Aegis.Web/src/components/common/AppHeader.vue (data-tour attributes)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (data-tour attributes)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -1221,10 +1256,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 79-80: Onboarding & Feature Tour
   - Sprint 77-78: Command Palette & Keyboard Navigation
   - Sprint 75-76: Drag & Drop, File Upload & Bulk Operations
   - Sprint 73-74: Advanced Search & Filtering
-  - Sprint 71-72: Form Validation with VeeValidate & Zod
 
 ## 💡 Tips for Next Session
 

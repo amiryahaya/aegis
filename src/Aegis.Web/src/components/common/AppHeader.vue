@@ -72,7 +72,7 @@ function logout() {
     </button>
 
     <!-- Search Bar + Command Palette Trigger -->
-    <div class="hidden sm:flex flex-1 max-w-lg mx-4 gap-2">
+    <div class="hidden sm:flex flex-1 max-w-lg mx-4 gap-2" data-tour="search">
       <form @submit.prevent="handleSearch" class="relative flex-1">
         <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
@@ -87,6 +87,7 @@ function logout() {
       <button
         type="button"
         @click="openCommandPalette"
+        data-tour="command-palette"
         class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
         title="Open command palette"
       >
@@ -117,6 +118,7 @@ function logout() {
       <button
         type="button"
         class="btn-ghost p-2"
+        data-tour="theme"
         @click="toggleDarkMode"
       >
         <MoonIcon v-if="!isDark" class="h-5 w-5" />
@@ -124,7 +126,9 @@ function logout() {
       </button>
 
       <!-- Notifications -->
-      <NotificationBell />
+      <div data-tour="notifications">
+        <NotificationBell />
+      </div>
 
       <!-- User menu -->
       <Menu as="div" class="relative">

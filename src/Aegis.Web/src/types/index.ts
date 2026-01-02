@@ -11,6 +11,7 @@ export * from './comments'
 export * from './presence'
 export * from './upload'
 export * from './command'
+export * from './onboarding'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {
