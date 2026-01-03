@@ -20,6 +20,7 @@ export * from './export'
 export * from './webhook'
 export * from './audit'
 export * from './userManagement'
+export * from './systemConfig'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

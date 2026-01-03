@@ -145,6 +145,13 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "admin" */ '@/views/UserManagementView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: 'User Management' }
     },
+    // System Configuration (Admin)
+    {
+      path: '/system-config',
+      name: 'system-config',
+      component: () => import(/* webpackChunkName: "admin" */ '@/views/SystemConfigView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'System Configuration' }
+    },
     // Catch all - redirect to dashboard
     {
       path: '/:pathMatch(.*)*',

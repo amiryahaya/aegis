@@ -1,8 +1,8 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 97-98: User Management & Team Administration UI
-**Current Branch:** main
+**Last Commit:** Sprint 99-100: Notification Preferences & System Configuration UI
+**Current Branch:** develop
 
 ## 📍 Where We Are
 
@@ -641,6 +641,27 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 99-100: Notification Preferences & System Configuration UI ✅
+- Comprehensive systemConfig types (UserNotificationPreferences, EmailTemplate, SystemConfiguration, FeatureFlag)
+- NotificationPreferencesPanel with sections for Email, In-App, Push, Digest, Quiet Hours
+- Email notification settings (queries, sessions, documents, mentions, team updates, security alerts)
+- In-App notification settings with sound and desktop notification toggles
+- Push notification settings with urgent-only option
+- Digest settings (frequency, day, time, analytics, team activity)
+- Quiet hours with start/end time and urgent override
+- FeatureFlagsPanel with create/edit dialog, rollout percentage, role-based targeting
+- Feature flag toggle, search, and delete functionality
+- EmailTemplatesPanel with category-based organization (authentication, notifications, alerts, reports, invitations, system)
+- Email template preview (HTML and source code views), duplicate, edit, delete
+- Template variables management with name, description, required flag
+- GeneralSettingsPanel (site name, URL, emails, branding, logo, favicon, theme, localization)
+- SecuritySettingsPanel (password policy, session settings, MFA, IP restrictions, CORS)
+- SystemConfigView with 6 tabs (General, Security, Notifications, Email Templates, Feature Flags, Change History)
+- Configuration change history with old/new value display
+- /system-config route with requiresAdmin guard
+- System Config navigation item in sidebar (admin only)
+- **Build:** 1423.62 KB precached (62 entries)
 
 #### Sprint 97-98: User Management & Team Administration UI ✅
 - Comprehensive user management types (ManagedUser, ManagedTeam, TeamMember, TeamSettings)
@@ -1463,6 +1484,29 @@ Potential future work:
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
 
+### Files Created (Sprint 99-100)
+
+**Types:**
+- src/Aegis.Web/src/types/systemConfig.ts (UserNotificationPreferences, EmailNotificationSettings, InAppNotificationSettings, PushNotificationSettings, DigestSettings, QuietHoursSettings, EmailTemplate, TemplateVariable, SystemConfiguration, GeneralSettings, SecuritySettings, AuthenticationSettings, SSOProvider, StorageSettings, LLMSettings, SystemNotificationSettings, SystemLimits, FeatureFlag, MaintenanceSettings, ScheduledMaintenance, ConfigurationChange, CONFIG_SECTION_LABELS, EMAIL_TEMPLATE_CATEGORIES, SSO_PROVIDER_LABELS, STORAGE_PROVIDER_LABELS, LLM_PROVIDER_LABELS, getDefaultUserNotificationPreferences)
+
+**Stores:**
+- src/Aegis.Web/src/stores/systemConfig.ts (notificationPreferences, emailTemplates, systemConfig, featureFlags, configHistory, CRUD, mock data generators)
+
+**Components:**
+- src/Aegis.Web/src/components/config/NotificationPreferencesPanel.vue (Email, In-App, Push, Digest, Quiet Hours sections with toggles)
+- src/Aegis.Web/src/components/config/FeatureFlagsPanel.vue (flag list, search, create/edit dialog, rollout percentage, role targeting)
+- src/Aegis.Web/src/components/config/EmailTemplatesPanel.vue (category organization, preview, create/edit, variables)
+- src/Aegis.Web/src/components/config/GeneralSettingsPanel.vue (site info, branding, localization settings)
+- src/Aegis.Web/src/components/config/SecuritySettingsPanel.vue (password policy, session, MFA, IP restrictions)
+
+**Views:**
+- src/Aegis.Web/src/views/SystemConfigView.vue (6 tabs: General, Security, Notifications, Email Templates, Feature Flags, Change History)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added systemConfig types export)
+- src/Aegis.Web/src/router/index.ts (added /system-config route)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (added System Config navigation for admins)
+
 ### Files Created (Sprint 97-98)
 
 **Types:**
@@ -1666,6 +1710,7 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 99-100: Notification Preferences & System Configuration UI
   - Sprint 97-98: User Management & Team Administration UI
   - Sprint 95-96: Audit Log Viewer & System Monitoring
   - Sprint 93-94: Webhook Management & API Integration UI
