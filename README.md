@@ -17,36 +17,34 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
-### Sprint 67-68: Error Handling & Accessibility ✅ (January 2026)
-- **Error Boundary** - Graceful error handling with retry/reload options
-- **Toast Notifications** - Success, error, warning, info with auto-dismiss
-- **Error Tracking** - Global error capture with external service integration ready
-- **Skip to Content** - Keyboard navigation accessibility
-- **Focus Trap** - Modal/dialog focus management
-- **Screen Reader Support** - ARIA live regions for announcements
+### Sprint 115-116: Password Recovery & Error Pages ✅ (January 2026)
+- **Forgot Password Flow** - Email-based password reset request with validation
+- **Reset Password Flow** - Token validation, password strength indicator, auto-redirect
+- **404 Not Found Page** - Auth-aware navigation with helpful quick links
+- **Notifications Enhancement** - Toast notifications for all notification actions
 
-### Sprint 65-66: CI/CD Pipeline & Frontend Optimization ✅ (January 2026)
-- **GitHub Actions CI/CD** - Automated lint, type-check, unit tests, E2E tests, and Docker build
-- **PWA Support** - Installable app with offline caching via Workbox service worker
-- **Build Optimization** - Code splitting with manual chunks (~555KB precached)
+### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅ (January 2026)
+- **User Registration** - VeeValidate + Zod validation with password strength indicator
+- **Dashboard Stats** - Workspace count, total documents, total queries display
+- **Profile Toasts** - Toast notifications for all profile operations
 
-### Sprint 63-64: E2E Testing with Playwright ✅ (January 2026)
-- **Playwright E2E Tests** - 70+ tests for auth, chat, sessions, workspaces, search
-- **Vitest Unit Tests** - 76 component and store tests
-- **Test Coverage** - ChatMessage, ChatInput, auth store, session store
+### Sprint 111-112: Enhanced Error Handling & Toast Notifications ✅ (January 2026)
+- **ChatView Toasts** - Success/error toasts for all chat operations
+- **SessionsView Toasts** - Bulk actions with proper error handling
+- **WorkspacesView Toasts** - Create/delete workspace notifications
 
-### Vue 3 Frontend (Sprint 51-68) ✅
+### Vue 3 Frontend (Sprint 51-116) ✅
 Complete Vue 3 + TailwindCSS frontend with:
-- Chat interface with SignalR streaming
-- Session and workspace management
-- Admin dashboard with metrics
-- Global search and document preview
-- User profile and API key management
-- Activity feed with comments and reactions
-- PWA support with offline caching
-- Error handling and toast notifications
-- Accessibility (skip links, focus traps, ARIA)
-- Comprehensive test suite (E2E + Unit)
+- **Authentication** - Login, register, forgot/reset password, 404 page
+- **Chat Interface** - SignalR streaming with source citations
+- **Session & Workspace Management** - CRUD, export, filtering, bulk operations
+- **Admin Dashboard** - System health, metrics, user management
+- **Global Search** - Full-text search with filters and document preview
+- **User Profile** - Profile management, API keys, settings
+- **Activity & Collaboration** - Activity feed, comments, reactions, presence
+- **PWA Support** - Installable app with offline caching
+- **Error Handling** - Toast notifications, error boundaries, ARIA support
+- **Testing** - 76 unit tests, 70+ E2E tests with Playwright
 
 ### UUID v7 Migration (December 2025)
 - **Time-Ordered Identifiers** - All entities use UUID v7 for better database performance
@@ -375,18 +373,19 @@ Aegis.sln
 | Icons | Heroicons | SVG icon library |
 | HTTP Client | Axios | API communication |
 
-**Frontend Features (Sprint 51-62):**
-- Chat interface with streaming responses
-- Session management (CRUD, export, filtering)
-- Workspace management with data sources
-- Document upload and preview
-- Global search with filters
-- Admin dashboard with metrics
-- User profile and API key management
-- Activity feed with threaded comments
-- Presence indicators (who's viewing)
-- Keyboard shortcuts
-- Dark mode support
+**Frontend Features (Sprint 51-116):**
+- **Authentication** - Login, register, forgot/reset password, 404 page
+- **Chat Interface** - Streaming responses with source citations
+- **Session Management** - CRUD, export, filtering, bulk operations
+- **Workspace Management** - Data sources, document upload/preview
+- **Global Search** - Full-text search with advanced filters
+- **Admin Dashboard** - System health, metrics, user management
+- **User Profile** - API key management, settings, preferences
+- **Activity Feed** - Threaded comments, reactions, mentions
+- **Real-time Features** - Presence indicators, typing status
+- **Accessibility** - Keyboard shortcuts, focus traps, ARIA support
+- **PWA Support** - Installable with offline caching
+- **Testing** - 76 unit tests, 70+ E2E tests
 
 ## Key Patterns
 
