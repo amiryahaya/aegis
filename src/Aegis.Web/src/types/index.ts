@@ -16,6 +16,7 @@ export * from './connection'
 export * from './offline'
 export * from './performance'
 export * from './analytics'
+export * from './export'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

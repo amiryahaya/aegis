@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 89-90: Analytics Dashboard & User Insights
+**Last Commit:** Sprint 91-92: Export & Reporting Features
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -570,6 +570,33 @@
 - **Files Added:** 8 new TypeScript/Vue files (analytics.ts types, analytics.ts store, StatCard.vue, DateRangePicker.vue, InsightCard.vue, TrendChart.vue, DistributionChart.vue, AnalyticsView.vue)
 - **Files Updated:** types/index.ts, router/index.ts, AppSidebar.vue
 - **Build Size:** 1089.67 KB precached
+
+#### Sprint 91-92: Export & Reporting Features ✅
+- Comprehensive export types (FileFormat, ExportFormatOption, ExportOptions, ExportJob, ExportHistoryItem)
+- 6 export formats: JSON, CSV, PDF, Markdown, HTML, Excel (XLSX)
+- 8 export resource types: session, sessions, workspace, workspaces, documents, analytics, audit-logs, activity
+- ReportTemplate type with 8 report templates:
+  - Usage Summary, Query Analytics, Session Analytics, Document Analytics
+  - Performance Report, Feedback Report, Audit Report, Workspace Report
+- Report categories: analytics, compliance, operations
+- ScheduledReport with frequency options: daily, weekly, monthly, quarterly
+- useExport composable for export execution with progress tracking
+- useExportDialog composable for multi-step export wizard state management
+- useReportDialog composable for report generation with scheduling support
+- ExportDialog component with 4 steps: format selection, options, progress, complete
+- ExportHistory component for viewing and managing past exports
+- ReportDialog component with 5 steps: template selection, filters, schedule, progress, complete
+- ReportsView with 3 tabs: Report Templates, Scheduled Reports, Export History
+- Category-based template grouping with format badges
+- Date range picker for report filters
+- Schedule configuration UI (frequency, day, time, recipients)
+- Mock data generators for development and testing
+- File download with Blob/ObjectURL and proper MIME types
+- /reports route added to router
+- Reports navigation link in sidebar with DocumentChartBarIcon
+- **Files Added:** 6 new TypeScript/Vue files (export.ts types, useExport.ts, ExportDialog.vue, ExportHistory.vue, ReportDialog.vue, ReportsView.vue)
+- **Files Updated:** types/index.ts, router/index.ts, AppSidebar.vue
+- **Build Size:** 1133.66 KB precached
 
 ### Current Statistics
 - **Total Backend Tests Passing:** 865 (844 unit + 21 architecture)
@@ -1321,6 +1348,27 @@ Potential future work:
 - src/Aegis.Web/src/router/index.ts (added /analytics route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Analytics navigation with ChartBarIcon)
 
+### Files Created (Sprint 91-92)
+
+**Types:**
+- src/Aegis.Web/src/types/export.ts (FileFormat, ExportFormatOption, ExportOptions, ExportJob, ExportHistoryItem, ReportTemplate, ScheduledReport, dialog state types)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useExport.ts (useExport, useExportDialog, useReportDialog composables)
+
+**Components:**
+- src/Aegis.Web/src/components/export/ExportDialog.vue (multi-step export wizard with format selection, options, progress)
+- src/Aegis.Web/src/components/export/ExportHistory.vue (export history list with download/delete actions)
+- src/Aegis.Web/src/components/export/ReportDialog.vue (report generation wizard with template selection, filters, scheduling)
+
+**Views:**
+- src/Aegis.Web/src/views/ReportsView.vue (reports page with templates, scheduled reports, export history tabs)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added export types export)
+- src/Aegis.Web/src/router/index.ts (added /reports route)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (added Reports navigation with DocumentChartBarIcon)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -1479,10 +1527,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 91-92: Export & Reporting Features
   - Sprint 89-90: Analytics Dashboard & User Insights
   - Sprint 87-88: Performance Optimization & Virtual Scrolling
   - Sprint 85-86: Offline Support & Data Sync
-  - Sprint 83-84: Responsive Mobile Design & Touch Gestures
 
 ## 💡 Tips for Next Session
 
