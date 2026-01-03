@@ -21,6 +21,12 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "auth" */ '@/views/LoginView.vue'),
       meta: { requiresAuth: false, title: 'Login' }
     },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import(/* webpackChunkName: "auth" */ '@/views/RegisterView.vue'),
+      meta: { requiresAuth: false, title: 'Create Account' }
+    },
     // Dashboard - core experience
     {
       path: '/',

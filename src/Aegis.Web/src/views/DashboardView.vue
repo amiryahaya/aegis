@@ -1,39 +1,70 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import { useWorkspaceStore } from '@/stores/workspace'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { SessionType } from '@/types'
 import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   SparklesIcon,
   ArrowTrendingUpIcon,
-  PlusIcon
+  PlusIcon,
+  FolderIcon,
+  DocumentTextIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
+const workspaceStore = useWorkspaceStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
-onMounted(() => {
+const totalDocuments = computed(() => {
+  return workspaceStore.workspaces.reduce((sum, ws) => sum + (ws.stats?.documentCount || 0), 0)
+})
+
+const totalQueries = computed(() => {
+  return workspaceStore.workspaces.reduce((sum, ws) => sum + (ws.stats?.queryCount || 0), 0)
+})
+
+onMounted(async () => {
   if (authStore.user) {
-    sessionStore.fetchStats(authStore.user.id)
-    sessionStore.fetchSessions({ userId: authStore.user.id, pageSize: 5 })
+    try {
+      await Promise.all([
+        sessionStore.fetchStats(authStore.user.id),
+        sessionStore.fetchSessions({ userId: authStore.user.id, pageSize: 5 }),
+        authStore.user.teamId ? workspaceStore.fetchWorkspaces(authStore.user.teamId) : Promise.resolve()
+      ])
+    } catch (error) {
+      toast.error('Failed to load dashboard', 'Some data could not be fetched')
+    }
   }
 })
 
 async function startNewChat() {
-  if (!authStore.user) return
+  if (!authStore.user) {
+    toast.error('Not authenticated', 'Please log in to start a chat')
+    return
+  }
 
-  const session = await sessionStore.createSession({
-    userId: authStore.user.id,
-    title: 'New Conversation',
-    type: SessionType.QuickQuery
-  })
+  try {
+    const session = await sessionStore.createSession({
+      userId: authStore.user.id,
+      title: 'New Conversation',
+      type: SessionType.QuickQuery
+    })
 
-  if (session) {
-    router.push(`/chat/${session.id}`)
+    if (session) {
+      toast.success('Chat started', 'New conversation created')
+      router.push(`/chat/${session.id}`)
+    } else {
+      toast.error('Failed to start chat', 'Unable to create new session')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to start chat')
   }
 }
 
@@ -117,6 +148,54 @@ function formatDate(dateStr: string | undefined) {
             <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
             <p class="text-2xl font-semibold text-gray-900 dark:text-white">
               {{ Math.round(sessionStore.stats?.averageSessionDuration ?? 0) }}m
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workspace stats row -->
+    <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Workspaces -->
+      <div class="card p-5">
+        <div class="flex items-center gap-4">
+          <div class="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/50">
+            <FolderIcon class="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Workspaces</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+              {{ workspaceStore.workspaces.length }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Documents -->
+      <div class="card p-5">
+        <div class="flex items-center gap-4">
+          <div class="rounded-lg bg-cyan-100 p-3 dark:bg-cyan-900/50">
+            <DocumentTextIcon class="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Documents</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+              {{ totalDocuments }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Queries (All Time) -->
+      <div class="card p-5">
+        <div class="flex items-center gap-4">
+          <div class="rounded-lg bg-pink-100 p-3 dark:bg-pink-900/50">
+            <ArrowTrendingUpIcon class="h-6 w-6 text-pink-600 dark:text-pink-400" />
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Queries</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white">
+              {{ totalQueries }}
             </p>
           </div>
         </div>

@@ -149,8 +149,16 @@ function handleBlur(field: 'email' | 'password') {
           </button>
         </form>
 
+        <!-- Sign up link -->
+        <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          Don't have an account?
+          <RouterLink to="/register" class="font-medium text-aegis-600 hover:text-aegis-500 dark:text-aegis-400">
+            Create one
+          </RouterLink>
+        </p>
+
         <!-- Demo credentials hint -->
-        <div class="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
+        <div class="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
           <p class="text-xs text-gray-500 dark:text-gray-400">
             <strong>Demo credentials:</strong><br />
             Email: demo@aegis.local<br />

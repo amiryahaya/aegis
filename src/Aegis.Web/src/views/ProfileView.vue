@@ -16,10 +16,12 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useProfileStore } from '@/stores/profile'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import type { UpdateProfileRequest, ProfileApiKeyRequest } from '@/types/profile'
 
 const profileStore = useProfileStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
 const isEditing = ref(false)
 const showChangePassword = ref(false)
@@ -96,9 +98,16 @@ function startEditing() {
 }
 
 async function saveProfile() {
-  const success = await profileStore.updateProfile(editForm.value)
-  if (success) {
-    isEditing.value = false
+  try {
+    const success = await profileStore.updateProfile(editForm.value)
+    if (success) {
+      isEditing.value = false
+      toast.success('Profile updated', 'Your profile has been saved')
+    } else {
+      toast.error('Update failed', profileStore.error || 'Unable to save profile')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to update profile')
   }
 }
 
@@ -110,32 +119,56 @@ async function handleAvatarUpload(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file) {
-    await profileStore.uploadAvatar(file)
+    try {
+      await profileStore.uploadAvatar(file)
+      toast.success('Avatar updated', 'Your profile picture has been changed')
+    } catch (error) {
+      toast.apiError(error, 'Failed to upload avatar')
+    }
   }
 }
 
 async function removeAvatar() {
-  await profileStore.removeAvatar()
+  try {
+    await profileStore.removeAvatar()
+    toast.success('Avatar removed', 'Your profile picture has been removed')
+  } catch (error) {
+    toast.apiError(error, 'Failed to remove avatar')
+  }
 }
 
 async function changePassword() {
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
-    profileStore.error = 'Passwords do not match'
+    toast.error('Passwords do not match', 'Please make sure your passwords match')
     return
   }
 
-  const success = await profileStore.changePassword(passwordForm.value)
-  if (success) {
-    showChangePassword.value = false
-    passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
+  try {
+    const success = await profileStore.changePassword(passwordForm.value)
+    if (success) {
+      showChangePassword.value = false
+      passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
+      toast.success('Password changed', 'Your password has been updated')
+    } else {
+      toast.error('Password change failed', profileStore.error || 'Unable to change password')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to change password')
   }
 }
 
 async function createApiKey() {
-  const result = await profileStore.createApiKey(apiKeyForm.value)
-  if (result) {
-    newApiKey.value = result.key
-    apiKeyForm.value = { name: '', scopes: ['read'], expiresInDays: 90 }
+  try {
+    const result = await profileStore.createApiKey(apiKeyForm.value)
+    if (result) {
+      newApiKey.value = result.key
+      apiKeyForm.value = { name: '', scopes: ['read'], expiresInDays: 90 }
+      toast.success('API key created', 'Make sure to copy your key now')
+    } else {
+      toast.error('Failed to create API key', profileStore.error || 'Unable to create API key')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to create API key')
   }
 }
 
@@ -145,19 +178,44 @@ function closeCreateApiKey() {
 }
 
 async function copyApiKey(key: string) {
-  await navigator.clipboard.writeText(key)
-  copiedKeyId.value = key
-  setTimeout(() => { copiedKeyId.value = null }, 2000)
+  try {
+    await navigator.clipboard.writeText(key)
+    copiedKeyId.value = key
+    setTimeout(() => { copiedKeyId.value = null }, 2000)
+    toast.success('Copied!', 'API key copied to clipboard')
+  } catch {
+    toast.error('Copy failed', 'Unable to copy to clipboard')
+  }
 }
 
 async function revokeApiKey(keyId: string) {
-  await profileStore.revokeApiKey(keyId)
+  if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
+    return
+  }
+
+  try {
+    await profileStore.revokeApiKey(keyId)
+    toast.success('API key revoked', 'The API key has been deactivated')
+  } catch (error) {
+    toast.apiError(error, 'Failed to revoke API key')
+  }
 }
 
 async function deleteAccount() {
-  const success = await profileStore.deleteAccount()
-  if (success) {
-    authStore.logout()
+  if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    return
+  }
+
+  try {
+    const success = await profileStore.deleteAccount()
+    if (success) {
+      toast.info('Account deleted', 'Your account has been removed')
+      authStore.logout()
+    } else {
+      toast.error('Delete failed', profileStore.error || 'Unable to delete account')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to delete account')
   }
 }
 
