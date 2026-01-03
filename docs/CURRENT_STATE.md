@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 101-102: API Service Layer & Backend Connection
+**Last Commit:** Sprint 103-104: Query Service & Document Management
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,18 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 103-104: Query Service & Document Management ✅
+- QueryService for RAG query API with SSE streaming support
+- DocumentService for document management (upload, CRUD, chunks, search, reprocessing)
+- NotificationService for notification API (CRUD, stats, send, archive)
+- SignalR service updated to use correct token key ('aegis_token')
+- Notification store updated to use NotificationService
+- Services index file for clean imports
+- Upload progress tracking with XHR events
+- Document validation and file type detection
+- Notification grouping by date and formatting utilities
+- **Build:** 1436.25 KB precached (62 entries)
 
 #### Sprint 101-102: API Service Layer & Backend Connection ✅
 - AuthService for authentication API (login, register, refreshToken, getCurrentUser, updateProfile, changePassword, logout)
@@ -1498,6 +1510,18 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added webhook types export)
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
+### Files Created (Sprint 103-104)
+
+**Services:**
+- src/Aegis.Web/src/services/query.service.ts (QueryService for RAG queries with SSE streaming)
+- src/Aegis.Web/src/services/document.service.ts (DocumentService for document management and upload)
+- src/Aegis.Web/src/services/notification.service.ts (NotificationService for notification API)
+- src/Aegis.Web/src/services/index.ts (Service exports for clean imports)
+
+**Updated Files:**
+- src/Aegis.Web/src/services/signalr.service.ts (Updated token key to 'aegis_token')
+- src/Aegis.Web/src/stores/notification.ts (Updated to use NotificationService)
 
 ### Files Created (Sprint 101-102)
 

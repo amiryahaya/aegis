@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/services/api'
+import notificationService from '@/services/notification.service'
 import signalRService, { type NotificationPayload } from '@/services/signalr.service'
 import type {
   Notification,
   NotificationFilter,
   NotificationStats,
-  NotificationPreferences,
-  PagedResponse
+  NotificationPreferences
 } from '@/types'
 
 export const useNotificationStore = defineStore('notification', () => {
@@ -124,16 +124,41 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   // Actions - API
-  async function fetchNotifications(filter?: NotificationFilter): Promise<void> {
+  async function fetchNotifications(filter?: NotificationFilter, userId?: string): Promise<void> {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.get<PagedResponse<Notification>>('/notifications', {
-        ...filter,
-        pageNumber: filter?.pageNumber || currentPage.value,
+      // Map frontend filter to service filter
+      const serviceFilter: import('@/services/notification.service').NotificationFilter = {
+        type: filter?.type as import('@/services/notification.service').NotificationType | undefined,
+        priority: filter?.priority as import('@/services/notification.service').NotificationPriority | undefined,
+        page: filter?.pageNumber || currentPage.value,
         pageSize: filter?.pageSize || pageSize.value
-      })
-      notifications.value = response.items
+      }
+      // Map isRead to status
+      if (filter?.isRead === false) {
+        serviceFilter.status = 'Unread'
+      } else if (filter?.isRead === true) {
+        serviceFilter.status = 'Read'
+      }
+
+      const response = await notificationService.getNotifications(userId || '', serviceFilter)
+      // Map service response to store notification type
+      notifications.value = response.items.map(item => ({
+        id: item.id,
+        userId: item.userId,
+        type: item.type as Notification['type'],
+        title: item.title,
+        message: item.message,
+        priority: item.priority as Notification['priority'],
+        channels: ['InApp'] as Notification['channels'],
+        isRead: item.status === 'Read' || item.status === 'Archived',
+        createdAt: item.createdAt,
+        readAt: item.readAt,
+        data: item.data,
+        actionUrl: item.actionUrl,
+        actionLabel: item.actionLabel
+      }))
       totalCount.value = response.totalCount
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch notifications'
@@ -142,12 +167,17 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  async function fetchStats(): Promise<void> {
+  async function fetchStats(userId?: string): Promise<void> {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.get<NotificationStats>('/notifications/stats')
-      stats.value = response
+      const response = await notificationService.getStats(userId || '')
+      stats.value = {
+        unreadCount: response.unreadCount,
+        totalCount: response.totalCount,
+        byType: response.countByType,
+        byPriority: response.countByPriority
+      }
       unreadCount.value = response.unreadCount
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch notification stats'
@@ -199,7 +229,7 @@ export const useNotificationStore = defineStore('notification', () => {
     isLoading.value = true
     error.value = null
     try {
-      await api.delete(`/notifications/${notificationId}`)
+      await notificationService.delete(notificationId)
       const notification = notifications.value.find(n => n.id === notificationId)
       if (notification && !notification.isRead) {
         unreadCount.value = Math.max(0, unreadCount.value - 1)

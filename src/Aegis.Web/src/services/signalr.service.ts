@@ -45,9 +45,9 @@ class SignalRService {
   private queryState: ConnectionState = 'disconnected'
   private notificationState: ConnectionState = 'disconnected'
 
-  // Get JWT token from localStorage
+  // Get JWT token from localStorage (uses same key as auth store)
   private getAccessToken(): string {
-    return localStorage.getItem('token') || ''
+    return localStorage.getItem('aegis_token') || ''
   }
 
   // ============== Query Hub ==============
