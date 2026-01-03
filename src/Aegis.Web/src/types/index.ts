@@ -15,6 +15,7 @@ export * from './onboarding'
 export * from './connection'
 export * from './offline'
 export * from './performance'
+export * from './analytics'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {

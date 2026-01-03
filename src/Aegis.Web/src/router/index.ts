@@ -110,6 +110,13 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "activity" */ '@/views/ActivityFeedView.vue'),
       meta: { requiresAuth: true, title: 'Activity Feed' }
     },
+    // Analytics
+    {
+      path: '/analytics',
+      name: 'analytics',
+      component: () => import(/* webpackChunkName: "analytics" */ '@/views/AnalyticsView.vue'),
+      meta: { requiresAuth: true, title: 'Analytics' }
+    },
     // Catch all - redirect to dashboard
     {
       path: '/:pathMatch(.*)*',
