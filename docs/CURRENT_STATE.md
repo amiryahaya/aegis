@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 103-104: Query Service & Document Management
+**Last Commit:** Sprint 105-106: Store Integration & Query Composables
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,19 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 105-106: Store Integration & Query Composables ✅
+- Workspace store refactored to use workspaceService and documentService
+- useQuery composable for RAG queries with SSE streaming support
+- useDocuments composable for document management (upload, CRUD, search)
+- Workspace context fetching with relevant context for queries
+- Document search with results mapping
+- Upload progress tracking with Map-based state
+- Conversation history tracking for multi-turn queries
+- AbortController support for query cancellation
+- Follow-up question extraction from responses
+- Document status polling with waitForProcessing
+- **Build:** 1445.79 KB precached (62 entries)
 
 #### Sprint 103-104: Query Service & Document Management ✅
 - QueryService for RAG query API with SSE streaming support
@@ -1510,6 +1523,16 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added webhook types export)
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
+### Files Created (Sprint 105-106)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useQuery.ts (RAG query composable with SSE streaming, conversation history, follow-up extraction)
+- src/Aegis.Web/src/composables/useDocuments.ts (Document management composable with upload, search, polling)
+
+**Updated Files:**
+- src/Aegis.Web/src/stores/workspace.ts (Refactored to use workspaceService and documentService)
+- src/Aegis.Web/src/services/index.ts (Updated exports)
 
 ### Files Created (Sprint 103-104)
 

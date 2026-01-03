@@ -14,9 +14,8 @@ export type {
   RegisterResponse,
   RefreshTokenRequest,
   RefreshTokenResponse,
-  UserProfileResponse,
-  UpdateProfileRequest,
-  ChangePasswordRequest
+  ChangePasswordRequest,
+  UserResponse
 } from './auth.service'
 
 // Sessions
@@ -27,9 +26,8 @@ export type {
   CreateSessionRequest,
   UpdateSessionRequest,
   AddTurnRequest,
-  SessionFilterParams,
+  SessionFilter,
   SessionStatsResponse,
-  SessionConversationResponse,
   ExportFormat
 } from './session.service'
 
@@ -42,7 +40,6 @@ export type {
   WorkspaceContextResponse,
   DataSourceResponse,
   CreateDataSourceRequest,
-  WorkspaceStats,
   ShareWorkspaceRequest,
   ShareableLinkResponse
 } from './workspace.service'
