@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useAuthStore } from '@/stores/auth'
 import { useBreakpoints } from '@/composables/useMediaQuery'
+import { useToast } from '@/composables/useToast'
 import { createWorkspaceSchema, type CreateWorkspaceFormData } from '@/validation/schemas'
 import {
   PlusIcon,
@@ -37,6 +38,7 @@ const router = useRouter()
 const workspaceStore = useWorkspaceStore()
 const authStore = useAuthStore()
 const { isMobile } = useBreakpoints()
+const toast = useToast()
 
 const searchQuery = ref('')
 const isCreateDialogOpen = ref(false)
@@ -81,18 +83,28 @@ watch(isCreateDialogOpen, (isOpen) => {
 })
 
 const createWorkspace = handleSubmit(async (values) => {
-  if (!authStore.user?.teamId) return
-
-  const request: CreateWorkspaceRequest = {
-    teamId: authStore.user.teamId,
-    name: values.name.trim(),
-    description: values.description?.trim() || undefined
+  if (!authStore.user?.teamId) {
+    toast.error('Not authenticated', 'Please log in to create a workspace')
+    return
   }
 
-  const workspace = await workspaceStore.createWorkspace(request)
-  if (workspace) {
-    isCreateDialogOpen.value = false
-    router.push(`/workspaces/${workspace.id}`)
+  try {
+    const request: CreateWorkspaceRequest = {
+      teamId: authStore.user.teamId,
+      name: values.name.trim(),
+      description: values.description?.trim() || undefined
+    }
+
+    const workspace = await workspaceStore.createWorkspace(request)
+    if (workspace) {
+      isCreateDialogOpen.value = false
+      toast.success('Workspace created', `"${workspace.name}" is ready to use`)
+      router.push(`/workspaces/${workspace.id}`)
+    } else {
+      toast.error('Creation failed', 'Unable to create workspace')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to create workspace')
   }
 })
 
@@ -101,8 +113,15 @@ function openWorkspace(workspace: Workspace) {
 }
 
 async function deleteWorkspace(workspace: Workspace) {
-  if (confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) {
+  if (!confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) {
+    return
+  }
+
+  try {
     await workspaceStore.deleteWorkspace(workspace.id)
+    toast.success('Workspace deleted', `"${workspace.name}" has been removed`)
+  } catch (error) {
+    toast.apiError(error, 'Failed to delete workspace')
   }
 }
 

@@ -15,6 +15,7 @@ import MobileSourcesSheet from '@/components/mobile/MobileSourcesSheet.vue'
 import { useQuery } from '@/composables/useQuery'
 import { useConnection } from '@/composables/useConnection'
 import { useBreakpoints } from '@/composables/useMediaQuery'
+import { useToast } from '@/composables/useToast'
 import {
   PencilIcon,
   TrashIcon,
@@ -32,6 +33,7 @@ const workspaceStore = useWorkspaceStore()
 const authStore = useAuthStore()
 const { joinResource, leaveResource, sendTypingIndicator } = useConnection()
 const { isMobile } = useBreakpoints()
+const toast = useToast()
 
 // Selected workspace for queries
 const selectedWorkspaceId = ref<string | null>(null)
@@ -162,36 +164,49 @@ watch(isStreaming, async (streaming, wasStreaming) => {
 })
 
 async function handleSend(query: string) {
-  if (!authStore.user) return
+  if (!authStore.user) {
+    toast.error('Not authenticated', 'Please log in to send messages')
+    return
+  }
   if (!selectedWorkspaceId.value) {
-    alert('Please select a workspace to query')
+    toast.warning('No workspace selected', 'Please select a workspace to query')
     return
   }
 
-  // Create session if none exists
-  let sid = sessionId.value
-  if (!sid) {
-    const session = await sessionStore.createSession({
-      userId: authStore.user.id,
-      workspaceId: selectedWorkspaceId.value,
-      title: query.slice(0, 50) + (query.length > 50 ? '...' : ''),
-      type: SessionType.QuickQuery
-    })
-    if (!session) return
-    sid = session.id
-    router.replace(`/chat/${sid}`)
-  }
+  try {
+    // Create session if none exists
+    let sid = sessionId.value
+    if (!sid) {
+      const session = await sessionStore.createSession({
+        userId: authStore.user.id,
+        workspaceId: selectedWorkspaceId.value,
+        title: query.slice(0, 50) + (query.length > 50 ? '...' : ''),
+        type: SessionType.QuickQuery
+      })
+      if (!session) {
+        toast.error('Session creation failed', 'Unable to create a new session')
+        return
+      }
+      sid = session.id
+      router.replace(`/chat/${sid}`)
+    }
 
-  // Add the turn (user query)
-  const turn = await sessionStore.addTurn(sid, { query })
-  if (!turn) return
+    // Add the turn (user query)
+    const turn = await sessionStore.addTurn(sid, { query })
+    if (!turn) {
+      toast.error('Failed to send message', 'Unable to add your message to the session')
+      return
+    }
 
-  streamingTurnId.value = turn.id
-  scrollToBottom()
+    streamingTurnId.value = turn.id
+    scrollToBottom()
 
-  // Use the query composable for streaming
-  if (queryComposable.value) {
-    queryComposable.value.streamQuery(query)
+    // Use the query composable for streaming
+    if (queryComposable.value) {
+      queryComposable.value.streamQuery(query)
+    }
+  } catch (error) {
+    toast.apiError(error, 'Error sending message')
   }
 }
 
@@ -231,33 +246,56 @@ function startEditTitle() {
 async function saveTitle() {
   if (!sessionId.value || !editTitle.value.trim()) return
 
-  await sessionStore.updateTitle(sessionId.value, editTitle.value.trim())
-  isEditingTitle.value = false
+  try {
+    await sessionStore.updateTitle(sessionId.value, editTitle.value.trim())
+    isEditingTitle.value = false
+    toast.success('Title updated', 'Session title has been updated')
+  } catch (error) {
+    toast.apiError(error, 'Failed to update title')
+  }
 }
 
 async function handleDelete() {
   if (!sessionId.value) return
 
-  if (confirm('Are you sure you want to delete this session?')) {
+  try {
     await sessionStore.deleteSession(sessionId.value)
+    toast.success('Session deleted', 'The session has been removed')
     router.push('/sessions')
+  } catch (error) {
+    toast.apiError(error, 'Failed to delete session')
+  }
+}
+
+function confirmDelete() {
+  if (confirm('Are you sure you want to delete this session? This cannot be undone.')) {
+    handleDelete()
   }
 }
 
 async function handleExport(format: ExportFormat) {
   if (!sessionId.value) return
 
-  const exportData = await sessionStore.exportSession(sessionId.value, format)
-  if (!exportData) return
+  try {
+    const exportData = await sessionStore.exportSession(sessionId.value, format)
+    if (!exportData) {
+      toast.error('Export failed', 'Unable to export session data')
+      return
+    }
 
-  // Create download
-  const blob = new Blob([exportData.content], { type: exportData.contentType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = exportData.fileName
-  a.click()
-  URL.revokeObjectURL(url)
+    // Create download
+    const blob = new Blob([exportData.content], { type: exportData.contentType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = exportData.fileName
+    a.click()
+    URL.revokeObjectURL(url)
+
+    toast.success('Export complete', `Session exported as ${format}`)
+  } catch (error) {
+    toast.apiError(error, 'Export failed')
+  }
 }
 </script>
 
@@ -272,7 +310,7 @@ async function handleExport(format: ExportFormat) {
       v-model:edit-title="editTitle"
       @edit="startEditTitle"
       @save-title="saveTitle"
-      @delete="handleDelete"
+      @delete="confirmDelete"
       @export="(format: string) => handleExport(format as ExportFormat)"
     />
 
@@ -353,7 +391,7 @@ async function handleExport(format: ExportFormat) {
                 <button
                   class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400"
                   :class="active ? 'bg-red-50 dark:bg-red-900/30' : ''"
-                  @click="handleDelete"
+                  @click="confirmDelete"
                 >
                   <TrashIcon class="h-4 w-4" />
                   Delete session

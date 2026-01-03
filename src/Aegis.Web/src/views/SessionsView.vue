@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useBulkSelection } from '@/composables/useBulkSelection'
 import { useBreakpoints } from '@/composables/useMediaQuery'
 import { usePullToRefresh } from '@/composables/useTouchGestures'
+import { useToast } from '@/composables/useToast'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import {
   MagnifyingGlassIcon,
@@ -29,6 +30,7 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
 const { isMobile } = useBreakpoints()
+const toast = useToast()
 
 // Pull to refresh
 const sessionsListRef = ref<HTMLElement | null>(null)
@@ -72,21 +74,27 @@ const sessionBulkActions: BulkAction[] = [
 ]
 
 async function handleBulkAction(action: BulkAction, selectedIds: string[]): Promise<void> {
-  switch (action.id) {
-    case 'delete':
-      for (const id of selectedIds) {
-        await sessionStore.deleteSession(id)
-      }
-      break
-    case 'export':
-      for (const id of selectedIds) {
-        await exportSession(id, 'Markdown' as ExportFormat)
-      }
-      break
-    case 'archive':
-      // Archive implementation would go here
-      console.log('Archive sessions:', selectedIds)
-      break
+  try {
+    switch (action.id) {
+      case 'delete':
+        for (const id of selectedIds) {
+          await sessionStore.deleteSession(id)
+        }
+        toast.success('Sessions deleted', `${selectedIds.length} session(s) have been deleted`)
+        break
+      case 'export':
+        for (const id of selectedIds) {
+          await exportSession(id, 'Markdown' as ExportFormat, false)
+        }
+        toast.success('Export complete', `${selectedIds.length} session(s) exported`)
+        break
+      case 'archive':
+        // Archive implementation would go here
+        toast.info('Coming soon', 'Archive functionality is not yet implemented')
+        break
+    }
+  } catch (error) {
+    toast.error(`${action.label} failed`, error instanceof Error ? error.message : 'An unexpected error occurred')
   }
 }
 
@@ -171,37 +179,67 @@ watch(showNewSessionDialog, (isOpen) => {
 })
 
 const createSession = handleSubmit(async (values) => {
-  if (!authStore.user) return
+  if (!authStore.user) {
+    toast.error('Not authenticated', 'Please log in to create a session')
+    return
+  }
 
-  const session = await sessionStore.createSession({
-    userId: authStore.user.id,
-    title: values.title.trim(),
-    type: values.type
-  })
+  try {
+    const session = await sessionStore.createSession({
+      userId: authStore.user.id,
+      title: values.title.trim(),
+      type: values.type
+    })
 
-  if (session) {
-    showNewSessionDialog.value = false
-    router.push(`/chat/${session.id}`)
+    if (session) {
+      showNewSessionDialog.value = false
+      toast.success('Session created', 'Your new session is ready')
+      router.push(`/chat/${session.id}`)
+    } else {
+      toast.error('Creation failed', 'Unable to create session')
+    }
+  } catch (error) {
+    toast.apiError(error, 'Failed to create session')
   }
 })
 
 async function deleteSession(sessionId: string) {
-  if (confirm('Are you sure you want to delete this session?')) {
+  if (!confirm('Are you sure you want to delete this session?')) return
+
+  try {
     await sessionStore.deleteSession(sessionId)
+    toast.success('Session deleted', 'The session has been removed')
+  } catch (error) {
+    toast.apiError(error, 'Failed to delete session')
   }
 }
 
-async function exportSession(sessionId: string, format: ExportFormat) {
-  const exportData = await sessionStore.exportSession(sessionId, format)
-  if (!exportData) return
+async function exportSession(sessionId: string, format: ExportFormat, showToast = true) {
+  try {
+    const exportData = await sessionStore.exportSession(sessionId, format)
+    if (!exportData) {
+      if (showToast) {
+        toast.error('Export failed', 'Unable to export session data')
+      }
+      return
+    }
 
-  const blob = new Blob([exportData.content], { type: exportData.contentType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = exportData.fileName
-  a.click()
-  URL.revokeObjectURL(url)
+    const blob = new Blob([exportData.content], { type: exportData.contentType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = exportData.fileName
+    a.click()
+    URL.revokeObjectURL(url)
+
+    if (showToast) {
+      toast.success('Export complete', `Session exported as ${format}`)
+    }
+  } catch (error) {
+    if (showToast) {
+      toast.apiError(error, 'Export failed')
+    }
+  }
 }
 
 function formatDate(dateStr: string | undefined) {
