@@ -63,6 +63,25 @@ export interface ChangePasswordRequest {
   newPassword: string
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ForgotPasswordResponse {
+  message: string
+  // In development, token might be returned for testing
+  resetToken?: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
+export interface ResetPasswordResponse {
+  message: string
+}
+
 // =============================================================================
 // Auth Service
 // =============================================================================
@@ -121,6 +140,27 @@ class AuthService {
     } catch {
       // Ignore logout errors - we'll clear local state anyway
     }
+  }
+
+  /**
+   * Request password reset email
+   */
+  async forgotPassword(request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+    return api.post<ForgotPasswordResponse>(`${this.basePath}/forgot-password`, request)
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    return api.post<ResetPasswordResponse>(`${this.basePath}/reset-password`, request)
+  }
+
+  /**
+   * Validate reset token (check if it's still valid)
+   */
+  async validateResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
+    return api.get<{ valid: boolean; email?: string }>(`${this.basePath}/reset-password/validate?token=${token}`)
   }
 
   /**

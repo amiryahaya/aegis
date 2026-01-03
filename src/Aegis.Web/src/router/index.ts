@@ -27,6 +27,18 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "auth" */ '@/views/RegisterView.vue'),
       meta: { requiresAuth: false, title: 'Create Account' }
     },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import(/* webpackChunkName: "auth" */ '@/views/ForgotPasswordView.vue'),
+      meta: { requiresAuth: false, title: 'Forgot Password' }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import(/* webpackChunkName: "auth" */ '@/views/ResetPasswordView.vue'),
+      meta: { requiresAuth: false, title: 'Reset Password' }
+    },
     // Dashboard - core experience
     {
       path: '/',
@@ -158,10 +170,12 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "admin" */ '@/views/SystemConfigView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: 'System Configuration' }
     },
-    // Catch all - redirect to dashboard
+    // 404 Not Found
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/'
+      name: 'not-found',
+      component: () => import(/* webpackChunkName: "error" */ '@/views/NotFoundView.vue'),
+      meta: { requiresAuth: false, title: 'Page Not Found' }
     }
   ]
 })

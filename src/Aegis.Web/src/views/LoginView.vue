@@ -122,13 +122,21 @@ function handleBlur(field: 'email' | 'password') {
             @blur="handleBlur('password')"
           />
 
-          <!-- Remember me -->
-          <FormCheckbox
-            v-model="rememberMe"
-            name="rememberMe"
-            label="Remember me"
-            description="Stay signed in for 30 days"
-          />
+          <!-- Remember me & Forgot password -->
+          <div class="flex items-center justify-between">
+            <FormCheckbox
+              v-model="rememberMe"
+              name="rememberMe"
+              label="Remember me"
+              description="Stay signed in for 30 days"
+            />
+            <RouterLink
+              to="/forgot-password"
+              class="text-sm font-medium text-aegis-600 hover:text-aegis-500 dark:text-aegis-400"
+            >
+              Forgot password?
+            </RouterLink>
+          </div>
 
           <!-- Submit button -->
           <button

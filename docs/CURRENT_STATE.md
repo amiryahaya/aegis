@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 113-114: Registration Flow & Dashboard Enhancement
+**Last Commit:** Sprint 115-116: Password Recovery & Error Pages
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,29 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 115-116: Password Recovery & Error Pages ✅
+- ForgotPasswordView for password reset requests
+- Email input with VeeValidate + Zod validation
+- Success state with email sent confirmation
+- "Try again" functionality for resending reset email
+- ResetPasswordView for setting new password with token
+- Token validation on page load (valid/invalid/expired states)
+- Password strength indicator with visual feedback
+- Password visibility toggles for both fields
+- Success state with auto-redirect to login
+- NotFoundView (404 page) with helpful navigation
+- Go back, go home buttons with auth-aware routing
+- Quick links to common pages (Chat, Sessions, Workspaces, Help)
+- Search suggestion for authenticated users
+- Auth service extended with password reset endpoints:
+  - forgotPassword, resetPassword, validateResetToken
+- LoginView updated with "Forgot password?" link
+- NotificationsView enhanced with toast notifications
+- Toast notifications for fetch errors, mark as read, delete
+- Router updated with new routes:
+  - /forgot-password, /reset-password, /:pathMatch(.*) (404)
+- **Build:** 1483.71 KB precached (69 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
+import { useToast } from '@/composables/useToast'
 import {
   BellIcon,
   CheckIcon,
@@ -20,6 +21,7 @@ import {
 import type { NotificationType, NotificationPriority } from '@/types'
 
 const notificationStore = useNotificationStore()
+const toast = useToast()
 
 const filterType = ref<NotificationType | 'all'>('all')
 const filterPriority = ref<NotificationPriority | 'all'>('all')
@@ -61,14 +63,44 @@ const priorityOptions: { value: NotificationPriority | 'all'; label: string }[] 
 ]
 
 onMounted(async () => {
-  await notificationStore.connect()
-  await notificationStore.fetchNotifications()
-  await notificationStore.fetchStats()
+  try {
+    await notificationStore.connect()
+    await notificationStore.fetchNotifications()
+    await notificationStore.fetchStats()
+  } catch (error) {
+    toast.error('Failed to load notifications', 'Please try refreshing the page')
+  }
 })
 
 onUnmounted(() => {
   notificationStore.disconnect()
 })
+
+async function handleMarkAllAsRead() {
+  try {
+    await notificationStore.markAllAsRead()
+    toast.success('All caught up!', 'All notifications marked as read')
+  } catch (error) {
+    toast.apiError(error, 'Failed to mark notifications as read')
+  }
+}
+
+async function handleMarkAsRead(id: string) {
+  try {
+    await notificationStore.markAsRead(id)
+  } catch (error) {
+    toast.apiError(error, 'Failed to mark as read')
+  }
+}
+
+async function handleDelete(id: string) {
+  try {
+    await notificationStore.deleteNotification(id)
+    toast.success('Deleted', 'Notification removed')
+  } catch (error) {
+    toast.apiError(error, 'Failed to delete notification')
+  }
+}
 
 function getPriorityIcon(priority: NotificationPriority) {
   switch (priority) {
@@ -157,7 +189,7 @@ function formatDate(dateString: string) {
           <button
             v-if="notificationStore.unreadCount > 0"
             class="btn-ghost inline-flex items-center gap-2"
-            @click="notificationStore.markAllAsRead()"
+            @click="handleMarkAllAsRead"
           >
             <CheckIcon class="h-4 w-4" />
             Mark all as read
@@ -289,14 +321,14 @@ function formatDate(dateString: string) {
                   v-if="!notification.isRead"
                   class="btn-ghost p-1"
                   title="Mark as read"
-                  @click="notificationStore.markAsRead(notification.id)"
+                  @click="handleMarkAsRead(notification.id)"
                 >
                   <CheckIcon class="h-4 w-4" />
                 </button>
                 <button
                   class="btn-ghost p-1 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                   title="Delete"
-                  @click="notificationStore.deleteNotification(notification.id)"
+                  @click="handleDelete(notification.id)"
                 >
                   <TrashIcon class="h-4 w-4" />
                 </button>
