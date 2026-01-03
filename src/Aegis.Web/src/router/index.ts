@@ -131,6 +131,13 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "integrations" */ '@/views/IntegrationsView.vue'),
       meta: { requiresAuth: true, title: 'Integrations' }
     },
+    // Audit Log (Admin)
+    {
+      path: '/audit',
+      name: 'audit',
+      component: () => import(/* webpackChunkName: "admin" */ '@/views/AuditLogView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Audit Log' }
+    },
     // Catch all - redirect to dashboard
     {
       path: '/:pathMatch(.*)*',

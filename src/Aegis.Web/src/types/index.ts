@@ -18,6 +18,7 @@ export * from './performance'
 export * from './analytics'
 export * from './export'
 export * from './webhook'
+export * from './audit'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {
