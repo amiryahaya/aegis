@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWorkspaceStore } from '@/stores/workspace'
-import { useFileUpload } from '@/composables/useFileUpload'
+import { useDocuments } from '@/composables/useDocuments'
 import { useConnection } from '@/composables/useConnection'
 import LivePresence from '@/components/connection/LivePresence.vue'
 import {
@@ -29,7 +29,6 @@ import {
 } from '@headlessui/vue'
 import type { DataSourceType } from '@/types/workspace'
 import DragDropZone from '@/components/upload/DragDropZone.vue'
-import FileUploadProgress from '@/components/upload/FileUploadProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,11 +42,23 @@ const isUploadDialogOpen = ref(false)
 const isAddDataSourceDialogOpen = ref(false)
 const uploadError = ref<string | null>(null)
 
-// File upload composable
-const fileUpload = useFileUpload({
-  url: `/api/workspaces/${workspaceId.value}/documents/upload`,
-  autoUpload: false
+// Use documents composable for document operations
+const documentsComposable = computed(() => {
+  if (workspaceId.value) {
+    return useDocuments(workspaceId.value, {
+      onUploadComplete: () => {
+        // Refresh after upload
+      },
+      onUploadError: (fileName, error) => {
+        uploadError.value = `Failed to upload ${fileName}: ${error}`
+      }
+    })
+  }
+  return null
 })
+
+// Pending files for upload
+const pendingFiles = ref<File[]>([])
 
 const newDataSourceName = ref('')
 const newDataSourceType = ref<DataSourceType>('WebCrawler')
@@ -62,6 +73,13 @@ const dataSourceTypes: { type: DataSourceType; label: string; icon: string }[] =
   { type: 'S3', label: 'Amazon S3', icon: 'aws' },
   { type: 'AzureBlob', label: 'Azure Blob', icon: 'azure' }
 ]
+
+// Computed states from documents composable
+const documents = computed(() => documentsComposable.value?.documents.value ?? [])
+const isUploading = computed(() => documentsComposable.value?.isUploading.value ?? false)
+const uploads = computed(() => documentsComposable.value?.uploads.value ?? new Map())
+const completedUploads = computed(() => documentsComposable.value?.completedUploads.value ?? [])
+const failedUploads = computed(() => documentsComposable.value?.failedUploads.value ?? [])
 
 onMounted(async () => {
   await loadWorkspace()
@@ -91,14 +109,14 @@ async function loadWorkspace() {
     await Promise.all([
       workspaceStore.fetchWorkspace(workspaceId.value),
       workspaceStore.fetchDataSources(workspaceId.value),
-      workspaceStore.fetchDocuments(workspaceId.value)
+      documentsComposable.value?.fetchDocuments()
     ])
   }
 }
 
 function handleFilesSelected(files: File[]) {
   uploadError.value = null
-  fileUpload.addFiles(files)
+  pendingFiles.value = [...pendingFiles.value, ...files]
 }
 
 function handleUploadError(message: string) {
@@ -106,24 +124,22 @@ function handleUploadError(message: string) {
 }
 
 async function startUpload() {
-  if (fileUpload.files.value.length === 0) return
+  if (pendingFiles.value.length === 0 || !documentsComposable.value) return
 
-  fileUpload.startAllUploads()
+  await documentsComposable.value.uploadMultiple(pendingFiles.value)
+  pendingFiles.value = []
 }
 
 function closeUploadDialog() {
   isUploadDialogOpen.value = false
-  fileUpload.clearAll()
+  pendingFiles.value = []
+  documentsComposable.value?.clearUploads()
   uploadError.value = null
 }
 
-// Watch for all uploads completed
-watch(() => fileUpload.completedCount.value, (completed) => {
-  if (completed > 0 && completed === fileUpload.files.value.length && !fileUpload.isUploading.value) {
-    // Refresh documents list after all uploads complete
-    workspaceStore.fetchDocuments(workspaceId.value)
-  }
-})
+function removeFile(index: number) {
+  pendingFiles.value = pendingFiles.value.filter((_, i) => i !== index)
+}
 
 async function addDataSource() {
   if (!newDataSourceName.value.trim()) return
@@ -155,7 +171,7 @@ async function deleteDataSource(dataSourceId: string) {
 
 async function deleteDocument(documentId: string) {
   if (confirm('Are you sure you want to delete this document?')) {
-    await workspaceStore.deleteDocument(workspaceId.value, documentId)
+    await documentsComposable.value?.deleteDocument(documentId)
   }
 }
 
@@ -308,7 +324,7 @@ function formatDate(dateString: string) {
           <TabPanel class="p-6">
             <div class="mb-4 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Documents ({{ workspaceStore.documents.length }})
+                Documents ({{ documents.length }})
               </h2>
               <button
                 class="btn-primary inline-flex items-center gap-2"
@@ -321,7 +337,7 @@ function formatDate(dateString: string) {
 
             <!-- Empty state -->
             <div
-              v-if="workspaceStore.documents.length === 0"
+              v-if="documents.length === 0"
               class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-600"
             >
               <FolderOpenIcon class="mx-auto h-12 w-12 text-gray-400" />
@@ -342,7 +358,7 @@ function formatDate(dateString: string) {
             <!-- Documents list -->
             <div v-else class="space-y-2">
               <div
-                v-for="doc in workspaceStore.documents"
+                v-for="doc in documents"
                 :key="doc.id"
                 class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
               >
@@ -501,7 +517,7 @@ function formatDate(dateString: string) {
                     accept=".pdf,.docx,.doc,.txt,.md,.html,.json,.csv"
                     :max-size="50"
                     :max-files="20"
-                    :disabled="fileUpload.isUploading.value"
+                    :disabled="isUploading"
                     @files-selected="handleFilesSelected"
                     @error="handleUploadError"
                   />
@@ -514,31 +530,83 @@ function formatDate(dateString: string) {
                     {{ uploadError }}
                   </div>
 
-                  <!-- File Upload Progress -->
-                  <FileUploadProgress
-                    :files="fileUpload.files.value"
-                    @cancel="fileUpload.cancelUpload($event)"
-                    @retry="fileUpload.retryUpload($event)"
-                    @remove="fileUpload.removeFile($event)"
-                    @clear-completed="fileUpload.clearCompleted()"
-                  />
+                  <!-- Pending files list -->
+                  <div v-if="pendingFiles.length > 0" class="space-y-2">
+                    <div
+                      v-for="(file, index) in pendingFiles"
+                      :key="index"
+                      class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700"
+                    >
+                      <div class="flex items-center gap-2">
+                        <DocumentTextIcon class="h-5 w-5 text-gray-400" />
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {{ file.name }}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                          ({{ formatBytes(file.size) }})
+                        </span>
+                      </div>
+                      <button
+                        class="btn-ghost p-1 text-gray-500 hover:text-red-500"
+                        @click="removeFile(index)"
+                      >
+                        <TrashIcon class="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Upload progress -->
+                  <div v-if="isUploading" class="space-y-2">
+                    <div
+                      v-for="[fileName, progress] in uploads"
+                      :key="fileName"
+                      class="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700"
+                    >
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between text-sm">
+                          <span class="font-medium text-gray-700 dark:text-gray-300">{{ fileName }}</span>
+                          <span class="text-gray-500">{{ progress.progress }}%</span>
+                        </div>
+                        <div class="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-600">
+                          <div
+                            class="h-full rounded-full bg-aegis-600 transition-all"
+                            :style="{ width: `${progress.progress}%` }"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Completed uploads -->
+                  <div v-if="completedUploads.length > 0" class="space-y-1">
+                    <p class="text-sm font-medium text-green-600 dark:text-green-400">
+                      Successfully uploaded {{ completedUploads.length }} file(s)
+                    </p>
+                  </div>
+
+                  <!-- Failed uploads -->
+                  <div v-if="failedUploads.length > 0" class="space-y-1">
+                    <p class="text-sm font-medium text-red-600 dark:text-red-400">
+                      Failed to upload {{ failedUploads.length }} file(s)
+                    </p>
+                  </div>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
                   <button
                     class="btn-ghost"
-                    :disabled="fileUpload.isUploading.value"
+                    :disabled="isUploading"
                     @click="closeUploadDialog"
                   >
-                    {{ fileUpload.completedCount.value > 0 ? 'Done' : 'Cancel' }}
+                    {{ completedUploads.length > 0 ? 'Done' : 'Cancel' }}
                   </button>
                   <button
-                    v-if="fileUpload.pendingCount.value > 0"
+                    v-if="pendingFiles.length > 0"
                     class="btn-primary"
-                    :disabled="fileUpload.files.value.length === 0 || fileUpload.isUploading.value"
+                    :disabled="isUploading"
                     @click="startUpload"
                   >
-                    {{ fileUpload.isUploading.value ? 'Uploading...' : `Upload ${fileUpload.pendingCount.value} file${fileUpload.pendingCount.value !== 1 ? 's' : ''}` }}
+                    {{ isUploading ? 'Uploading...' : `Upload ${pendingFiles.length} file${pendingFiles.length !== 1 ? 's' : ''}` }}
                   </button>
                 </div>
               </DialogPanel>

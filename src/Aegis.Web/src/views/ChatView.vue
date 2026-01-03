@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import { useWorkspaceStore } from '@/stores/workspace'
 import { useAuthStore } from '@/stores/auth'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
@@ -11,34 +12,36 @@ import MobileChatHeader from '@/components/mobile/MobileChatHeader.vue'
 import MobileChatInput from '@/components/mobile/MobileChatInput.vue'
 import MobileMessageBubble from '@/components/mobile/MobileMessageBubble.vue'
 import MobileSourcesSheet from '@/components/mobile/MobileSourcesSheet.vue'
-import { useQueryStream } from '@/composables/useSignalR'
+import { useQuery } from '@/composables/useQuery'
 import { useConnection } from '@/composables/useConnection'
 import { useBreakpoints } from '@/composables/useMediaQuery'
 import {
   PencilIcon,
   TrashIcon,
   ArrowDownTrayIcon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
+  FolderIcon
 } from '@heroicons/vue/24/outline'
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { SessionType, type ExportFormat, type SourceReference } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const sessionStore = useSessionStore()
+const workspaceStore = useWorkspaceStore()
 const authStore = useAuthStore()
-const { connectionState, streamState, connect, disconnect, streamQuery, resetStream } = useQueryStream()
 const { joinResource, leaveResource, sendTypingIndicator } = useConnection()
 const { isMobile } = useBreakpoints()
+
+// Selected workspace for queries
+const selectedWorkspaceId = ref<string | null>(null)
 
 const chatContainerRef = ref<HTMLDivElement>()
 const chatInputRef = ref<InstanceType<typeof ChatInput>>()
 const mobileChatInputRef = ref<InstanceType<typeof MobileChatInput>>()
-const isLoading = ref(false)
 const streamingTurnId = ref<string | null>(null)
 const isEditingTitle = ref(false)
 const editTitle = ref('')
-const streamingResponse = ref('')
 
 // Mobile-specific state
 const showSourcesSheet = ref(false)
@@ -48,6 +51,24 @@ const sessionId = computed(() => route.params.sessionId as string | undefined)
 
 const currentSession = computed(() => sessionStore.currentSession)
 const turns = computed(() => sessionStore.currentTurns)
+const workspaces = computed(() => workspaceStore.workspaces)
+const selectedWorkspace = computed(() =>
+  workspaces.value.find(w => w.id === selectedWorkspaceId.value)
+)
+
+// Create query composable when workspace is selected
+const queryComposable = computed(() => {
+  if (selectedWorkspaceId.value) {
+    return useQuery(selectedWorkspaceId.value, {
+      onToken: () => scrollToBottom(),
+      onComplete: () => scrollToBottom()
+    })
+  }
+  return null
+})
+
+const isLoading = computed(() => queryComposable.value?.isLoading.value ?? false)
+const isStreaming = computed(() => queryComposable.value?.isStreaming.value ?? false)
 
 // Load session on mount or route change
 watch(sessionId, async (id, oldId) => {
@@ -57,11 +78,15 @@ watch(sessionId, async (id, oldId) => {
   }
 
   if (id) {
-    await sessionStore.fetchSession(id)
+    const session = await sessionStore.fetchSession(id)
     await sessionStore.fetchTurns(id)
     scrollToBottom()
     // Join new session for presence
     joinResource('session', id)
+    // Set workspace from session
+    if (session?.workspaceId) {
+      selectedWorkspaceId.value = session.workspaceId
+    }
   } else {
     sessionStore.clearCurrent()
   }
@@ -69,11 +94,19 @@ watch(sessionId, async (id, oldId) => {
 
 onMounted(async () => {
   chatInputRef.value?.focus()
-  await connect()
+  // Load available workspaces
+  if (authStore.user?.teamId) {
+    await workspaceStore.fetchWorkspaces(authStore.user.teamId)
+    // Select first workspace if none selected
+    if (!selectedWorkspaceId.value && workspaces.value.length > 0) {
+      selectedWorkspaceId.value = workspaces.value[0].id
+    }
+  }
 })
 
 onUnmounted(() => {
-  disconnect()
+  // Cancel any streaming query
+  queryComposable.value?.cancel()
   // Leave session presence
   if (sessionId.value) {
     leaveResource('session', sessionId.value)
@@ -100,48 +133,47 @@ function handleTyping() {
   }, 2000)
 }
 
-// Watch for streaming updates
-watch(() => streamState.value.fullResponse, (newResponse) => {
-  streamingResponse.value = newResponse
-  scrollToBottom()
-})
-
-watch(() => streamState.value.isStreaming, async (isStreaming) => {
-  if (!isStreaming && streamState.value.fullResponse && streamingTurnId.value) {
+// Watch for streaming completion to save the turn
+watch(isStreaming, async (streaming, wasStreaming) => {
+  if (wasStreaming && !streaming && streamingTurnId.value && queryComposable.value) {
     // Stream complete - save the response
     const sid = sessionId.value
-    if (sid) {
-      const citations = streamState.value.citations.map(c => ({
-        documentId: c.documentId,
-        documentName: `Document ${c.chunkIndex}`,
-        relevanceScore: c.score,
-        excerpt: c.text.slice(0, 200)
+    const qc = queryComposable.value
+    if (sid && qc.response.value) {
+      const sources = qc.sources.value.map(s => ({
+        documentId: s.documentId,
+        documentName: s.documentName,
+        relevanceScore: s.relevance,
+        excerpt: s.content?.slice(0, 200)
       }))
 
       await sessionStore.completeTurn(
         sid,
         streamingTurnId.value,
-        streamState.value.fullResponse,
-        citations,
-        ['What are the key takeaways?', 'Can you provide more details?']
+        qc.response.value,
+        sources,
+        qc.followUpQuestions.value
       )
     }
 
-    isLoading.value = false
     streamingTurnId.value = null
-    resetStream()
     scrollToBottom()
   }
 })
 
 async function handleSend(query: string) {
   if (!authStore.user) return
+  if (!selectedWorkspaceId.value) {
+    alert('Please select a workspace to query')
+    return
+  }
 
   // Create session if none exists
   let sid = sessionId.value
   if (!sid) {
     const session = await sessionStore.createSession({
       userId: authStore.user.id,
+      workspaceId: selectedWorkspaceId.value,
       title: query.slice(0, 50) + (query.length > 50 ? '...' : ''),
       type: SessionType.QuickQuery
     })
@@ -150,60 +182,22 @@ async function handleSend(query: string) {
     router.replace(`/chat/${sid}`)
   }
 
-  isLoading.value = true
-  resetStream()
-
   // Add the turn (user query)
   const turn = await sessionStore.addTurn(sid, { query })
-  if (!turn) {
-    isLoading.value = false
-    return
-  }
+  if (!turn) return
 
   streamingTurnId.value = turn.id
   scrollToBottom()
 
-  // Use SignalR streaming if connected, otherwise fall back to mock
-  if (connectionState.value === 'connected' && authStore.user.teamId) {
-    try {
-      await streamQuery(authStore.user.teamId, query, 5)
-    } catch (error) {
-      console.error('Streaming error:', error)
-      // Fall back to mock response on error
-      await fallbackMockResponse(sid, turn.id, query)
-    }
-  } else {
-    // Fall back to mock response when not connected
-    await fallbackMockResponse(sid, turn.id, query)
+  // Use the query composable for streaming
+  if (queryComposable.value) {
+    queryComposable.value.streamQuery(query)
   }
 }
 
-async function fallbackMockResponse(sid: string, turnId: string, query: string) {
-  // Simulate streaming with mock response
-  await new Promise(resolve => setTimeout(resolve, 1500))
-
-  const mockResponse = `Based on my analysis of the available documents, here's what I found regarding your query: "${query}"
-
-This is a simulated response. Connect to a workspace with indexed documents for real RAG responses.
-
-The response would include:
-- Relevant information from your documents
-- Citations to source materials
-- Follow-up questions to explore the topic further`
-
-  await sessionStore.completeTurn(
-    sid,
-    turnId,
-    mockResponse,
-    [
-      { documentId: '1', documentName: 'sample-doc.pdf', relevanceScore: 0.92, excerpt: 'Relevant excerpt from the document...' }
-    ],
-    ['What are the key takeaways?', 'Can you provide more details?']
-  )
-
-  isLoading.value = false
+function handleCancel() {
+  queryComposable.value?.cancel()
   streamingTurnId.value = null
-  scrollToBottom()
 }
 
 function handleFollowUp(question: string) {
@@ -426,14 +420,52 @@ async function handleExport(format: ExportFormat) {
       :session-id="sessionId"
     />
 
+    <!-- Workspace Selector (when no session) -->
+    <div
+      v-if="!currentSession && workspaces.length > 0"
+      class="border-t border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800/50"
+    >
+      <div class="mx-auto flex max-w-3xl items-center gap-2">
+        <FolderIcon class="h-4 w-4 text-gray-500" />
+        <span class="text-sm text-gray-500 dark:text-gray-400">Query workspace:</span>
+        <Listbox v-model="selectedWorkspaceId">
+          <div class="relative flex-1">
+            <ListboxButton class="relative w-full cursor-pointer rounded-lg bg-white py-1.5 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-gray-300 focus:outline-none focus:ring-2 focus:ring-aegis-500 dark:bg-gray-700 dark:ring-gray-600">
+              <span class="block truncate">{{ selectedWorkspace?.name || 'Select a workspace' }}</span>
+            </ListboxButton>
+            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
+              <ListboxOption
+                v-for="workspace in workspaces"
+                :key="workspace.id"
+                :value="workspace.id"
+                as="template"
+                v-slot="{ active: isActive, selected: isSelected }"
+              >
+                <li
+                  class="cursor-pointer select-none px-3 py-2"
+                  :class="[
+                    isActive ? 'bg-aegis-100 dark:bg-aegis-900/50' : '',
+                    isSelected ? 'font-semibold' : ''
+                  ]"
+                >
+                  {{ workspace.name }}
+                </li>
+              </ListboxOption>
+            </ListboxOptions>
+          </div>
+        </Listbox>
+      </div>
+    </div>
+
     <!-- Desktop Input -->
     <ChatInput
       v-if="!isMobile"
       ref="chatInputRef"
       :loading="isLoading"
+      :disabled="!selectedWorkspaceId"
       class="hidden md:block"
       @send="handleSend"
-      @stop="isLoading = false"
+      @stop="handleCancel"
       @input="handleTyping"
     />
 
@@ -442,8 +474,9 @@ async function handleExport(format: ExportFormat) {
       v-if="isMobile"
       ref="mobileChatInputRef"
       :loading="isLoading"
+      :disabled="!selectedWorkspaceId"
       @send="handleSend"
-      @stop="isLoading = false"
+      @stop="handleCancel"
       @input="handleTyping"
     />
 

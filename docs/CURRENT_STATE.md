@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 107-108: Complete Store Integration & Composables Index
+**Last Commit:** Sprint 109-110: View Integration & API Connection
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,18 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 109-110: View Integration & API Connection ✅
+- ChatView updated to use useQuery composable for real RAG queries
+- Workspace selector added for choosing query context
+- StreamQuery integration with SSE streaming
+- Source mapping from QuerySource to SourceReference types
+- WorkspaceDetailView updated to use useDocuments composable
+- Document upload refactored with pendingFiles pattern
+- Upload progress tracking with uploads Map
+- Delete document via composable instead of store
+- NotificationBell already integrated with real-time SignalR
+- **Build:** 1447.31 KB precached (61 entries)
 
 #### Sprint 107-108: Complete Store Integration & Composables Index ✅
 - SearchService for search API (full-text search, suggestions, facets, document preview)
@@ -1534,6 +1546,12 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added webhook types export)
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
+### Files Created (Sprint 109-110)
+
+**Updated Files:**
+- src/Aegis.Web/src/views/ChatView.vue (Refactored to use useQuery composable with workspace selector)
+- src/Aegis.Web/src/views/WorkspaceDetailView.vue (Refactored to use useDocuments composable for uploads)
 
 ### Files Created (Sprint 107-108)
 
