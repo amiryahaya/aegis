@@ -83,6 +83,51 @@ export interface ResetPasswordResponse {
 }
 
 // =============================================================================
+// Security Types
+// =============================================================================
+
+export interface ActiveSession {
+  id: string
+  deviceName: string
+  deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown'
+  browser: string
+  os: string
+  ipAddress: string
+  location?: string
+  lastActiveAt: string
+  createdAt: string
+  isCurrent: boolean
+}
+
+export interface LoginHistoryEntry {
+  id: string
+  ipAddress: string
+  location?: string
+  deviceName: string
+  browser: string
+  os: string
+  status: 'success' | 'failed'
+  failureReason?: string
+  createdAt: string
+}
+
+export interface TwoFactorSetupResponse {
+  secret: string
+  qrCodeUrl: string
+  backupCodes: string[]
+}
+
+export interface TwoFactorVerifyRequest {
+  code: string
+}
+
+export interface SecuritySettings {
+  twoFactorEnabled: boolean
+  lastPasswordChange?: string
+  passwordExpiresAt?: string
+}
+
+// =============================================================================
 // Auth Service
 // =============================================================================
 
@@ -161,6 +206,73 @@ class AuthService {
    */
   async validateResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
     return api.get<{ valid: boolean; email?: string }>(`${this.basePath}/reset-password/validate?token=${token}`)
+  }
+
+  // ===========================================================================
+  // Security Methods
+  // ===========================================================================
+
+  /**
+   * Get security settings for current user
+   */
+  async getSecuritySettings(): Promise<SecuritySettings> {
+    return api.get<SecuritySettings>(`${this.basePath}/security`)
+  }
+
+  /**
+   * Get active sessions for current user
+   */
+  async getActiveSessions(): Promise<ActiveSession[]> {
+    return api.get<ActiveSession[]>(`${this.basePath}/sessions`)
+  }
+
+  /**
+   * Revoke a specific session
+   */
+  async revokeSession(sessionId: string): Promise<void> {
+    return api.delete<void>(`${this.basePath}/sessions/${sessionId}`)
+  }
+
+  /**
+   * Revoke all sessions except current
+   */
+  async revokeAllSessions(): Promise<void> {
+    return api.post<void>(`${this.basePath}/sessions/revoke-all`)
+  }
+
+  /**
+   * Get login history
+   */
+  async getLoginHistory(limit: number = 10): Promise<LoginHistoryEntry[]> {
+    return api.get<LoginHistoryEntry[]>(`${this.basePath}/login-history?limit=${limit}`)
+  }
+
+  /**
+   * Setup two-factor authentication
+   */
+  async setupTwoFactor(): Promise<TwoFactorSetupResponse> {
+    return api.post<TwoFactorSetupResponse>(`${this.basePath}/2fa/setup`)
+  }
+
+  /**
+   * Verify and enable two-factor authentication
+   */
+  async verifyTwoFactor(request: TwoFactorVerifyRequest): Promise<{ success: boolean; backupCodes?: string[] }> {
+    return api.post<{ success: boolean; backupCodes?: string[] }>(`${this.basePath}/2fa/verify`, request)
+  }
+
+  /**
+   * Disable two-factor authentication
+   */
+  async disableTwoFactor(request: TwoFactorVerifyRequest): Promise<void> {
+    return api.post<void>(`${this.basePath}/2fa/disable`, request)
+  }
+
+  /**
+   * Regenerate backup codes
+   */
+  async regenerateBackupCodes(request: TwoFactorVerifyRequest): Promise<{ backupCodes: string[] }> {
+    return api.post<{ backupCodes: string[] }>(`${this.basePath}/2fa/backup-codes`, request)
   }
 
   /**

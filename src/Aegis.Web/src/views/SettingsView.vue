@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '@/i18n'
 import {
   SunIcon,
@@ -12,7 +13,8 @@ import {
   ShieldCheckIcon,
   UserCircleIcon,
   KeyIcon,
-  LanguageIcon
+  LanguageIcon,
+  LockClosedIcon
 } from '@heroicons/vue/24/outline'
 import {
   Switch,
@@ -22,11 +24,16 @@ import {
   TabPanels,
   TabPanel
 } from '@headlessui/vue'
+import SecuritySettingsTab from '@/components/settings/SecuritySettingsTab.vue'
+import ActiveSessionsPanel from '@/components/settings/ActiveSessionsPanel.vue'
 import type { ThemeMode } from '@/types/admin'
 
 const { locale, t } = useI18n()
 const settingsStore = useSettingsStore()
 const authStore = useAuthStore()
+const toast = useToast()
+
+const showSessionsPanel = ref(false)
 
 // Handle language change
 const handleLanguageChange = (newLocale: LocaleCode) => {
@@ -64,7 +71,16 @@ onMounted(() => {
 })
 
 async function handleSave() {
-  await settingsStore.saveSettings()
+  try {
+    await settingsStore.saveSettings()
+    toast.success('Settings saved', 'Your preferences have been updated')
+  } catch (error) {
+    toast.error('Save failed', 'Could not save your settings. Please try again.')
+  }
+}
+
+function openSessionsPanel() {
+  showSessionsPanel.value = true
 }
 
 const currentTheme = computed(() => settingsStore.settings.theme)
@@ -138,6 +154,20 @@ const currentTheme = computed(() => settingsStore.settings.theme)
             >
               <ShieldCheckIcon class="h-5 w-5" />
               Privacy
+            </button>
+          </Tab>
+          <Tab
+            v-slot="{ selected }"
+            as="template"
+          >
+            <button
+              class="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium leading-5 transition-all"
+              :class="selected
+                ? 'bg-white text-aegis-700 shadow dark:bg-gray-700 dark:text-aegis-400'
+                : 'text-gray-600 hover:bg-white/30 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'"
+            >
+              <LockClosedIcon class="h-5 w-5" />
+              Security
             </button>
           </Tab>
           <Tab
@@ -492,6 +522,11 @@ const currentTheme = computed(() => settingsStore.settings.theme)
             </div>
           </TabPanel>
 
+          <!-- Security Tab -->
+          <TabPanel>
+            <SecuritySettingsTab @open-sessions="openSessionsPanel" />
+          </TabPanel>
+
           <!-- API Keys Tab -->
           <TabPanel>
             <div class="card space-y-6 p-6">
@@ -533,5 +568,11 @@ const currentTheme = computed(() => settingsStore.settings.theme)
         </button>
       </div>
     </div>
+
+    <!-- Active Sessions Panel -->
+    <ActiveSessionsPanel
+      :open="showSessionsPanel"
+      @close="showSessionsPanel = false"
+    />
   </div>
 </template>

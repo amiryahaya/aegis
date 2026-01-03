@@ -1,7 +1,7 @@
 # Current Development State
 
-**Last Updated:** January 3, 2026
-**Last Commit:** Sprint 115-116: Password Recovery & Error Pages
+**Last Updated:** January 4, 2026
+**Last Commit:** Sprint 117-118: Security Settings & Account Management
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -664,6 +664,39 @@
 - Router updated with new routes:
   - /forgot-password, /reset-password, /:pathMatch(.*) (404)
 - **Build:** 1483.71 KB precached (69 entries)
+
+#### Sprint 117-118: Security Settings & Account Management ✅
+- SecuritySettingsTab component for password and 2FA management
+- Password change form with VeeValidate + Zod validation
+- Password visibility toggles for all password fields
+- Password strength requirements (8+ chars, uppercase, lowercase, number)
+- Two-factor authentication setup flow:
+  - QR code display for authenticator app scanning
+  - Manual secret key entry option
+  - 6-digit verification code input
+  - Backup codes generation and display
+  - Copy to clipboard functionality
+- 2FA enable/disable with code verification
+- Disclosure panel for 2FA disable confirmation
+- ActiveSessionsPanel dialog component:
+  - Tabbed interface (Active Sessions / Login History)
+  - Session list with device icons (desktop, mobile, tablet)
+  - Session details (browser, OS, IP, location, last active)
+  - Current session badge
+  - Individual session revocation
+  - Revoke all other sessions button
+  - Login history with success/failure status
+  - Failed login reason display
+- Auth service extended with security endpoints:
+  - getSecuritySettings, getActiveSessions
+  - revokeSession, revokeAllSessions, getLoginHistory
+  - setupTwoFactor, verifyTwoFactor, disableTwoFactor
+  - regenerateBackupCodes
+- New types: ActiveSession, LoginHistoryEntry, SecuritySettings, TwoFactorSetupResponse
+- SettingsView updated with Security tab (6 tabs total)
+- Toast notifications for settings save with success/error feedback
+- LockClosedIcon for Security tab navigation
+- **Build:** 1506.58 KB precached (69 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)
