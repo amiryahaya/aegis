@@ -13,7 +13,8 @@ import {
   ShieldCheckIcon,
   RssIcon,
   ChartBarIcon,
-  DocumentChartBarIcon
+  DocumentChartBarIcon,
+  GlobeAltIcon
 } from '@heroicons/vue/24/outline'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
@@ -40,7 +41,8 @@ const navigation = computed(() => {
     { name: 'Workspaces', href: '/workspaces', icon: FolderIcon, current: route.path.startsWith('/workspaces') },
     { name: 'Activity', href: '/activity', icon: RssIcon, current: route.path === '/activity' },
     { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, current: route.path === '/analytics' },
-    { name: 'Reports', href: '/reports', icon: DocumentChartBarIcon, current: route.path === '/reports' }
+    { name: 'Reports', href: '/reports', icon: DocumentChartBarIcon, current: route.path === '/reports' },
+    { name: 'Integrations', href: '/integrations', icon: GlobeAltIcon, current: route.path === '/integrations' }
   ]
   return items
 })

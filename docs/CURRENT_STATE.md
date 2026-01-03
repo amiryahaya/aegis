@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 91-92: Export & Reporting Features
+**Last Commit:** Sprint 93-94: Webhook Management & API Integration UI
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -597,6 +597,28 @@
 - **Files Added:** 6 new TypeScript/Vue files (export.ts types, useExport.ts, ExportDialog.vue, ExportHistory.vue, ReportDialog.vue, ReportsView.vue)
 - **Files Updated:** types/index.ts, router/index.ts, AppSidebar.vue
 - **Build Size:** 1133.66 KB precached
+
+#### Sprint 93-94: Webhook Management & API Integration UI ✅
+- Webhook types matching backend (WebhookEventType, WebhookSubscription, WebhookDelivery, etc.)
+- 17 WebhookEventType definitions across 5 categories (Document, Query, DataSource, System, User)
+- WebhookHealth tracking with success rate calculation
+- Webhook store with Pinia for CRUD, filtering, testing, and delivery history
+- Mock data generators for development
+- WebhookCard component with health indicators and event badges
+- DeliveryHistoryTable component with status icons, retry actions
+- WebhookFormDialog for creating/editing webhooks with:
+  - Event selection with category-based disclosure panels
+  - Custom headers management
+  - Secret configuration with HMAC-SHA256 signing
+- WebhookTestDialog for testing webhook endpoints with result display
+- IntegrationsView with 3 tabs: Webhooks, Delivery History, API Keys
+- Stats overview (total webhooks, active, failed deliveries, success rate)
+- Webhook filtering by search query and active status
+- /integrations route added to router
+- Integrations navigation link in sidebar with GlobeAltIcon
+- **Files Added:** 7 new TypeScript/Vue files (webhook.ts types, webhook.ts store, WebhookCard.vue, DeliveryHistoryTable.vue, WebhookFormDialog.vue, WebhookTestDialog.vue, IntegrationsView.vue)
+- **Files Updated:** types/index.ts, router/index.ts, AppSidebar.vue
+- **Build Size:** 1182.84 KB precached
 
 ### Current Statistics
 - **Total Backend Tests Passing:** 865 (844 unit + 21 architecture)
@@ -1369,6 +1391,28 @@ Potential future work:
 - src/Aegis.Web/src/router/index.ts (added /reports route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Reports navigation with DocumentChartBarIcon)
 
+### Files Created (Sprint 93-94)
+
+**Types:**
+- src/Aegis.Web/src/types/webhook.ts (WebhookEventType, WebhookSubscription, WebhookDelivery, WebhookHealth, filters, stats)
+
+**Stores:**
+- src/Aegis.Web/src/stores/webhook.ts (webhook state, CRUD, filtering, testing, delivery history)
+
+**Components:**
+- src/Aegis.Web/src/components/webhook/WebhookCard.vue (webhook display with health and events)
+- src/Aegis.Web/src/components/webhook/DeliveryHistoryTable.vue (delivery history with retry actions)
+- src/Aegis.Web/src/components/webhook/WebhookFormDialog.vue (create/edit webhook form)
+- src/Aegis.Web/src/components/webhook/WebhookTestDialog.vue (webhook testing dialog)
+
+**Views:**
+- src/Aegis.Web/src/views/IntegrationsView.vue (integrations page with webhooks, delivery history, API keys tabs)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added webhook types export)
+- src/Aegis.Web/src/router/index.ts (added /integrations route)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
 ## 🔧 Key Architecture Components
 
 ### Agent Orchestration Flow (with Self-Evaluation)
@@ -1527,10 +1571,10 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 93-94: Webhook Management & API Integration UI
   - Sprint 91-92: Export & Reporting Features
   - Sprint 89-90: Analytics Dashboard & User Insights
   - Sprint 87-88: Performance Optimization & Virtual Scrolling
-  - Sprint 85-86: Offline Support & Data Sync
 
 ## 💡 Tips for Next Session
 
