@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 4, 2026
-**Last Commit:** Sprint 117-118: Security Settings & Account Management
+**Last Commit:** Sprint 119-120: API Key Management & Account Settings
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -697,6 +697,35 @@
 - Toast notifications for settings save with success/error feedback
 - LockClosedIcon for Security tab navigation
 - **Build:** 1506.58 KB precached (69 entries)
+
+#### Sprint 119-120: API Key Management & Account Settings ✅
+- ApiKeyService for API key CRUD operations
+- API key types: ApiKey, ApiKeyScope, CreateApiKeyRequest, CreateApiKeyResponse
+- Scope definitions with categories (General, Features)
+- Expiration options (7d, 30d, 90d, 6mo, 1yr, never)
+- ApiKeySettingsTab component:
+  - Create API key dialog with name, description, scopes, expiration
+  - API key list with active/inactive sections
+  - Key prefix display (partial key for identification)
+  - Scope badges for each key
+  - Usage statistics (request count, last used)
+  - Expiration status with color coding (expired, expiring soon)
+  - Revoke key with confirmation dialog
+  - Copy key to clipboard (on creation only)
+  - One-time key display with security warning
+  - Collapsible inactive/expired keys section
+- AccountSettingsTab component:
+  - Account information display (email, name, role, member since)
+  - Data export with selectable data types:
+    - Profile, Sessions, Workspaces, Documents, API Keys, Activity Log
+  - Export progress indicator with percentage
+  - JSON file download with timestamped filename
+  - Account deletion with confirmation:
+    - Type "delete my account" to confirm
+    - Lists all data to be deleted
+    - Redirects to login after deletion
+- SettingsView updated with Account tab (7 tabs total)
+- **Build:** 1536.84 KB precached (69 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)

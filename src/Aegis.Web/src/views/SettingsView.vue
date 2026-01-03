@@ -14,7 +14,8 @@ import {
   UserCircleIcon,
   KeyIcon,
   LanguageIcon,
-  LockClosedIcon
+  LockClosedIcon,
+  Cog6ToothIcon
 } from '@heroicons/vue/24/outline'
 import {
   Switch,
@@ -26,6 +27,8 @@ import {
 } from '@headlessui/vue'
 import SecuritySettingsTab from '@/components/settings/SecuritySettingsTab.vue'
 import ActiveSessionsPanel from '@/components/settings/ActiveSessionsPanel.vue'
+import ApiKeySettingsTab from '@/components/settings/ApiKeySettingsTab.vue'
+import AccountSettingsTab from '@/components/settings/AccountSettingsTab.vue'
 import type { ThemeMode } from '@/types/admin'
 
 const { locale, t } = useI18n()
@@ -182,6 +185,20 @@ const currentTheme = computed(() => settingsStore.settings.theme)
             >
               <KeyIcon class="h-5 w-5" />
               API Keys
+            </button>
+          </Tab>
+          <Tab
+            v-slot="{ selected }"
+            as="template"
+          >
+            <button
+              class="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium leading-5 transition-all"
+              :class="selected
+                ? 'bg-white text-aegis-700 shadow dark:bg-gray-700 dark:text-aegis-400'
+                : 'text-gray-600 hover:bg-white/30 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'"
+            >
+              <Cog6ToothIcon class="h-5 w-5" />
+              Account
             </button>
           </Tab>
         </TabList>
@@ -529,27 +546,12 @@ const currentTheme = computed(() => settingsStore.settings.theme)
 
           <!-- API Keys Tab -->
           <TabPanel>
-            <div class="card space-y-6 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">API Keys</h2>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">Manage your API keys for programmatic access</p>
-                </div>
-                <button class="btn-primary">
-                  Create API Key
-                </button>
-              </div>
+            <ApiKeySettingsTab />
+          </TabPanel>
 
-              <div class="rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="p-8 text-center">
-                  <KeyIcon class="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No API Keys</h3>
-                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Create an API key to access AEGIS programmatically
-                  </p>
-                </div>
-              </div>
-            </div>
+          <!-- Account Tab -->
+          <TabPanel>
+            <AccountSettingsTab />
           </TabPanel>
         </TabPanels>
       </TabGroup>
