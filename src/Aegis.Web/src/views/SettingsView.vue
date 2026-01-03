@@ -167,7 +167,7 @@ const currentTheme = computed(() => settingsStore.settings.theme)
                   <label class="label">Name</label>
                   <input
                     type="text"
-                    :value="authStore.user?.name"
+                    :value="authStore.user?.displayName"
                     class="input w-full"
                     disabled
                   />

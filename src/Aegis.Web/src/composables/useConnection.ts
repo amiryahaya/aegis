@@ -241,7 +241,7 @@ export function useConnection() {
     try {
       await hubConnection.invoke('AnnouncePresence', {
         userId: authStore.user.id,
-        name: authStore.user.name || authStore.user.email,
+        name: authStore.user.displayName || authStore.user.email,
         status: 'active'
       })
     } catch (error) {
@@ -279,7 +279,7 @@ export function useConnection() {
     try {
       await hubConnection.invoke('SendTypingIndicator', {
         userId: authStore.user.id,
-        userName: authStore.user.name || authStore.user.email,
+        userName: authStore.user.displayName || authStore.user.email,
         sessionId,
         isTyping,
         timestamp: new Date()

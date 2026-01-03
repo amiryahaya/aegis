@@ -1,9 +1,13 @@
 export interface User {
   id: string
   email: string
-  name: string
+  firstName: string
+  lastName: string
+  displayName: string
+  avatarUrl?: string
   role: UserRole
   teamId?: string
+  teamName?: string
   isActive: boolean
   createdAt: string
   lastLoginAt?: string
@@ -24,7 +28,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string
-  refreshToken?: string
+  refreshToken: string
   expiresAt: string
   user: User
 }
@@ -32,7 +36,9 @@ export interface LoginResponse {
 export interface RegisterRequest {
   email: string
   password: string
-  name: string
+  firstName: string
+  lastName: string
+  teamId?: string
 }
 
 export interface Team {

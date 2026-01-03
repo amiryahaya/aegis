@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 99-100: Notification Preferences & System Configuration UI
+**Last Commit:** Sprint 101-102: API Service Layer & Backend Connection
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,21 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 101-102: API Service Layer & Backend Connection ✅
+- AuthService for authentication API (login, register, refreshToken, getCurrentUser, updateProfile, changePassword, logout)
+- SessionService for session API (CRUD, turns, conversation, feedback, sharing, export, search, stats)
+- WorkspaceService for workspace API (CRUD, archive, context, data sources, documents, sharing, links)
+- Type mappers for converting backend responses to frontend types
+- Updated auth store with real API integration, token refresh, and proper storage keys
+- Updated session store with real API integration and backward compatibility
+- Enhanced API service with automatic token refresh and retry logic
+- Environment configuration (.env.example, .env.development, .env.production)
+- TypeScript env.d.ts with typed environment variables
+- Updated User type with firstName, lastName, displayName, avatarUrl, teamName
+- SessionFilter extended with userId for API compatibility
+- ExportFormat with content type mapping for file downloads
+- **Build:** 1432.00 KB precached (62 entries)
 
 #### Sprint 99-100: Notification Preferences & System Configuration UI ✅
 - Comprehensive systemConfig types (UserNotificationPreferences, EmailTemplate, SystemConfiguration, FeatureFlag)
@@ -1483,6 +1498,27 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added webhook types export)
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
+### Files Created (Sprint 101-102)
+
+**Services:**
+- src/Aegis.Web/src/services/auth.service.ts (AuthService for login, register, refresh, profile, password change)
+- src/Aegis.Web/src/services/session.service.ts (SessionService for CRUD, turns, feedback, sharing, export, stats)
+- src/Aegis.Web/src/services/workspace.service.ts (WorkspaceService for CRUD, context, data sources, documents, sharing)
+
+**Configuration:**
+- src/Aegis.Web/.env.example (API configuration, SignalR, feature flags)
+- src/Aegis.Web/.env.development (development environment settings with mock data enabled)
+- src/Aegis.Web/.env.production (production environment settings)
+
+**Updated Files:**
+- src/Aegis.Web/env.d.ts (typed environment variables for VITE_API_URL, VITE_SIGNALR_URL, etc.)
+- src/Aegis.Web/src/services/api.ts (automatic token refresh, retry logic, proper storage keys)
+- src/Aegis.Web/src/stores/auth.ts (real API integration, token management, registration, profile updates)
+- src/Aegis.Web/src/stores/session.ts (real API integration, backward compatible signatures)
+- src/Aegis.Web/src/types/user.ts (added firstName, lastName, displayName, avatarUrl, teamName)
+- src/Aegis.Web/src/composables/useConnection.ts (updated to use displayName)
+- src/Aegis.Web/src/views/SettingsView.vue (updated to use displayName)
 
 ### Files Created (Sprint 99-100)
 
