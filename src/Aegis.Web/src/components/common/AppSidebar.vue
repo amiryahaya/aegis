@@ -15,7 +15,8 @@ import {
   ChartBarIcon,
   DocumentChartBarIcon,
   GlobeAltIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  UsersIcon
 } from '@heroicons/vue/24/outline'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
@@ -53,6 +54,7 @@ const bottomNavigation = computed(() => {
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: route.path === '/settings' }
   ]
   if (authStore.isAdmin) {
+    items.push({ name: 'Users', href: '/users', icon: UsersIcon, current: route.path === '/users' })
     items.push({ name: 'Audit Log', href: '/audit', icon: ClipboardDocumentListIcon, current: route.path === '/audit' })
     items.push({ name: 'Admin', href: '/admin', icon: ShieldCheckIcon, current: route.path === '/admin' })
   }

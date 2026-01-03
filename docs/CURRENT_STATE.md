@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 95-96: Audit Log Viewer & System Monitoring
+**Last Commit:** Sprint 97-98: User Management & Team Administration UI
 **Current Branch:** main
 
 ## 📍 Where We Are
@@ -641,6 +641,29 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 97-98: User Management & Team Administration UI ✅
+- Comprehensive user management types (ManagedUser, ManagedTeam, TeamMember, TeamSettings)
+- User roles with permissions (Viewer, Contributor, Analyst, Admin, SystemAdmin)
+- User actions (activate, deactivate, lock, unlock, resetPassword, enableMfa, disableMfa, etc.)
+- Bulk user actions support for mass operations
+- Team member roles (member, moderator, admin, owner)
+- User invitations workflow with status tracking
+- User activity logging and session management
+- User management store with Pinia (users, teams, invitations, stats, filtering, pagination)
+- Mock data generators for 50 users and 15 teams
+- UserTable component with sortable columns, checkboxes, role badges, status icons, action menu
+- UserDetailPanel with tabbed interface (Overview, Activity, Sessions)
+- UserFormDialog for create/edit with role selection and team assignment
+- TeamTable component with member counts, workspace counts, owner display
+- TeamDetailPanel with member management (add/remove members)
+- TeamFormDialog for create/edit with team settings (max members, workspace limit, query rate, storage)
+- UserManagementView with Users and Teams tabs
+- Stats overview (total users, active, locked, pending, MFA enabled, teams)
+- Filters by status, role, team, and search
+- Bulk actions toolbar (activate, deactivate, delete)
+- /users route with requiresAdmin guard
+- Users navigation link in admin section of sidebar
 - /audit route with requiresAdmin guard
 - Audit Log navigation link in admin section of sidebar
 - **Files Added:** 6 new TypeScript/Vue files (audit.ts types, audit.ts store, AuditLogTable.vue, AuditLogDetail.vue, SystemHealthCard.vue, AuditLogView.vue)
@@ -1440,6 +1463,30 @@ Potential future work:
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
 
+### Files Created (Sprint 97-98)
+
+**Types:**
+- src/Aegis.Web/src/types/userManagement.ts (ManagedUser, ManagedTeam, TeamMember, TeamSettings, UserFilters, TeamFilters, CreateManagedUserRequest, UpdateManagedUserRequest, CreateTeamRequest, UpdateTeamRequest, AddTeamMemberRequest, UserManagementStats, TeamManagementStats, UserInvitation, UserActivityEntry, UserSession, UserAction, BulkUserAction, ROLE_DEFINITIONS, utility functions)
+
+**Stores:**
+- src/Aegis.Web/src/stores/userManagement.ts (users, teams, invitations, stats, CRUD, user actions, bulk actions, filtering, pagination, mock data generators)
+
+**Components:**
+- src/Aegis.Web/src/components/users/UserTable.vue (sortable table with checkboxes, role badges, status icons, action menu)
+- src/Aegis.Web/src/components/users/UserDetailPanel.vue (tabbed dialog with Overview, Activity, Sessions tabs)
+- src/Aegis.Web/src/components/users/UserFormDialog.vue (create/edit user with role selection, team assignment, password fields)
+- src/Aegis.Web/src/components/teams/TeamTable.vue (team list with member counts, workspace counts, owner, status, action menu)
+- src/Aegis.Web/src/components/teams/TeamDetailPanel.vue (team details with member management, add/remove members)
+- src/Aegis.Web/src/components/teams/TeamFormDialog.vue (create/edit team with settings configuration)
+
+**Views:**
+- src/Aegis.Web/src/views/UserManagementView.vue (tabbed view with Users and Teams, stats, filters, bulk actions)
+
+**Updated Files:**
+- src/Aegis.Web/src/types/index.ts (added userManagement types export)
+- src/Aegis.Web/src/router/index.ts (added /users route with requiresAdmin guard)
+- src/Aegis.Web/src/components/common/AppSidebar.vue (added Users navigation with UsersIcon in admin section)
+
 ### Files Created (Sprint 95-96)
 
 **Types:**
@@ -1619,6 +1666,7 @@ When you return to development:
 - **Development Plan:** `docs/DEVELOPMENT_PLAN.md`
 - **README:** `README.md`
 - **Recent Commits:**
+  - Sprint 97-98: User Management & Team Administration UI
   - Sprint 95-96: Audit Log Viewer & System Monitoring
   - Sprint 93-94: Webhook Management & API Integration UI
   - Sprint 91-92: Export & Reporting Features

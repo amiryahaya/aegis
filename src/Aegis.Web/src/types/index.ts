@@ -19,6 +19,7 @@ export * from './analytics'
 export * from './export'
 export * from './webhook'
 export * from './audit'
+export * from './userManagement'
 
 // Re-export workspace types with explicit names to avoid conflicts
 export type {
