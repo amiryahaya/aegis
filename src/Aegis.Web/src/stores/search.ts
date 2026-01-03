@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import api from '@/services/api'
+import searchService from '@/services/search.service'
 import type {
-  SearchRequest,
   SearchResponse,
   SearchResult,
   SearchFilter,
@@ -127,20 +126,31 @@ export const useSearchStore = defineStore('search', () => {
     currentPage.value = page
 
     try {
-      const request: SearchRequest = {
-        query,
+      const response = await searchService.searchPaged(query, page, pageSize.value, {
         types: filters.value.types.length > 0 ? filters.value.types : undefined,
         workspaceIds: filters.value.workspaceIds.length > 0 ? filters.value.workspaceIds : undefined,
         dateFrom: filters.value.dateRange?.from || undefined,
         dateTo: filters.value.dateRange?.to || undefined,
-        pageNumber: page,
-        pageSize: pageSize.value,
         sortBy: 'relevance'
-      }
+      })
 
-      const response = await api.post<SearchResponse>('/search', request)
-
-      results.value = response.results
+      // Map service response to store types
+      results.value = response.results.map(r => ({
+        id: r.id,
+        type: r.type as SearchResultType,
+        title: r.title,
+        excerpt: r.excerpt,
+        highlights: r.highlights,
+        score: r.relevanceScore,
+        metadata: {
+          workspaceId: r.metadata.workspaceId,
+          workspaceName: r.metadata.workspaceName,
+          sessionId: r.metadata.sessionId,
+          documentId: r.metadata.documentId
+        },
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt
+      }))
       totalCount.value = response.totalCount
       totalPages.value = response.totalPages
       searchTimeMs.value = response.searchTimeMs
@@ -148,7 +158,7 @@ export const useSearchStore = defineStore('search', () => {
       // Add to recent searches
       addRecentSearch(query, response.totalCount)
 
-      return response
+      return response as unknown as SearchResponse
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Search failed'
       return null
@@ -164,20 +174,37 @@ export const useSearchStore = defineStore('search', () => {
     error.value = null
 
     try {
-      const request: SearchRequest = {
-        query: currentQuery.value,
-        types: filters.value.types.length > 0 ? filters.value.types : undefined,
-        workspaceIds: filters.value.workspaceIds.length > 0 ? filters.value.workspaceIds : undefined,
-        dateFrom: filters.value.dateRange?.from || undefined,
-        dateTo: filters.value.dateRange?.to || undefined,
-        pageNumber: currentPage.value + 1,
-        pageSize: pageSize.value,
-        sortBy: 'relevance'
-      }
+      const response = await searchService.searchPaged(
+        currentQuery.value,
+        currentPage.value + 1,
+        pageSize.value,
+        {
+          types: filters.value.types.length > 0 ? filters.value.types : undefined,
+          workspaceIds: filters.value.workspaceIds.length > 0 ? filters.value.workspaceIds : undefined,
+          dateFrom: filters.value.dateRange?.from || undefined,
+          dateTo: filters.value.dateRange?.to || undefined,
+          sortBy: 'relevance'
+        }
+      )
 
-      const response = await api.post<SearchResponse>('/search', request)
-
-      results.value = [...results.value, ...response.results]
+      // Map and append results
+      const newResults = response.results.map(r => ({
+        id: r.id,
+        type: r.type as SearchResultType,
+        title: r.title,
+        excerpt: r.excerpt,
+        highlights: r.highlights,
+        score: r.relevanceScore,
+        metadata: {
+          workspaceId: r.metadata.workspaceId,
+          workspaceName: r.metadata.workspaceName,
+          sessionId: r.metadata.sessionId,
+          documentId: r.metadata.documentId
+        },
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt
+      }))
+      results.value = [...results.value, ...newResults]
       currentPage.value = response.pageNumber
       totalPages.value = response.totalPages
     } catch (err) {
@@ -192,9 +219,29 @@ export const useSearchStore = defineStore('search', () => {
     error.value = null
 
     try {
-      const response = await api.get<DocumentPreview>(`/documents/${documentId}/preview`)
-      documentPreview.value = response
-      return response
+      const response = await searchService.getDocumentPreview(documentId)
+      // Map to store type
+      documentPreview.value = {
+        id: response.id,
+        name: response.name,
+        mimeType: response.type,
+        content: response.content,
+        chunks: response.chunks.map(c => ({
+          index: c.index,
+          content: c.content,
+          pageNumber: c.pageNumber
+        })),
+        metadata: {
+          workspaceId: '',
+          workspaceName: '',
+          uploadedBy: '',
+          uploadedAt: '',
+          fileSize: 0,
+          pageCount: response.pageCount,
+          wordCount: response.wordCount
+        }
+      }
+      return documentPreview.value
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load document preview'
       return null

@@ -100,3 +100,16 @@ export { default as indexedDBService } from './indexeddb.service'
 
 // Sync Service
 export { default as syncService } from './sync.service'
+
+// Search
+export { default as searchService } from './search.service'
+export type {
+  SearchRequest,
+  SearchResponse,
+  SearchResult,
+  SearchResultMetadata,
+  SearchFacets,
+  SearchResultType,
+  DocumentPreviewResponse,
+  DocumentChunkPreview
+} from './search.service'

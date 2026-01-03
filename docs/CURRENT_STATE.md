@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 3, 2026
-**Last Commit:** Sprint 105-106: Store Integration & Query Composables
+**Last Commit:** Sprint 107-108: Complete Store Integration & Composables Index
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -641,6 +641,17 @@
 - Search functionality across description, username, action, resourceId
 - Export functionality (JSON, CSV) with filtered results
 - Pagination controls with page navigation
+
+#### Sprint 107-108: Complete Store Integration & Composables Index ✅
+- SearchService for search API (full-text search, suggestions, facets, document preview)
+- Search store refactored to use searchService with type mappings
+- useNotifications composable for real-time notifications via SignalR
+- Toast notification support for new notifications
+- Composables index file for clean imports (24 composables)
+- Services index updated with search service exports
+- Type mapping fixes (SearchResult.score, DocumentPreview.mimeType)
+- Archive notification bug fix (unread count tracking)
+- **Build:** 1448.40 KB precached (62 entries)
 
 #### Sprint 105-106: Store Integration & Query Composables ✅
 - Workspace store refactored to use workspaceService and documentService
@@ -1523,6 +1534,19 @@ Potential future work:
 - src/Aegis.Web/src/types/index.ts (added webhook types export)
 - src/Aegis.Web/src/router/index.ts (added /integrations route)
 - src/Aegis.Web/src/components/common/AppSidebar.vue (added Integrations navigation with GlobeAltIcon)
+
+### Files Created (Sprint 107-108)
+
+**Services:**
+- src/Aegis.Web/src/services/search.service.ts (SearchService for search, suggestions, facets, document preview, utilities)
+
+**Composables:**
+- src/Aegis.Web/src/composables/useNotifications.ts (Notification composable with SignalR, toast, filtering, mark as read)
+- src/Aegis.Web/src/composables/index.ts (Composables index for clean imports - 24 composables)
+
+**Updated Files:**
+- src/Aegis.Web/src/stores/search.ts (Refactored to use searchService with type mappings)
+- src/Aegis.Web/src/services/index.ts (Added search service exports)
 
 ### Files Created (Sprint 105-106)
 
