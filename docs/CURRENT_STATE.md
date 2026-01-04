@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 4, 2026
-**Last Commit:** Sprint 127-128: Chat Enhancements & Document Actions
+**Last Commit:** Sprint 129-130: Workspace Collaboration & Session Sharing
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -869,6 +869,25 @@
   - SessionsView bulk archive action implemented
   - Toast notifications for archive status
 - **Build:** 1644.36 KB precached (78 entries)
+
+#### Sprint 129-130: Workspace Collaboration & Session Sharing ✅
+- Workspace member sharing wired to actual API:
+  - workspace.ts store: Added shareWorkspace, updateShareRole, removeShare actions
+  - UserAccessManager.vue: Full API integration with auth store
+  - Current user role detection from workspace owner and shares
+- Session sharing dialog component (SessionShareDialog.vue):
+  - Share type selection (User, Team, Public link)
+  - Permission levels (ReadOnly, Comment, Edit)
+  - Expiration options (never, 1h, 24h, 7d, 30d)
+  - Public link generation with copy to clipboard
+  - Headless UI integration (Dialog, RadioGroup, Listbox)
+- Document download wired directly in DocumentDetailsDrawer:
+  - Direct documentService.download call with loading state
+  - Toast notifications for download status
+- ChatView integration with session sharing:
+  - Share menu item in session actions menu
+  - SessionShareDialog component integration
+- **Build:** 1654.79 KB precached (78 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)

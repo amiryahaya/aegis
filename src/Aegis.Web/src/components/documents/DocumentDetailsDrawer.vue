@@ -112,13 +112,20 @@ async function handleReindex() {
 
 async function handleDownload() {
   if (!props.document) return
+  loading.value = true
   try {
-    // TODO: Add download endpoint to API when available
-    // For now, emit the download event for the parent to handle
-    toast.success('Download started', 'Your download will begin shortly')
+    toast.info('Downloading', `Downloading ${props.document.name}...`)
+    await documentService.download(
+      props.document.workspaceId,
+      props.document.id,
+      props.document.name
+    )
+    toast.success('Download complete', `${props.document.name} has been downloaded`)
     emit('download', props.document.id)
   } catch {
     toast.error('Download failed', 'Could not download the document')
+  } finally {
+    loading.value = false
   }
 }
 

@@ -12,6 +12,7 @@ import MobileChatHeader from '@/components/mobile/MobileChatHeader.vue'
 import MobileChatInput from '@/components/mobile/MobileChatInput.vue'
 import MobileMessageBubble from '@/components/mobile/MobileMessageBubble.vue'
 import MobileSourcesSheet from '@/components/mobile/MobileSourcesSheet.vue'
+import SessionShareDialog from '@/components/session/SessionShareDialog.vue'
 import { useQuery } from '@/composables/useQuery'
 import { useConnection } from '@/composables/useConnection'
 import { useBreakpoints } from '@/composables/useMediaQuery'
@@ -21,7 +22,8 @@ import {
   TrashIcon,
   ArrowDownTrayIcon,
   EllipsisVerticalIcon,
-  FolderIcon
+  FolderIcon,
+  ShareIcon
 } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { SessionType, type ExportFormat, type SourceReference } from '@/types'
@@ -48,6 +50,9 @@ const editTitle = ref('')
 // Mobile-specific state
 const showSourcesSheet = ref(false)
 const selectedSources = ref<SourceReference[]>([])
+
+// Share dialog state
+const isShareDialogOpen = ref(false)
 
 const sessionId = computed(() => route.params.sessionId as string | undefined)
 
@@ -389,6 +394,17 @@ async function handleExport(format: ExportFormat) {
               </MenuItem>
               <MenuItem v-slot="{ active }">
                 <button
+                  class="flex w-full items-center gap-2 px-4 py-2 text-sm"
+                  :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                  @click="isShareDialogOpen = true"
+                >
+                  <ShareIcon class="h-4 w-4" />
+                  Share session
+                </button>
+              </MenuItem>
+              <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+              <MenuItem v-slot="{ active }">
+                <button
                   class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400"
                   :class="active ? 'bg-red-50 dark:bg-red-900/30' : ''"
                   @click="confirmDelete"
@@ -523,6 +539,14 @@ async function handleExport(format: ExportFormat) {
       :sources="selectedSources"
       :open="showSourcesSheet"
       @close="showSourcesSheet = false"
+    />
+
+    <!-- Session Share Dialog -->
+    <SessionShareDialog
+      :session="currentSession"
+      :open="isShareDialogOpen"
+      @close="isShareDialogOpen = false"
+      @shared="isShareDialogOpen = false"
     />
   </div>
 </template>

@@ -479,6 +479,64 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     }
   }
 
+  async function shareWorkspace(
+    workspaceId: string,
+    userId: string,
+    role: import('@/types/workspace').WorkspaceRole
+  ): Promise<WorkspaceShare | null> {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await workspaceService.shareWithUser(workspaceId, { userId, role })
+      const share = workspaceService.mapToShare(response)
+      shares.value.push(share)
+      return share
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to share workspace'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateShareRole(
+    workspaceId: string,
+    shareId: string,
+    role: import('@/types/workspace').WorkspaceRole
+  ): Promise<WorkspaceShare | null> {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await workspaceService.updateShare(workspaceId, shareId, role)
+      const share = workspaceService.mapToShare(response)
+      const index = shares.value.findIndex(s => s.id === shareId)
+      if (index !== -1) {
+        shares.value[index] = share
+      }
+      return share
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update share'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function removeShare(workspaceId: string, shareId: string): Promise<boolean> {
+    isLoading.value = true
+    error.value = null
+    try {
+      await workspaceService.removeShare(workspaceId, shareId)
+      shares.value = shares.value.filter(s => s.id !== shareId)
+      return true
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to remove share'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function fetchShareableLinks(workspaceId: string): Promise<ShareableLink[]> {
     isLoading.value = true
     error.value = null
@@ -599,6 +657,9 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
     // Actions - Sharing
     fetchShares,
+    shareWorkspace,
+    updateShareRole,
+    removeShare,
     fetchShareableLinks,
     createShareableLink,
     revokeShareableLink,

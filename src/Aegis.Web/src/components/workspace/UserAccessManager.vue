@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useWorkspaceStore } from '@/stores/workspace'
+import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import type { WorkspaceShare, WorkspaceRole } from '@/types/workspace'
 import {
@@ -35,6 +36,7 @@ const props = defineProps<{
 }>()
 
 const workspaceStore = useWorkspaceStore()
+const authStore = useAuthStore()
 const toast = useToast()
 
 const loading = ref(false)
@@ -54,8 +56,14 @@ const roles: { value: WorkspaceRole; label: string; description: string; icon: t
 ]
 
 const currentUserRole = computed(() => {
-  // TODO: Get from auth store
-  return 'Owner' as WorkspaceRole
+  // Check if current user is the workspace owner
+  const workspace = workspaceStore.currentWorkspace
+  if (workspace && authStore.user && workspace.createdBy === authStore.user.id) {
+    return 'Owner' as WorkspaceRole
+  }
+  // Check if current user has a share with a specific role
+  const userShare = shares.value.find(s => s.userId === authStore.user?.id)
+  return (userShare?.role || 'Viewer') as WorkspaceRole
 })
 
 const canManageMembers = computed(() => {
@@ -82,24 +90,22 @@ async function addUser() {
 
   addingUser.value = true
   try {
-    // TODO: Call API to share workspace with user
-    // await workspaceStore.shareWorkspace(props.workspaceId, newUserEmail.value, newUserRole.value)
+    // Use email as userId (backend can resolve to actual user)
+    const share = await workspaceStore.shareWorkspace(
+      props.workspaceId,
+      newUserEmail.value.trim(),
+      newUserRole.value
+    )
 
-    // Mock for now - add to local state
-    const mockShare: WorkspaceShare = {
-      id: `share-${Date.now()}`,
-      workspaceId: props.workspaceId,
-      userId: `user-${Date.now()}`,
-      role: newUserRole.value,
-      createdAt: new Date().toISOString(),
-      createdBy: 'current-user'
+    if (share) {
+      shares.value.push(share)
+      toast.success('User added', `${newUserEmail.value} has been added as ${newUserRole.value}`)
+      isAddDialogOpen.value = false
+      newUserEmail.value = ''
+      newUserRole.value = 'Viewer'
+    } else {
+      toast.error('Error', workspaceStore.error || 'Failed to add user')
     }
-    shares.value.push(mockShare)
-
-    toast.success('User added', `${newUserEmail.value} has been added as ${newUserRole.value}`)
-    isAddDialogOpen.value = false
-    newUserEmail.value = ''
-    newUserRole.value = 'Viewer'
   } catch (error) {
     toast.error('Error', 'Failed to add user')
   } finally {
@@ -109,12 +115,16 @@ async function addUser() {
 
 async function updateRole(shareId: string, newRole: WorkspaceRole) {
   try {
-    // TODO: Call API to update share role
-    const index = shares.value.findIndex(s => s.id === shareId)
-    if (index !== -1) {
-      shares.value[index] = { ...shares.value[index], role: newRole }
+    const share = await workspaceStore.updateShareRole(props.workspaceId, shareId, newRole)
+    if (share) {
+      const index = shares.value.findIndex(s => s.id === shareId)
+      if (index !== -1) {
+        shares.value[index] = share
+      }
+      toast.success('Role updated', 'Member role has been updated')
+    } else {
+      toast.error('Error', workspaceStore.error || 'Failed to update role')
     }
-    toast.success('Role updated', 'Member role has been updated')
   } catch (error) {
     toast.error('Error', 'Failed to update role')
   }
@@ -124,9 +134,13 @@ async function removeUser(shareId: string) {
   if (!confirm('Are you sure you want to remove this member?')) return
 
   try {
-    // TODO: Call API to remove share
-    shares.value = shares.value.filter(s => s.id !== shareId)
-    toast.success('Member removed', 'User has been removed from the workspace')
+    const success = await workspaceStore.removeShare(props.workspaceId, shareId)
+    if (success) {
+      shares.value = shares.value.filter(s => s.id !== shareId)
+      toast.success('Member removed', 'User has been removed from the workspace')
+    } else {
+      toast.error('Error', workspaceStore.error || 'Failed to remove member')
+    }
   } catch (error) {
     toast.error('Error', 'Failed to remove member')
   }
