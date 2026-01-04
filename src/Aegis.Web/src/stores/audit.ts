@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { auditService } from '@/services/audit.service'
+import { useAuthStore } from '@/stores/auth'
 import type {
   DetailedAuditLogEntry,
   AuditLogFilters,
@@ -11,6 +13,7 @@ import type {
 } from '@/types'
 
 export const useAuditStore = defineStore('audit', () => {
+  const authStore = useAuthStore()
   // State
   const entries = ref<DetailedAuditLogEntry[]>([])
   const statistics = ref<AuditStatistics | null>(null)
@@ -73,12 +76,44 @@ export const useAuditStore = defineStore('audit', () => {
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      entries.value = generateMockEntries(100)
-      totalCount.value = entries.value.length
+      const response = await auditService.query({
+        teamId: authStore.user?.teamId,
+        actions: filters.value.actions,
+        categories: filters.value.categories,
+        success: filters.value.success,
+        severity: filters.value.minSeverity,
+        search: filters.value.searchText,
+        page: page.value,
+        pageSize: pageSize.value,
+        sortBy: sortBy.value,
+        sortDesc: sortDescending.value
+      })
+
+      entries.value = response.entries.map(e => ({
+        id: e.id,
+        action: e.action as AuditAction,
+        category: e.category as AuditCategory,
+        userId: e.userId,
+        username: e.username,
+        workspaceId: e.workspaceId,
+        teamId: e.teamId,
+        resourceType: e.resourceType,
+        resourceId: e.resourceId,
+        description: e.description,
+        ipAddress: e.ipAddress,
+        userAgent: e.userAgent,
+        success: e.success,
+        errorMessage: e.errorMessage,
+        severity: e.severity as AuditSeverity,
+        correlationId: e.correlationId,
+        timestamp: e.timestamp
+      }))
+      totalCount.value = response.totalCount
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch audit logs'
-      throw err
+      // Fallback to mock data
+      entries.value = generateMockEntries(100)
+      totalCount.value = entries.value.length
     } finally {
       isLoading.value = false
     }
@@ -89,11 +124,27 @@ export const useAuditStore = defineStore('audit', () => {
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 300))
-      statistics.value = generateMockStatistics()
+      const response = await auditService.getStatistics({
+        teamId: authStore.user?.teamId
+      })
+
+      statistics.value = {
+        totalEvents: response.totalEvents,
+        successfulEvents: response.successfulEvents,
+        failedEvents: response.failedEvents,
+        uniqueUsers: response.uniqueUsers,
+        actionBreakdown: response.actionBreakdown as unknown as AuditStatistics['actionBreakdown'],
+        categoryBreakdown: response.categoryBreakdown as unknown as AuditStatistics['categoryBreakdown'],
+        severityBreakdown: response.severityBreakdown as unknown as AuditStatistics['severityBreakdown'],
+        userBreakdown: {},
+        hourlyBreakdown: {},
+        dailyBreakdown: response.dailyBreakdown,
+        fromDate: response.fromDate,
+        toDate: response.toDate
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch statistics'
-      throw err
+      statistics.value = generateMockStatistics()
     } finally {
       isLoadingStats.value = false
     }
@@ -104,53 +155,65 @@ export const useAuditStore = defineStore('audit', () => {
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // System health comes from a different endpoint - keep mock for now
       systemHealth.value = generateMockSystemHealth()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch system health'
-      throw err
+      systemHealth.value = generateMockSystemHealth()
     } finally {
       isLoadingHealth.value = false
     }
   }
 
   async function exportLogs(format: 'json' | 'csv'): Promise<Blob> {
-    const data = filteredEntries.value
+    try {
+      // Use the API export endpoint
+      const blob = await auditService.export({
+        format,
+        actions: filters.value.actions,
+        categories: filters.value.categories,
+        teamId: authStore.user?.teamId
+      })
+      return blob
+    } catch {
+      // Fallback to local export
+      const data = filteredEntries.value
 
-    if (format === 'json') {
-      return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      if (format === 'json') {
+        return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      }
+
+      // CSV export
+      const headers = [
+        'Timestamp',
+        'Action',
+        'Category',
+        'Username',
+        'Resource Type',
+        'Resource ID',
+        'Success',
+        'Severity',
+        'Description',
+        'IP Address'
+      ]
+
+      const rows = data.map(e => [
+        e.timestamp,
+        e.action,
+        e.category,
+        e.username || '',
+        e.resourceType || '',
+        e.resourceId || '',
+        e.success ? 'Yes' : 'No',
+        e.severity,
+        e.description || '',
+        e.ipAddress || ''
+      ])
+
+      const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n')
+
+      return new Blob([csv], { type: 'text/csv' })
     }
-
-    // CSV export
-    const headers = [
-      'Timestamp',
-      'Action',
-      'Category',
-      'Username',
-      'Resource Type',
-      'Resource ID',
-      'Success',
-      'Severity',
-      'Description',
-      'IP Address'
-    ]
-
-    const rows = data.map(e => [
-      e.timestamp,
-      e.action,
-      e.category,
-      e.username || '',
-      e.resourceType || '',
-      e.resourceId || '',
-      e.success ? 'Yes' : 'No',
-      e.severity,
-      e.description || '',
-      e.ipAddress || ''
-    ])
-
-    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n')
-
-    return new Blob([csv], { type: 'text/csv' })
   }
 
   function setFilters(newFilters: AuditLogFilters): void {

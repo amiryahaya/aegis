@@ -29,8 +29,10 @@ import {
   TabList,
   Tab,
   TabPanels,
-  TabPanel
+  TabPanel,
+  Switch
 } from '@headlessui/vue'
+import { workspaceService } from '@/services/workspace.service'
 
 const props = defineProps<{
   dataSource: DataSource | null
@@ -129,6 +131,39 @@ async function handleSync() {
   try {
     emit('sync', props.dataSource.id)
     toast.success('Sync started', 'The data source is now syncing')
+  } finally {
+    loading.value = false
+  }
+}
+
+const isEnabled = ref(true)
+
+// Update isEnabled when dataSource changes
+watch(() => props.dataSource, (ds) => {
+  if (ds) {
+    isEnabled.value = ds.status !== 'Disabled'
+  }
+}, { immediate: true })
+
+async function handleToggle(enabled: boolean) {
+  if (!props.dataSource) return
+  loading.value = true
+  try {
+    await workspaceService.toggleDataSource(
+      props.dataSource.workspaceId,
+      props.dataSource.id,
+      enabled
+    )
+    isEnabled.value = enabled
+    emit('toggle', props.dataSource.id, enabled)
+    toast.success(
+      enabled ? 'Data source enabled' : 'Data source disabled',
+      enabled ? 'Syncing will resume on schedule' : 'Syncing has been paused'
+    )
+  } catch (e) {
+    toast.error('Failed to toggle data source', e instanceof Error ? e.message : 'Unknown error')
+    // Revert the toggle
+    isEnabled.value = !enabled
   } finally {
     loading.value = false
   }
@@ -287,28 +322,53 @@ const successRate = computed(() => {
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex items-center gap-2 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                      <button
-                        class="btn-primary flex-1 justify-center"
-                        :disabled="loading || dataSource.status === 'Syncing'"
-                        @click="handleSync"
-                      >
-                        <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': dataSource.status === 'Syncing' }" />
-                        {{ dataSource.status === 'Syncing' ? 'Syncing...' : 'Sync Now' }}
-                      </button>
-                      <button
-                        class="btn-ghost flex-1 justify-center"
-                        @click="emit('edit', dataSource.id)"
-                      >
-                        <Cog6ToothIcon class="h-4 w-4 mr-2" />
-                        Configure
-                      </button>
-                      <button
-                        class="btn-ghost p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                        @click="emit('delete', dataSource.id)"
-                      >
-                        <TrashIcon class="h-5 w-5" />
-                      </button>
+                    <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700 space-y-4">
+                      <!-- Enable/Disable Toggle -->
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <p class="text-sm font-medium text-gray-900 dark:text-white">Enable Data Source</p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ isEnabled ? 'Syncing is active' : 'Syncing is paused' }}
+                          </p>
+                        </div>
+                        <Switch
+                          :model-value="isEnabled"
+                          :disabled="loading"
+                          class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                          :class="isEnabled ? 'bg-aegis-600' : 'bg-gray-300 dark:bg-gray-600'"
+                          @update:model-value="handleToggle"
+                        >
+                          <span
+                            class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                            :class="isEnabled ? 'translate-x-6' : 'translate-x-1'"
+                          />
+                        </Switch>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="flex items-center gap-2">
+                        <button
+                          class="btn-primary flex-1 justify-center"
+                          :disabled="loading || dataSource.status === 'Syncing' || !isEnabled"
+                          @click="handleSync"
+                        >
+                          <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': dataSource.status === 'Syncing' }" />
+                          {{ dataSource.status === 'Syncing' ? 'Syncing...' : 'Sync Now' }}
+                        </button>
+                        <button
+                          class="btn-ghost flex-1 justify-center"
+                          @click="emit('edit', dataSource.id)"
+                        >
+                          <Cog6ToothIcon class="h-4 w-4 mr-2" />
+                          Configure
+                        </button>
+                        <button
+                          class="btn-ghost p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                          @click="emit('delete', dataSource.id)"
+                        >
+                          <TrashIcon class="h-5 w-5" />
+                        </button>
+                      </div>
                     </div>
 
                     <!-- Tabs -->

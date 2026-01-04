@@ -354,6 +354,20 @@ class WorkspaceService {
     return api.post<void>(`${this.basePath}/${workspaceId}/datasources/${dataSourceId}/sync`)
   }
 
+  /**
+   * Toggle data source enabled/disabled
+   */
+  async toggleDataSource(
+    workspaceId: string,
+    dataSourceId: string,
+    enabled: boolean
+  ): Promise<DataSourceResponse> {
+    return api.patch<DataSourceResponse>(
+      `${this.basePath}/${workspaceId}/datasources/${dataSourceId}`,
+      { enabled }
+    )
+  }
+
   // =========================================================================
   // Documents
   // =========================================================================

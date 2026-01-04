@@ -16,6 +16,8 @@ import {
   EXPORT_FORMATS,
   REPORT_TEMPLATES
 } from '@/types/export'
+import { analyticsService } from '@/services/analytics.service'
+import auditService from '@/services/audit.service'
 
 // Export service composable
 export function useExport() {
@@ -48,16 +50,57 @@ export function useExport() {
       // Simulate export processing
       job.status = 'processing'
 
-      // Simulate progress updates
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200))
-        exportProgress.value = i
-        job.progress = i
-      }
+      let blob: Blob
 
-      // Generate mock file content based on format
-      const content = await generateExportContent(options)
-      const blob = new Blob([content], { type: getMimeType(options.format) })
+      // Try API export for analytics and audit-logs
+      if (options.resourceType === 'analytics') {
+        try {
+          exportProgress.value = 30
+          job.progress = 30
+
+          blob = await analyticsService.export({
+            format: options.format as 'json' | 'csv' | 'pdf' | 'xlsx',
+            fromDate: options.dateRange?.start,
+            toDate: options.dateRange?.end
+          })
+
+          exportProgress.value = 100
+          job.progress = 100
+        } catch {
+          // Fallback to local export
+          const content = await generateExportContent(options)
+          blob = new Blob([content], { type: getMimeType(options.format) })
+        }
+      } else if (options.resourceType === 'audit-logs') {
+        try {
+          exportProgress.value = 30
+          job.progress = 30
+
+          blob = await auditService.export({
+            format: options.format as 'json' | 'csv' | 'pdf' | 'excel',
+            fromDate: options.dateRange?.start,
+            toDate: options.dateRange?.end
+          })
+
+          exportProgress.value = 100
+          job.progress = 100
+        } catch {
+          // Fallback to local export
+          const content = await generateExportContent(options)
+          blob = new Blob([content], { type: getMimeType(options.format) })
+        }
+      } else {
+        // Simulate progress updates for other types
+        for (let i = 0; i <= 100; i += 10) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+          exportProgress.value = i
+          job.progress = i
+        }
+
+        // Generate mock file content based on format
+        const content = await generateExportContent(options)
+        blob = new Blob([content], { type: getMimeType(options.format) })
+      }
 
       job.status = 'completed'
       job.completedAt = new Date().toISOString()
