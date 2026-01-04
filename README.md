@@ -17,6 +17,12 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 123-124: Data Source Management & Sync Monitoring ✅ (January 2026)
+- **DataSourceConfigDialog** - Type-specific configuration for 8+ data source types
+- **DataSourceDetailsDrawer** - Overview & sync history with statistics
+- **WorkspaceDetailView** - Enhanced Data Sources tab with grid layout, quick actions
+- **Sync Monitoring** - Track sync operations, success rates, document counts
+
 ### Sprint 121-122: Document Management Enhancement ✅ (January 2026)
 - **DocumentManagerPanel** - Search, filter, sort, bulk select/delete documents
 - **DocumentDetailsDrawer** - Slide-out drawer with metadata, chunks, actions
@@ -38,12 +44,13 @@ AEGIS is a single-tenant, multi-user platform that provides:
 - **Reset Password Flow** - Token validation, password strength indicator, auto-redirect
 - **404 Not Found Page** - Auth-aware navigation with helpful quick links
 
-### Vue 3 Frontend (Sprint 51-122) ✅
+### Vue 3 Frontend (Sprint 51-124) ✅
 Complete Vue 3 + TailwindCSS frontend with:
 - **Authentication** - Login, register, forgot/reset password, MFA, 404 page
 - **Chat Interface** - SignalR streaming with source citations
 - **Session & Workspace Management** - CRUD, export, filtering, bulk operations
 - **Document Management** - Upload, search, filter, bulk actions, details drawer
+- **Data Source Management** - Type-specific config, sync monitoring, history tracking
 - **Admin Dashboard** - System health, metrics, user management
 - **Global Search** - Full-text search with filters and document preview
 - **User Profile** - Profile management, API keys, security settings
