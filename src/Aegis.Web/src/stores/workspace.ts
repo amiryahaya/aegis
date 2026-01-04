@@ -14,6 +14,7 @@ import type {
   CreateWorkspaceRequest as ServiceCreateWorkspaceRequest,
   UpdateWorkspaceRequest,
   CreateDataSourceRequest,
+  UpdateDataSourceRequest,
   WorkspaceContextResponse
 } from '@/services/workspace.service'
 import type { CreateWorkspaceRequest } from '@/types/workspace'
@@ -227,6 +228,29 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       return dataSource
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create data source'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateDataSource(
+    workspaceId: string,
+    dataSourceId: string,
+    request: UpdateDataSourceRequest
+  ): Promise<DataSource | null> {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await workspaceService.updateDataSource(workspaceId, dataSourceId, request)
+      const dataSource = workspaceService.mapToDataSource(response)
+      const index = dataSources.value.findIndex(ds => ds.id === dataSourceId)
+      if (index !== -1) {
+        dataSources.value[index] = dataSource
+      }
+      return dataSource
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update data source'
       return null
     } finally {
       isLoading.value = false
@@ -561,6 +585,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     // Actions - Data Sources
     fetchDataSources,
     createDataSource,
+    updateDataSource,
     syncDataSource,
     deleteDataSource,
 

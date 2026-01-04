@@ -95,6 +95,120 @@ export interface CreateDataSourceRequest {
   config: DataSourceConfig
 }
 
+export interface UpdateDataSourceRequest {
+  name?: string
+  config?: Partial<DataSourceConfig>
+  isEnabled?: boolean
+}
+
+// Sync History Types
+export interface SyncHistory {
+  id: string
+  dataSourceId: string
+  status: SyncStatus
+  startedAt: string
+  completedAt?: string
+  documentsAdded: number
+  documentsUpdated: number
+  documentsDeleted: number
+  documentsSkipped: number
+  errorCount: number
+  errorMessage?: string
+  durationMs?: number
+  triggeredBy: 'Manual' | 'Scheduled' | 'Webhook'
+}
+
+export type SyncStatus =
+  | 'Pending'
+  | 'InProgress'
+  | 'Completed'
+  | 'Failed'
+  | 'Cancelled'
+  | 'PartialSuccess'
+
+export interface SyncStats {
+  totalSyncs: number
+  successfulSyncs: number
+  failedSyncs: number
+  averageDurationMs: number
+  lastSuccessfulSync?: string
+  documentsProcessed: number
+}
+
+// Extended Data Source with sync info
+export interface DataSourceWithSync extends DataSource {
+  syncHistory?: SyncHistory[]
+  syncStats?: SyncStats
+  isEnabled: boolean
+}
+
+// Data Source Type Configurations
+export interface WebCrawlerConfig {
+  url: string
+  maxDepth?: number
+  includePaths?: string[]
+  excludePaths?: string[]
+  respectRobotsTxt?: boolean
+  userAgent?: string
+  crawlFrequency?: 'hourly' | 'daily' | 'weekly' | 'monthly'
+}
+
+export interface DatabaseConfig {
+  connectionString: string
+  databaseType: 'PostgreSQL' | 'MySQL' | 'SQLServer' | 'MongoDB'
+  query?: string
+  tableName?: string
+  incrementalColumn?: string
+  batchSize?: number
+}
+
+export interface SharePointConfig {
+  siteUrl: string
+  clientId: string
+  clientSecret?: string
+  tenantId: string
+  libraryName?: string
+  folderPath?: string
+}
+
+export interface GoogleDriveConfig {
+  folderId?: string
+  serviceAccountKey?: string
+  includeSharedDrives?: boolean
+  fileTypes?: string[]
+}
+
+export interface ConfluenceConfig {
+  baseUrl: string
+  username: string
+  apiToken?: string
+  spaceKey?: string
+  includeAttachments?: boolean
+}
+
+export interface NotionConfig {
+  integrationToken?: string
+  databaseId?: string
+  pageIds?: string[]
+}
+
+export interface S3Config {
+  bucketName: string
+  region: string
+  accessKeyId?: string
+  secretAccessKey?: string
+  prefix?: string
+  fileTypes?: string[]
+}
+
+export interface AzureBlobConfig {
+  connectionString?: string
+  containerName: string
+  sasToken?: string
+  prefix?: string
+  fileTypes?: string[]
+}
+
 // Document Types
 
 export interface Document {
