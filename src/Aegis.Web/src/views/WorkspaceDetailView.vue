@@ -12,6 +12,7 @@ import DocumentUploadDialog from '@/components/documents/DocumentUploadDialog.vu
 import DataSourceConfigDialog from '@/components/datasources/DataSourceConfigDialog.vue'
 import DataSourceDetailsDrawer from '@/components/datasources/DataSourceDetailsDrawer.vue'
 import type { DocumentResponse } from '@/services/document.service'
+import { documentService } from '@/services/document.service'
 import type { DataSource, DataSourceType, DataSourceConfig } from '@/types/workspace'
 import {
   ArrowPathIcon,
@@ -128,14 +129,28 @@ async function handleUpload(files: File[]) {
   await documentsComposable.value.fetchDocuments()
 }
 
-async function handleReindex(_documentId: string) {
-  toast.success('Reindexing started', 'The document is being reprocessed')
-  // TODO: Call reindex API when available
+async function handleReindex(documentId: string) {
+  try {
+    await documentService.reprocess(workspaceId.value, documentId)
+    toast.success('Reindexing started', 'The document is being reprocessed')
+    // Refresh documents to show updated status
+    await documentsComposable.value?.fetchDocuments()
+  } catch (error) {
+    toast.error('Reindex failed', 'Unable to start reindexing')
+  }
 }
 
-async function handleDownload(_documentId: string) {
-  toast.success('Download started', 'Your download will begin shortly')
-  // TODO: Call download API when available
+async function handleDownload(documentId: string) {
+  const doc = documents.value.find(d => d.id === documentId)
+  if (!doc) return
+
+  try {
+    toast.info('Downloading', `Downloading ${doc.name}...`)
+    await documentService.download(workspaceId.value, documentId, doc.name)
+    toast.success('Download complete', `${doc.name} has been downloaded`)
+  } catch (error) {
+    toast.error('Download failed', `Unable to download ${doc.name}`)
+  }
 }
 
 // Data source management handlers

@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 4, 2026
-**Last Commit:** Sprint 125-126: Workspace Settings & Sharing
+**Last Commit:** Sprint 127-128: Chat Enhancements & Document Actions
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -837,6 +837,38 @@
   - UpdateWorkspaceRequest supports settings updates
 - Router updated with /workspaces/:workspaceId/settings route
 - **Build:** 1634.02 KB precached (76 entries)
+
+#### Sprint 127-128: Chat Enhancements & Document Actions ✅
+- ChatMessage.vue enhanced with quick actions toolbar:
+  - Copy response to clipboard with visual feedback
+  - Regenerate response (emits regenerate event)
+  - Share turn (emits share event)
+  - Thumbs up/down feedback with toggle states
+  - Hover-to-show actions behavior
+- Source citations enhanced:
+  - Visual relevance score bars (green/yellow/orange based on score)
+  - Percentage display for relevance scores
+  - Progress bar visualization
+- Document download functionality:
+  - documentService.download method for blob downloads
+  - WorkspaceDetailView handleDownload with toast feedback
+  - Proper file download with Blob/ObjectURL
+- Document reindex functionality:
+  - WorkspaceDetailView handleReindex with API integration
+  - Toast notifications for reindex status
+- Document type-specific icons:
+  - PDF: DocumentTextIcon
+  - Word: DocumentIcon
+  - Excel/CSV: TableCellsIcon
+  - PowerPoint: PresentationChartBarIcon
+  - HTML/JSON: CodeBracketIcon
+  - Image: PhotoIcon
+- Session archive functionality:
+  - sessionService.archive and unarchive methods
+  - Session store archiveSession and unarchiveSession actions
+  - SessionsView bulk archive action implemented
+  - Toast notifications for archive status
+- **Build:** 1644.36 KB precached (78 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)

@@ -245,6 +245,32 @@ class DocumentService {
   }
 
   /**
+   * Download a document
+   */
+  async download(workspaceId: string, documentId: string, fileName: string): Promise<void> {
+    try {
+      const response = await api.getClient().get(
+        `/workspaces/${workspaceId}/documents/${documentId}/download`,
+        { responseType: 'blob' }
+      )
+
+      // Create a blob URL and trigger download
+      const blob = new Blob([response.data])
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      throw error
+    }
+  }
+
+  /**
    * Reprocess a document (re-chunk and re-embed)
    */
   async reprocess(workspaceId: string, documentId: string): Promise<void> {

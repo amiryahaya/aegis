@@ -17,6 +17,13 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 127-128: Chat Enhancements & Document Actions ✅ (January 2026)
+- **ChatMessage Quick Actions** - Copy, regenerate, share, thumbs up/down feedback
+- **Source Citations** - Visual relevance score bars with color-coded percentages
+- **Document Download** - Download documents with proper blob handling
+- **Document Type Icons** - Type-specific icons (PDF, Word, Excel, PowerPoint, etc.)
+- **Session Archive** - Archive/unarchive sessions with bulk action support
+
 ### Sprint 125-126: Workspace Settings & Sharing ✅ (January 2026)
 - **WorkspaceSettingsView** - 5 tabs: General, Search, LLM, Access, Danger Zone
 - **UserAccessManager** - Add/remove members, role management (Viewer to Admin)
@@ -50,13 +57,13 @@ AEGIS is a single-tenant, multi-user platform that provides:
 - **Reset Password Flow** - Token validation, password strength indicator, auto-redirect
 - **404 Not Found Page** - Auth-aware navigation with helpful quick links
 
-### Vue 3 Frontend (Sprint 51-126) ✅
+### Vue 3 Frontend (Sprint 51-128) ✅
 Complete Vue 3 + TailwindCSS frontend with:
 - **Authentication** - Login, register, forgot/reset password, MFA, 404 page
-- **Chat Interface** - SignalR streaming with source citations
-- **Session & Workspace Management** - CRUD, export, filtering, bulk operations
+- **Chat Interface** - SignalR streaming with source citations, quick actions
+- **Session & Workspace Management** - CRUD, export, filtering, bulk operations, archive
 - **Workspace Settings** - Search, LLM, sharing, member management, danger zone
-- **Document Management** - Upload, search, filter, bulk actions, details drawer
+- **Document Management** - Upload, search, filter, bulk actions, details drawer, download
 - **Data Source Management** - Type-specific config, sync monitoring, history tracking
 - **Admin Dashboard** - System health, metrics, user management
 - **Global Search** - Full-text search with filters and document preview

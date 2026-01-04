@@ -2469,6 +2469,7 @@ public class VectorSearchPlugin
 - [x] Document Management Enhancement (Sprint 121-122: DocumentManagerPanel, DocumentDetailsDrawer, DocumentUploadDialog)
 - [x] Data Source Management & Sync Monitoring (Sprint 123-124: DataSourceConfigDialog, DataSourceDetailsDrawer, sync history)
 - [x] Workspace Settings & Sharing (Sprint 125-126: WorkspaceSettingsView, UserAccessManager, ShareableLinkGenerator)
+- [x] Chat Enhancements & Document Actions (Sprint 127-128: ChatMessage quick actions, document download, type icons, session archive)
 
 ---
 

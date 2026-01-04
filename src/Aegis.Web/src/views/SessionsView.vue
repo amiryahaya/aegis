@@ -89,8 +89,10 @@ async function handleBulkAction(action: BulkAction, selectedIds: string[]): Prom
         toast.success('Export complete', `${selectedIds.length} session(s) exported`)
         break
       case 'archive':
-        // Archive implementation would go here
-        toast.info('Coming soon', 'Archive functionality is not yet implemented')
+        for (const id of selectedIds) {
+          await sessionStore.archiveSession(id)
+        }
+        toast.success('Sessions archived', `${selectedIds.length} session(s) have been archived`)
         break
     }
   } catch (error) {

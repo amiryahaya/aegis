@@ -13,7 +13,12 @@ import {
   ExclamationCircleIcon,
   ClockIcon,
   DocumentArrowUpIcon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
+  TableCellsIcon,
+  PresentationChartBarIcon,
+  CodeBracketIcon,
+  PhotoIcon,
+  DocumentIcon
 } from '@heroicons/vue/24/outline'
 import {
   Menu,
@@ -209,10 +214,28 @@ const getStatusColor = (status: DocumentStatus) => {
   }
 }
 
-const getTypeIcon = (_type: DocumentType) => {
-  // For now, use a generic document icon
-  // TODO: Return different icons based on document type
-  return DocumentTextIcon
+const getTypeIcon = (type: DocumentType) => {
+  switch (type) {
+    case 'Pdf':
+      return DocumentTextIcon
+    case 'Word':
+      return DocumentIcon
+    case 'Excel':
+    case 'Csv':
+      return TableCellsIcon
+    case 'PowerPoint':
+      return PresentationChartBarIcon
+    case 'Text':
+    case 'Markdown':
+      return DocumentTextIcon
+    case 'Html':
+    case 'Json':
+      return CodeBracketIcon
+    case 'Image':
+      return PhotoIcon
+    default:
+      return DocumentIcon
+  }
 }
 
 const clearFilters = () => {

@@ -296,6 +296,20 @@ class SessionService {
   }
 
   /**
+   * Archive a session
+   */
+  async archive(id: string): Promise<SessionResponse> {
+    return api.post<SessionResponse>(`${this.basePath}/${id}/archive`)
+  }
+
+  /**
+   * Unarchive/restore a session
+   */
+  async unarchive(id: string): Promise<SessionResponse> {
+    return api.post<SessionResponse>(`${this.basePath}/${id}/unarchive`)
+  }
+
+  /**
    * Delete a session
    */
   async delete(id: string): Promise<void> {

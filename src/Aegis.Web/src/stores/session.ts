@@ -293,6 +293,52 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
+  async function archiveSession(sessionId: string): Promise<boolean> {
+    try {
+      const response = await sessionService.archive(sessionId)
+      const session = sessionService.mapToSession(response)
+
+      // Update in sessions list
+      const index = sessions.value.findIndex(s => s.id === sessionId)
+      if (index !== -1) {
+        sessions.value[index] = session
+      }
+
+      // Update current session if it's the same
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = session
+      }
+
+      return true
+    } catch (err) {
+      error.value = (err as { detail?: string }).detail || 'Failed to archive session'
+      return false
+    }
+  }
+
+  async function unarchiveSession(sessionId: string): Promise<boolean> {
+    try {
+      const response = await sessionService.unarchive(sessionId)
+      const session = sessionService.mapToSession(response)
+
+      // Update in sessions list
+      const index = sessions.value.findIndex(s => s.id === sessionId)
+      if (index !== -1) {
+        sessions.value[index] = session
+      }
+
+      // Update current session if it's the same
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = session
+      }
+
+      return true
+    } catch (err) {
+      error.value = (err as { detail?: string }).detail || 'Failed to unarchive session'
+      return false
+    }
+  }
+
   async function exportSession(sessionId: string, format: ExportFormat | string): Promise<{ content: string; fileName: string; contentType: string } | null> {
     try {
       // Convert string to lowercase for API compatibility
@@ -413,6 +459,8 @@ export const useSessionStore = defineStore('session', () => {
     updateTitle,
     endSession,
     deleteSession,
+    archiveSession,
+    unarchiveSession,
     exportSession,
     shareSession,
     fetchSharedSessions,
