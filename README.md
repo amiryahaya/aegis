@@ -17,30 +17,36 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 121-122: Document Management Enhancement ✅ (January 2026)
+- **DocumentManagerPanel** - Search, filter, sort, bulk select/delete documents
+- **DocumentDetailsDrawer** - Slide-out drawer with metadata, chunks, actions
+- **DocumentUploadDialog** - Drag-drop upload, multi-file, progress tracking
+- **WorkspaceDetailView** - Integrated new document management components
+
+### Sprint 119-120: API Key Management & Account Settings ✅ (January 2026)
+- **API Key Management** - Create, list, revoke keys with scopes and expiration
+- **Account Settings** - Data export (JSON), account deletion with confirmation
+- **Settings View** - 7 tabs (Profile, Appearance, Notifications, Privacy, Security, API Keys, Account)
+
+### Sprint 117-118: Security Settings & Account Management ✅ (January 2026)
+- **Security Settings** - Password change, MFA setup, login activity
+- **Active Sessions** - View and revoke active sessions across devices
+- **Two-Factor Auth** - TOTP setup with QR code and backup codes
+
 ### Sprint 115-116: Password Recovery & Error Pages ✅ (January 2026)
 - **Forgot Password Flow** - Email-based password reset request with validation
 - **Reset Password Flow** - Token validation, password strength indicator, auto-redirect
 - **404 Not Found Page** - Auth-aware navigation with helpful quick links
-- **Notifications Enhancement** - Toast notifications for all notification actions
 
-### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅ (January 2026)
-- **User Registration** - VeeValidate + Zod validation with password strength indicator
-- **Dashboard Stats** - Workspace count, total documents, total queries display
-- **Profile Toasts** - Toast notifications for all profile operations
-
-### Sprint 111-112: Enhanced Error Handling & Toast Notifications ✅ (January 2026)
-- **ChatView Toasts** - Success/error toasts for all chat operations
-- **SessionsView Toasts** - Bulk actions with proper error handling
-- **WorkspacesView Toasts** - Create/delete workspace notifications
-
-### Vue 3 Frontend (Sprint 51-116) ✅
+### Vue 3 Frontend (Sprint 51-122) ✅
 Complete Vue 3 + TailwindCSS frontend with:
-- **Authentication** - Login, register, forgot/reset password, 404 page
+- **Authentication** - Login, register, forgot/reset password, MFA, 404 page
 - **Chat Interface** - SignalR streaming with source citations
 - **Session & Workspace Management** - CRUD, export, filtering, bulk operations
+- **Document Management** - Upload, search, filter, bulk actions, details drawer
 - **Admin Dashboard** - System health, metrics, user management
 - **Global Search** - Full-text search with filters and document preview
-- **User Profile** - Profile management, API keys, settings
+- **User Profile** - Profile management, API keys, security settings
 - **Activity & Collaboration** - Activity feed, comments, reactions, presence
 - **PWA Support** - Installable app with offline caching
 - **Error Handling** - Toast notifications, error boundaries, ARIA support
@@ -373,14 +379,15 @@ Aegis.sln
 | Icons | Heroicons | SVG icon library |
 | HTTP Client | Axios | API communication |
 
-**Frontend Features (Sprint 51-116):**
-- **Authentication** - Login, register, forgot/reset password, 404 page
+**Frontend Features (Sprint 51-122):**
+- **Authentication** - Login, register, forgot/reset password, MFA, 404 page
 - **Chat Interface** - Streaming responses with source citations
 - **Session Management** - CRUD, export, filtering, bulk operations
-- **Workspace Management** - Data sources, document upload/preview
+- **Workspace Management** - Data sources, document management with search/filter/bulk actions
+- **Document Management** - Upload dialog, details drawer, chunk viewer, reindex/download
 - **Global Search** - Full-text search with advanced filters
 - **Admin Dashboard** - System health, metrics, user management
-- **User Profile** - API key management, settings, preferences
+- **User Profile** - API key management, security settings, account management
 - **Activity Feed** - Threaded comments, reactions, mentions
 - **Real-time Features** - Presence indicators, typing status
 - **Accessibility** - Keyboard shortcuts, focus traps, ARIA support

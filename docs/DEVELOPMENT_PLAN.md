@@ -2464,6 +2464,9 @@ public class VectorSearchPlugin
 - [x] Enhanced Error Handling & Toast Notifications (Sprint 111-112: Toast notifications across all views)
 - [x] Registration Flow & Dashboard Enhancement (Sprint 113-114: RegisterView, password strength, workspace stats)
 - [x] Password Recovery & Error Pages (Sprint 115-116: Forgot/reset password, 404 page, auth service extensions)
+- [x] Security Settings & Account Management (Sprint 117-118: Password change, MFA setup, active sessions, login activity)
+- [x] API Key Management & Account Settings (Sprint 119-120: API key CRUD, scopes, expiration, data export, account deletion)
+- [x] Document Management Enhancement (Sprint 121-122: DocumentManagerPanel, DocumentDetailsDrawer, DocumentUploadDialog)
 
 ---
 
