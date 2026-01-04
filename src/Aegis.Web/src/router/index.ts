@@ -79,6 +79,12 @@ const router = createRouter({
       component: () => import(/* webpackChunkName: "workspaces" */ '@/views/WorkspaceDetailView.vue'),
       meta: { requiresAuth: true, title: 'Workspace Details' }
     },
+    {
+      path: '/workspaces/:workspaceId/settings',
+      name: 'workspace-settings',
+      component: () => import(/* webpackChunkName: "workspaces" */ '@/views/WorkspaceSettingsView.vue'),
+      meta: { requiresAuth: true, title: 'Workspace Settings' }
+    },
     // Notifications
     {
       path: '/notifications',

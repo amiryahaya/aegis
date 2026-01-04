@@ -55,6 +55,15 @@ export interface Workspace {
     averageResponseTime: number
     lastActivityAt?: string
   }
+  settings?: {
+    defaultSearchMode?: 'Semantic' | 'Keyword' | 'Hybrid'
+    maxResults?: number
+    enableCaching?: boolean
+    enableFollowUps?: boolean
+    llmModel?: string
+    temperature?: number
+    systemPrompt?: string
+  }
 }
 
 export enum WorkspaceStatus {

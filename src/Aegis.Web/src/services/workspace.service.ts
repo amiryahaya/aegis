@@ -21,8 +21,17 @@ export interface CreateWorkspaceRequest {
 }
 
 export interface UpdateWorkspaceRequest {
-  name: string
+  name?: string
   description?: string
+  settings?: {
+    defaultSearchMode?: 'Semantic' | 'Keyword' | 'Hybrid'
+    maxResults?: number
+    enableCaching?: boolean
+    enableFollowUps?: boolean
+    llmModel?: string
+    temperature?: number
+    systemPrompt?: string
+  }
 }
 
 export interface WorkspaceResponse {

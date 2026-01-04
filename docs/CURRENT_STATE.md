@@ -1,7 +1,7 @@
 # Current Development State
 
 **Last Updated:** January 4, 2026
-**Last Commit:** Sprint 123-124: Data Source Management & Sync Monitoring
+**Last Commit:** Sprint 125-126: Workspace Settings & Sharing
 **Current Branch:** develop
 
 ## 📍 Where We Are
@@ -809,6 +809,34 @@
 - Workspace store enhanced:
   - updateDataSource method for configuration updates
 - **Build:** 1596.46 KB precached (71 entries)
+
+#### Sprint 125-126: Workspace Settings & Sharing ✅
+- WorkspaceSettingsView with 5 tabs:
+  - General: Name, description editing
+  - Search: Search mode (Semantic/Keyword/Hybrid), max results, caching, follow-ups
+  - LLM: Model selection (GPT-4, Claude, Ollama), temperature, system prompt
+  - Access: Member management and shareable links
+  - Danger: Archive and delete workspace
+- UserAccessManager component:
+  - List workspace members with roles
+  - Add member by email with role selection
+  - Role management (Viewer, Commenter, Editor, Admin)
+  - Remove member with confirmation
+  - Role icons and descriptions
+- ShareableLinkGenerator component:
+  - Create shareable invite links
+  - Role selection for link access level
+  - Expiration options (1h, 24h, 7d, 30d, never)
+  - Max uses limit configuration
+  - Optional password protection
+  - Copy link to clipboard
+  - Link history with active/expired status
+  - Revoke links
+- Workspace types extended:
+  - Settings property added to Workspace interface
+  - UpdateWorkspaceRequest supports settings updates
+- Router updated with /workspaces/:workspaceId/settings route
+- **Build:** 1634.02 KB precached (76 entries)
 
 #### Sprint 113-114: Registration Flow & Dashboard Enhancement ✅
 - RegisterView with comprehensive form validation (VeeValidate + Zod)

@@ -17,6 +17,12 @@ AEGIS is a single-tenant, multi-user platform that provides:
 
 ## Latest Updates ✨
 
+### Sprint 125-126: Workspace Settings & Sharing ✅ (January 2026)
+- **WorkspaceSettingsView** - 5 tabs: General, Search, LLM, Access, Danger Zone
+- **UserAccessManager** - Add/remove members, role management (Viewer to Admin)
+- **ShareableLinkGenerator** - Create invite links with expiration, max uses, passwords
+- **Workspace-Level Settings** - Search mode, LLM model, temperature, system prompt
+
 ### Sprint 123-124: Data Source Management & Sync Monitoring ✅ (January 2026)
 - **DataSourceConfigDialog** - Type-specific configuration for 8+ data source types
 - **DataSourceDetailsDrawer** - Overview & sync history with statistics
@@ -44,11 +50,12 @@ AEGIS is a single-tenant, multi-user platform that provides:
 - **Reset Password Flow** - Token validation, password strength indicator, auto-redirect
 - **404 Not Found Page** - Auth-aware navigation with helpful quick links
 
-### Vue 3 Frontend (Sprint 51-124) ✅
+### Vue 3 Frontend (Sprint 51-126) ✅
 Complete Vue 3 + TailwindCSS frontend with:
 - **Authentication** - Login, register, forgot/reset password, MFA, 404 page
 - **Chat Interface** - SignalR streaming with source citations
 - **Session & Workspace Management** - CRUD, export, filtering, bulk operations
+- **Workspace Settings** - Search, LLM, sharing, member management, danger zone
 - **Document Management** - Upload, search, filter, bulk actions, details drawer
 - **Data Source Management** - Type-specific config, sync monitoring, history tracking
 - **Admin Dashboard** - System health, metrics, user management

@@ -2468,6 +2468,7 @@ public class VectorSearchPlugin
 - [x] API Key Management & Account Settings (Sprint 119-120: API key CRUD, scopes, expiration, data export, account deletion)
 - [x] Document Management Enhancement (Sprint 121-122: DocumentManagerPanel, DocumentDetailsDrawer, DocumentUploadDialog)
 - [x] Data Source Management & Sync Monitoring (Sprint 123-124: DataSourceConfigDialog, DataSourceDetailsDrawer, sync history)
+- [x] Workspace Settings & Sharing (Sprint 125-126: WorkspaceSettingsView, UserAccessManager, ShareableLinkGenerator)
 
 ---
 
