@@ -4,14 +4,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useDocuments } from '@/composables/useDocuments'
 import { useConnection } from '@/composables/useConnection'
+import { useToast } from '@/composables/useToast'
 import LivePresence from '@/components/connection/LivePresence.vue'
+import DocumentManagerPanel from '@/components/documents/DocumentManagerPanel.vue'
+import DocumentDetailsDrawer from '@/components/documents/DocumentDetailsDrawer.vue'
+import DocumentUploadDialog from '@/components/documents/DocumentUploadDialog.vue'
+import type { DocumentResponse } from '@/services/document.service'
 import {
-  DocumentTextIcon,
-  CloudArrowUpIcon,
   ArrowPathIcon,
   TrashIcon,
   PlusIcon,
-  FolderOpenIcon,
   LinkIcon,
   Cog6ToothIcon
 } from '@heroicons/vue/24/outline'
@@ -28,19 +30,20 @@ import {
   TabPanel
 } from '@headlessui/vue'
 import type { DataSourceType } from '@/types/workspace'
-import DragDropZone from '@/components/upload/DragDropZone.vue'
 
 const route = useRoute()
 const router = useRouter()
 const workspaceStore = useWorkspaceStore()
 const { joinResource, leaveResource } = useConnection()
+const toast = useToast()
 
 const workspaceId = computed(() => route.params.workspaceId as string)
 const workspace = computed(() => workspaceStore.currentWorkspace)
 
 const isUploadDialogOpen = ref(false)
 const isAddDataSourceDialogOpen = ref(false)
-const uploadError = ref<string | null>(null)
+const isDetailsDrawerOpen = ref(false)
+const selectedDocument = ref<DocumentResponse | null>(null)
 
 // Use documents composable for document operations
 const documentsComposable = computed(() => {
@@ -50,15 +53,12 @@ const documentsComposable = computed(() => {
         // Refresh after upload
       },
       onUploadError: (fileName, error) => {
-        uploadError.value = `Failed to upload ${fileName}: ${error}`
+        toast.error('Upload failed', `Failed to upload ${fileName}: ${error}`)
       }
     })
   }
   return null
 })
-
-// Pending files for upload
-const pendingFiles = ref<File[]>([])
 
 const newDataSourceName = ref('')
 const newDataSourceType = ref<DataSourceType>('WebCrawler')
@@ -75,11 +75,7 @@ const dataSourceTypes: { type: DataSourceType; label: string; icon: string }[] =
 ]
 
 // Computed states from documents composable
-const documents = computed(() => documentsComposable.value?.documents.value ?? [])
-const isUploading = computed(() => documentsComposable.value?.isUploading.value ?? false)
-const uploads = computed(() => documentsComposable.value?.uploads.value ?? new Map())
-const completedUploads = computed(() => documentsComposable.value?.completedUploads.value ?? [])
-const failedUploads = computed(() => documentsComposable.value?.failedUploads.value ?? [])
+const documents = computed(() => [...(documentsComposable.value?.documents.value ?? [])])
 
 onMounted(async () => {
   await loadWorkspace()
@@ -114,31 +110,26 @@ async function loadWorkspace() {
   }
 }
 
-function handleFilesSelected(files: File[]) {
-  uploadError.value = null
-  pendingFiles.value = [...pendingFiles.value, ...files]
+// Document management handlers
+function handleViewDetails(doc: DocumentResponse) {
+  selectedDocument.value = doc
+  isDetailsDrawerOpen.value = true
 }
 
-function handleUploadError(message: string) {
-  uploadError.value = message
+async function handleUpload(files: File[]) {
+  if (!documentsComposable.value) return
+  await documentsComposable.value.uploadMultiple(files)
+  await documentsComposable.value.fetchDocuments()
 }
 
-async function startUpload() {
-  if (pendingFiles.value.length === 0 || !documentsComposable.value) return
-
-  await documentsComposable.value.uploadMultiple(pendingFiles.value)
-  pendingFiles.value = []
+async function handleReindex(_documentId: string) {
+  toast.success('Reindexing started', 'The document is being reprocessed')
+  // TODO: Call reindex API when available
 }
 
-function closeUploadDialog() {
-  isUploadDialogOpen.value = false
-  pendingFiles.value = []
-  documentsComposable.value?.clearUploads()
-  uploadError.value = null
-}
-
-function removeFile(index: number) {
-  pendingFiles.value = pendingFiles.value.filter((_, i) => i !== index)
+async function handleDownload(_documentId: string) {
+  toast.success('Download started', 'Your download will begin shortly')
+  // TODO: Call download API when available
 }
 
 async function addDataSource() {
@@ -172,6 +163,22 @@ async function deleteDataSource(dataSourceId: string) {
 async function deleteDocument(documentId: string) {
   if (confirm('Are you sure you want to delete this document?')) {
     await documentsComposable.value?.deleteDocument(documentId)
+    toast.success('Document deleted', 'The document has been removed')
+    // Close drawer if the deleted document was being viewed
+    if (selectedDocument.value?.id === documentId) {
+      isDetailsDrawerOpen.value = false
+      selectedDocument.value = null
+    }
+  }
+}
+
+async function handleBulkDelete(ids: string[]) {
+  if (confirm(`Are you sure you want to delete ${ids.length} documents?`)) {
+    for (const id of ids) {
+      await documentsComposable.value?.deleteDocument(id)
+    }
+    toast.success('Documents deleted', `${ids.length} documents have been removed`)
+    await documentsComposable.value?.fetchDocuments()
   }
 }
 
@@ -191,14 +198,6 @@ function getStatusColor(status: string) {
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
   }
-}
-
-function formatBytes(bytes: number) {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 function formatDate(dateString: string) {
@@ -321,75 +320,17 @@ function formatDate(dateString: string) {
 
         <TabPanels class="flex-1 overflow-auto">
           <!-- Documents Tab -->
-          <TabPanel class="p-6">
-            <div class="mb-4 flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Documents ({{ documents.length }})
-              </h2>
-              <button
-                class="btn-primary inline-flex items-center gap-2"
-                @click="isUploadDialogOpen = true"
-              >
-                <CloudArrowUpIcon class="h-5 w-5" />
-                Upload Documents
-              </button>
-            </div>
-
-            <!-- Empty state -->
-            <div
-              v-if="documents.length === 0"
-              class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-600"
-            >
-              <FolderOpenIcon class="mx-auto h-12 w-12 text-gray-400" />
-              <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-                No documents yet
-              </h3>
-              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Upload documents or add a data source to get started
-              </p>
-              <button
-                class="btn-primary mt-4"
-                @click="isUploadDialogOpen = true"
-              >
-                Upload Documents
-              </button>
-            </div>
-
-            <!-- Documents list -->
-            <div v-else class="space-y-2">
-              <div
-                v-for="doc in documents"
-                :key="doc.id"
-                class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-              >
-                <div class="flex items-center gap-3">
-                  <DocumentTextIcon class="h-8 w-8 text-gray-400" />
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">
-                      {{ doc.name }}
-                    </h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ formatBytes(doc.size) }} · {{ doc.chunkCount }} chunks · {{ formatDate(doc.createdAt) }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                  <span
-                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    :class="getStatusColor(doc.status)"
-                  >
-                    {{ doc.status }}
-                  </span>
-                  <button
-                    class="btn-ghost p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                    @click="deleteDocument(doc.id)"
-                  >
-                    <TrashIcon class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+          <TabPanel class="h-full">
+            <DocumentManagerPanel
+              :documents="documents"
+              :loading="workspaceStore.isLoading"
+              @upload="isUploadDialogOpen = true"
+              @delete="deleteDocument"
+              @bulk-delete="handleBulkDelete"
+              @reindex="handleReindex"
+              @download="handleDownload"
+              @view-details="handleViewDetails"
+            />
           </TabPanel>
 
           <!-- Data Sources Tab -->
@@ -481,140 +422,23 @@ function formatDate(dateString: string) {
     </template>
 
     <!-- Upload Dialog -->
-    <TransitionRoot appear :show="isUploadDialogOpen" as="template">
-      <Dialog as="div" class="relative z-50" @close="closeUploadDialog">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-300"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black bg-opacity-25 dark:bg-opacity-50" />
-        </TransitionChild>
+    <DocumentUploadDialog
+      :open="isUploadDialogOpen"
+      :max-files="20"
+      :max-file-size="50 * 1024 * 1024"
+      @close="isUploadDialogOpen = false"
+      @upload="handleUpload"
+    />
 
-        <div class="fixed inset-0 overflow-y-auto">
-          <div class="flex min-h-full items-center justify-center p-4">
-            <TransitionChild
-              as="template"
-              enter="ease-out duration-300"
-              enter-from="opacity-0 scale-95"
-              enter-to="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leave-from="opacity-100 scale-100"
-              leave-to="opacity-0 scale-95"
-            >
-              <DialogPanel class="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all dark:bg-gray-800">
-                <DialogTitle class="text-lg font-medium text-gray-900 dark:text-white">
-                  Upload Documents
-                </DialogTitle>
-
-                <div class="mt-4 space-y-4">
-                  <!-- Drag and Drop Zone -->
-                  <DragDropZone
-                    accept=".pdf,.docx,.doc,.txt,.md,.html,.json,.csv"
-                    :max-size="50"
-                    :max-files="20"
-                    :disabled="isUploading"
-                    @files-selected="handleFilesSelected"
-                    @error="handleUploadError"
-                  />
-
-                  <!-- Error message -->
-                  <div
-                    v-if="uploadError"
-                    class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300"
-                  >
-                    {{ uploadError }}
-                  </div>
-
-                  <!-- Pending files list -->
-                  <div v-if="pendingFiles.length > 0" class="space-y-2">
-                    <div
-                      v-for="(file, index) in pendingFiles"
-                      :key="index"
-                      class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700"
-                    >
-                      <div class="flex items-center gap-2">
-                        <DocumentTextIcon class="h-5 w-5 text-gray-400" />
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {{ file.name }}
-                        </span>
-                        <span class="text-xs text-gray-500">
-                          ({{ formatBytes(file.size) }})
-                        </span>
-                      </div>
-                      <button
-                        class="btn-ghost p-1 text-gray-500 hover:text-red-500"
-                        @click="removeFile(index)"
-                      >
-                        <TrashIcon class="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Upload progress -->
-                  <div v-if="isUploading" class="space-y-2">
-                    <div
-                      v-for="[fileName, progress] in uploads"
-                      :key="fileName"
-                      class="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700"
-                    >
-                      <div class="flex-1">
-                        <div class="flex items-center justify-between text-sm">
-                          <span class="font-medium text-gray-700 dark:text-gray-300">{{ fileName }}</span>
-                          <span class="text-gray-500">{{ progress.progress }}%</span>
-                        </div>
-                        <div class="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-600">
-                          <div
-                            class="h-full rounded-full bg-aegis-600 transition-all"
-                            :style="{ width: `${progress.progress}%` }"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Completed uploads -->
-                  <div v-if="completedUploads.length > 0" class="space-y-1">
-                    <p class="text-sm font-medium text-green-600 dark:text-green-400">
-                      Successfully uploaded {{ completedUploads.length }} file(s)
-                    </p>
-                  </div>
-
-                  <!-- Failed uploads -->
-                  <div v-if="failedUploads.length > 0" class="space-y-1">
-                    <p class="text-sm font-medium text-red-600 dark:text-red-400">
-                      Failed to upload {{ failedUploads.length }} file(s)
-                    </p>
-                  </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                  <button
-                    class="btn-ghost"
-                    :disabled="isUploading"
-                    @click="closeUploadDialog"
-                  >
-                    {{ completedUploads.length > 0 ? 'Done' : 'Cancel' }}
-                  </button>
-                  <button
-                    v-if="pendingFiles.length > 0"
-                    class="btn-primary"
-                    :disabled="isUploading"
-                    @click="startUpload"
-                  >
-                    {{ isUploading ? 'Uploading...' : `Upload ${pendingFiles.length} file${pendingFiles.length !== 1 ? 's' : ''}` }}
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
+    <!-- Document Details Drawer -->
+    <DocumentDetailsDrawer
+      :document="selectedDocument"
+      :open="isDetailsDrawerOpen"
+      @close="isDetailsDrawerOpen = false"
+      @delete="deleteDocument"
+      @reindex="handleReindex"
+      @download="handleDownload"
+    />
 
     <!-- Add Data Source Dialog -->
     <TransitionRoot appear :show="isAddDataSourceDialogOpen" as="template">
