@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { auditService } from '@/services/audit.service'
+import { healthService } from '@/services/health.service'
 import { useAuthStore } from '@/stores/auth'
 import type {
   DetailedAuditLogEntry,
@@ -155,8 +156,55 @@ export const useAuditStore = defineStore('audit', () => {
     error.value = null
 
     try {
-      // System health comes from a different endpoint - keep mock for now
-      systemHealth.value = generateMockSystemHealth()
+      const response = await healthService.getSystemHealth()
+
+      // Map API status to frontend status type
+      const mapStatus = (s: string): 'healthy' | 'degraded' | 'unhealthy' => {
+        switch (s) {
+          case 'Healthy': return 'healthy'
+          case 'Warning': return 'degraded'
+          case 'Critical':
+          case 'Unknown':
+          default: return 'unhealthy'
+        }
+      }
+
+      // Parse uptime string to seconds
+      const parseUptime = (uptimeStr: string): number => {
+        // Try to parse "Xd Yh Zm" or "Xh Ym Zs" format
+        let totalSeconds = 0
+        const dMatch = uptimeStr.match(/(\d+)d/)
+        const hMatch = uptimeStr.match(/(\d+)h/)
+        const mMatch = uptimeStr.match(/(\d+)m/)
+        const sMatch = uptimeStr.match(/(\d+)s/)
+        if (dMatch) totalSeconds += parseInt(dMatch[1]) * 86400
+        if (hMatch) totalSeconds += parseInt(hMatch[1]) * 3600
+        if (mMatch) totalSeconds += parseInt(mMatch[1]) * 60
+        if (sMatch) totalSeconds += parseInt(sMatch[1])
+        return totalSeconds || response.uptimeSeconds
+      }
+
+      systemHealth.value = {
+        status: mapStatus(response.status),
+        uptime: parseUptime(response.uptime),
+        lastCheck: response.timestamp,
+        metrics: {
+          cpu: response.metrics.cpuUsagePercent,
+          memory: response.metrics.memoryUsagePercent,
+          disk: 0, // Not provided by backend yet
+          activeConnections: response.metrics.threadCount,
+          requestsPerMinute: 0, // Not provided by backend yet
+          averageResponseTime: 0, // Not provided by backend yet
+          errorRate: 0 // Not provided by backend yet
+        },
+        components: response.components.map(c => ({
+          name: c.name,
+          status: mapStatus(c.status) as 'healthy' | 'degraded' | 'unhealthy' | 'unknown',
+          responseTime: 0,
+          lastCheck: c.lastCheck,
+          message: c.status !== 'Healthy' ? c.message : undefined
+        }))
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch system health'
       systemHealth.value = generateMockSystemHealth()

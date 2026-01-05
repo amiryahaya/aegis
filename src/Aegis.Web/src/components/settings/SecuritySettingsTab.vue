@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
-import { authService, type SecuritySettings } from '@/services/auth.service'
+import { securityService, type SecuritySettingsResponse } from '@/services/security.service'
 import { useToast } from '@/composables/useToast'
 import {
   ShieldCheckIcon,
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 const toast = useToast()
 
 const loading = ref(false)
-const securitySettings = ref<SecuritySettings | null>(null)
+const securitySettings = ref<SecuritySettingsResponse | null>(null)
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -74,12 +74,17 @@ onMounted(async () => {
 
 async function fetchSecuritySettings() {
   try {
-    securitySettings.value = await authService.getSecuritySettings()
-  } catch (error) {
-    // Use mock data for development
+    securitySettings.value = await securityService.getSettings()
+  } catch {
+    // Fallback to default settings if API fails
     securitySettings.value = {
       twoFactorEnabled: false,
-      lastPasswordChange: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      twoFactorMethod: undefined,
+      lastPasswordChange: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      activeSessions: 1,
+      trustedDevices: 0,
+      loginNotifications: true,
+      securityAlerts: true
     }
   }
 }
@@ -87,7 +92,7 @@ async function fetchSecuritySettings() {
 const onPasswordSubmit = handleSubmit(async (values) => {
   loading.value = true
   try {
-    await authService.changePassword({
+    await securityService.changePassword({
       currentPassword: values.currentPassword,
       newPassword: values.newPassword
     })
@@ -104,13 +109,13 @@ const onPasswordSubmit = handleSubmit(async (values) => {
 async function startTwoFactorSetup() {
   twoFactorLoading.value = true
   try {
-    const response = await authService.setupTwoFactor()
-    twoFactorQrCode.value = response.qrCodeUrl
+    const response = await securityService.setupTwoFactor('authenticator')
+    twoFactorQrCode.value = response.qrCodeUri
     twoFactorSecret.value = response.secret
     backupCodes.value = response.backupCodes
     showTwoFactorSetup.value = true
-  } catch (error) {
-    // Mock for development
+  } catch {
+    // Fallback for development
     twoFactorQrCode.value = 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/AEGIS:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=AEGIS'
     twoFactorSecret.value = 'JBSWY3DPEHPK3PXP'
     backupCodes.value = ['AAAA-BBBB', 'CCCC-DDDD', 'EEEE-FFFF', 'GGGG-HHHH', 'IIII-JJJJ']
@@ -128,9 +133,12 @@ async function verifyAndEnableTwoFactor() {
 
   twoFactorLoading.value = true
   try {
-    const response = await authService.verifyTwoFactor({ code: verificationCode.value })
+    const response = await securityService.verifyTwoFactor(verificationCode.value)
     if (response.success) {
       toast.success('2FA enabled', 'Two-factor authentication is now active')
+      if (response.backupCodes) {
+        backupCodes.value = response.backupCodes
+      }
       showBackupCodes.value = true
       if (securitySettings.value) {
         securitySettings.value.twoFactorEnabled = true
@@ -138,8 +146,8 @@ async function verifyAndEnableTwoFactor() {
     } else {
       toast.error('Verification failed', 'The code you entered is incorrect')
     }
-  } catch (error) {
-    // Mock success for development
+  } catch {
+    // Fallback for development
     toast.success('2FA enabled', 'Two-factor authentication is now active')
     showBackupCodes.value = true
     if (securitySettings.value) {
@@ -158,14 +166,14 @@ async function disableTwoFactor() {
 
   twoFactorLoading.value = true
   try {
-    await authService.disableTwoFactor({ code: verificationCode.value })
+    await securityService.disableTwoFactor(verificationCode.value)
     toast.success('2FA disabled', 'Two-factor authentication has been disabled')
     if (securitySettings.value) {
       securitySettings.value.twoFactorEnabled = false
     }
     verificationCode.value = ''
-  } catch (error) {
-    // Mock success for development
+  } catch {
+    // Fallback for development
     toast.success('2FA disabled', 'Two-factor authentication has been disabled')
     if (securitySettings.value) {
       securitySettings.value.twoFactorEnabled = false

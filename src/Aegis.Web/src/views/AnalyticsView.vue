@@ -11,6 +11,8 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/vue/24/outline'
 import { useAnalyticsStore } from '@/stores/analytics'
+import { analyticsService } from '@/services/analytics.service'
+import { useToast } from '@/composables/useToast'
 import StatCard from '@/components/analytics/StatCard.vue'
 import DateRangePicker from '@/components/analytics/DateRangePicker.vue'
 import InsightCard from '@/components/analytics/InsightCard.vue'
@@ -18,8 +20,10 @@ import TrendChart from '@/components/analytics/TrendChart.vue'
 import DistributionChart from '@/components/analytics/DistributionChart.vue'
 
 const analyticsStore = useAnalyticsStore()
+const toast = useToast()
 
 const selectedTab = ref(0)
+const isExporting = ref(false)
 
 const tabs = [
   { name: 'Overview', icon: ChartBarIcon },
@@ -35,9 +39,33 @@ onMounted(async () => {
 })
 
 // Export functionality
-async function exportAnalytics(format: 'csv' | 'json' | 'pdf') {
-  // In production, this would trigger an actual export
-  console.log('Exporting analytics as', format)
+async function exportAnalytics(format: 'csv' | 'json' | 'pdf' | 'xlsx') {
+  if (isExporting.value) return
+
+  isExporting.value = true
+  try {
+    const blob = await analyticsService.export({
+      format: format as 'json' | 'csv' | 'pdf' | 'xlsx',
+      fromDate: analyticsStore.dateRange.start,
+      toDate: analyticsStore.dateRange.end
+    })
+
+    // Create download link
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `analytics-${new Date().toISOString().split('T')[0]}.${format}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    toast.success('Export complete', `Analytics data exported as ${format.toUpperCase()}`)
+  } catch (error) {
+    toast.error('Export failed', error instanceof Error ? error.message : 'Unknown error')
+  } finally {
+    isExporting.value = false
+  }
 }
 </script>
 
